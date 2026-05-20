@@ -4,8 +4,10 @@ namespace App\Controllers;
 
 use App\Controllers\BaseController;
 use App\Models\Categoria_Model;
+use App\Models\Dato_Model;
 use App\Models\Dependencia_Model;
 use App\Models\Estado_Model;
+use App\Models\General_Model;
 use App\Models\Municipio_Model;
 use App\Models\Sector_Model;
 use App\Models\Sexo_Model;
@@ -29,6 +31,27 @@ class Registro_Controller extends BaseController
         $data['sectores'] = $sector->findAll();
         $data['sexos'] = $sexo->findAll();
 
-        return view('registro', $data);
+        return view('Registro', $data);
+    }
+
+    public function guardar()
+    {
+        $dato = new Dato_Model();
+        $general = new General_Model();
+
+        $idDato = $dato->insert([
+            'nombre' => $this->request->getPost('nombre'),
+            'correo' => $this->request->getPost('correo'),
+        ]);
+
+        $general->insert([
+            'id_dato' => $idDato,
+            'id_sexo' => $this->request->getPost('id_sexo'),
+            'id_dependencia' => $this->request->getPost('id_dependencia'),
+            'id_municipio' => $this->request->getPost('id_municipio'),
+            'id_categoria' => $this->request->getPost('id_categoria'),
+        ]);
+
+        return redirect()->to('/registro')->with('success', 'Registro guardado correctamente.');
     }
 }
