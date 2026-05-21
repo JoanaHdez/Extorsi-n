@@ -7,9 +7,24 @@
         </p>
     <?php endif; ?>
 
+    <?php if (session()->get('errors')): ?>
+        <div style="color: red;">
+            <ul>
+                <?php foreach (session()->get('errors') as $error): ?>
+                    <li><?= esc($error) ?></li>
+                <?php endforeach; ?>
+            </ul>
+        </div>
+    <?php endif; ?>
+
     <form action="<?= base_url('registro/guardar') ?>" method="post">
+  
+        <?= csrf_field() ?>
+
         <label for="nombre">Nombre</label>
         <input type="text" name="nombre" id="nombre" required>
+        <input type="text" name="apellido_p" id="apellido_p" required>
+        <input type="text" name="apellido_m" id="apellido_m" required>
 
         <br><br>
 
@@ -82,7 +97,6 @@
 
         <button type="submit">Guardar registro</button>
     </form>
-
     <script src="<?= base_url('assets/JS/index.js') ?>"></script>
 </body>
 

@@ -12,6 +12,8 @@ class Dato_Model extends Model
 
     protected $allowedFields = [
         'nombre',
+        'apellido_p',
+        'apellido_m',
         'correo',
     ];
 }
