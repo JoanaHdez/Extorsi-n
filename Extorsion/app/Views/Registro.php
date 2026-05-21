@@ -57,11 +57,6 @@
         <label for="id_municipio">Municipio</label>
         <select name="id_municipio" id="id_municipio" required>
             <option value="">Seleccione una opción</option>
-            <?php foreach ($municipios as $municipio): ?>
-                <option value="<?= $municipio['id_municipio'] ?>">
-                    <?= esc($municipio['municipio']) ?>
-                </option>
-            <?php endforeach; ?>
         </select>
 
         <br><br>
@@ -81,17 +76,14 @@
         <label for="id_categoria">Categoría</label>
         <select name="id_categoria" id="id_categoria" required>
             <option value="">Seleccione una opción</option>
-            <?php foreach ($categorias as $categoria): ?>
-                <option value="<?= $categoria['id_categoria'] ?>">
-                    <?= esc($categoria['categoria']) ?>
-                </option>
-            <?php endforeach; ?>
         </select>
 
         <br><br>
 
         <button type="submit">Guardar registro</button>
     </form>
+
+    <script src="<?= base_url('assets/JS/index.js') ?>"></script>
 </body>
 
 </html>

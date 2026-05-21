@@ -54,4 +54,26 @@ class Registro_Controller extends BaseController
 
         return redirect()->to('/registro')->with('success', 'Registro guardado correctamente.');
     }
+
+    public function municipios($id_municipio)
+    {
+        $municipio = new Municipio_Model();
+
+        $municipios = $municipio
+        ->where('id_estado', $id_municipio)
+        ->findAll();
+        
+        return $this->response->setJSON($municipios);
+    }
+
+    public function categorias($id_sector)
+    {
+        $categoria = new Categoria_Model();
+
+        $categorias = $categoria
+        ->where('id_sector', $id_sector)
+        ->findAll();
+        
+        return $this->response->setJSON($categorias);
+    }
 }
