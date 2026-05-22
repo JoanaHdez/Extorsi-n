@@ -225,7 +225,7 @@ class Registro_Controller extends BaseController
         JOIN sector sec
         ON c.id_sector = sec.id_sector
         GROUP BY sec.sector
-        "); 
+        ");
 
         $categoria = $db->query("
         SELECT c.categoria, COUNT(*) AS total
@@ -233,7 +233,7 @@ class Registro_Controller extends BaseController
         JOIN categoria c
         ON g.id_categoria = c.id_categoria
         GROUP BY c.categoria
-        "); 
+        ");
 
         $data['total'] = $total->getRow()->total;
         $data['sexo'] = $sexo->getResultArray();
@@ -243,5 +243,75 @@ class Registro_Controller extends BaseController
         $data['sector'] = $sector->getResultArray();
         $data['categoria'] = $categoria->getResultArray();
         return view('Reporte', $data);
+    }
+
+    public function exportar()
+    {
+        $db = \Config\Database::connect();
+
+        $query = $db->query("
+        SELECT 
+        d.nombre, 
+        d.apellido_p, 
+        d.apellido_m,
+        d.correo,
+        s.sexo,
+        dep.dependencia,
+        e.estado,
+        m.municipio,
+        sec.sector,
+        c.categoria,
+        g.fecha_registro
+
+        FROM general g
+
+        INNER JOIN dato d ON g.id_dato = d.id_dato
+        INNER JOIN sexo s ON g.id_sexo = s.id_sexo
+        INNER JOIN dependencia dep ON g.id_dependencia = dep.id_dependencia
+        INNER JOIN municipio m ON g.id_municipio = m.id_municipio
+        INNER JOIN estado e ON m.id_estado = e.id_estado
+        INNER JOIN categoria c ON g.id_categoria = c.id_categoria
+        INNER JOIN sector sec ON c.id_sector = sec.id_sector
+        ");
+
+        $registros = $query->getResultArray();
+
+        header('Content-Type: text/csv; charset=utf-8');
+        header('Content-Disposition: attachment; filename=registro.csv');
+
+        $output = fopen('php://output', 'w');
+
+        fputcsv($output, [
+            'Nombre',
+            'Apellido Paterno',
+            'Apellido Materno',
+            'Correo',
+            'Sexo',
+            'Dependencia',
+            'Estado',
+            'Municipio',
+            'Sector',
+            'Categoría',
+            'Fecha de Registro'
+        ]);
+
+        foreach ($registros as $fila) {
+            fputcsv($output, [
+                $fila['nombre'],
+                $fila['apellido_p'],
+                $fila['apellido_m'],
+                $fila['correo'],
+                $fila['sexo'],
+                $fila['dependencia'],
+                $fila['estado'],
+                $fila['municipio'],
+                $fila['sector'],
+                $fila['categoria'],
+                $fila['fecha_registro']
+            ]);
+        }
+
+        fclose($output);
+        exit;
     }
 }

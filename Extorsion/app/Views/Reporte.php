@@ -101,3 +101,8 @@
         </tr>
     <?php endforeach; ?>
 </table>
+
+<p>
+    <a href="/reporte/exportar">Exportar a CSV</a>
+    <button onclick="window.print()">Imprimir</button>
+</p>
