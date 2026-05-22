@@ -174,4 +174,74 @@ class Registro_Controller extends BaseController
         $data['registros'] = $query->getResultArray();
         return view('Listado', $data);
     }
+
+    public function reporte()
+    {
+        $db = \Config\Database::connect();
+
+        $total = $db->query("
+        SELECT COUNT(*) AS total 
+        FROM general");
+
+        $sexo = $db->query("
+        SELECT s.sexo, COUNT(*) AS total
+        FROM general g
+        INNER JOIN sexo s 
+        ON g.id_sexo = s.id_sexo
+        GROUP BY s.sexo
+        ");
+
+        $dependencia = $db->query("
+        SELECT d.dependencia, COUNT(*) AS total
+        FROM general g
+        JOIN dependencia d
+        ON g.id_dependencia = d.id_dependencia
+        GROUP BY d.dependencia
+        ");
+
+        $estado = $db->query("
+        SELECT e.estado, COUNT(*) AS total
+        FROM general g
+        JOIN municipio m
+        ON g.id_municipio = m.id_municipio
+        JOIN estado e
+        ON m.id_estado = e.id_estado
+        GROUP BY e.estado
+        ");
+
+        $municipio = $db->query("
+        SELECT m.municipio, COUNT(*) AS total
+        FROM general g
+        JOIN municipio m
+        ON g.id_municipio = m.id_municipio
+        GROUP BY m.municipio
+        ");
+
+        $sector = $db->query("
+        SELECT sec.sector, COUNT(*) AS total
+        FROM general g
+        JOIN categoria c
+        ON g.id_categoria = c.id_categoria
+        JOIN sector sec
+        ON c.id_sector = sec.id_sector
+        GROUP BY sec.sector
+        "); 
+
+        $categoria = $db->query("
+        SELECT c.categoria, COUNT(*) AS total
+        FROM general g
+        JOIN categoria c
+        ON g.id_categoria = c.id_categoria
+        GROUP BY c.categoria
+        "); 
+
+        $data['total'] = $total->getRow()->total;
+        $data['sexo'] = $sexo->getResultArray();
+        $data['dependencia'] = $dependencia->getResultArray();
+        $data['estado'] = $estado->getResultArray();
+        $data['municipio'] = $municipio->getResultArray();
+        $data['sector'] = $sector->getResultArray();
+        $data['categoria'] = $categoria->getResultArray();
+        return view('Reporte', $data);
+    }
 }
