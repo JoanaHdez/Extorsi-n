@@ -1,102 +1,156 @@
 <body>
-    <h1>Formulario de registro</h1>
+    <main class="container-fluid">
+        <section>
+            <div>
+                <div class="container-fluid p-0">
+                    <!-- <div class="fondo-1 position-relative">
+                        <h1 class="fw-bold mb-1 text-white">Formulario de registro</h1>
+                    </div> -->
+                    <div class="d-flex">
 
-    <?php if (session()->getFlashdata('success')): ?>
-        <p style="color: green;">
-            <?= session()->getFlashdata('success') ?>
-        </p>
-    <?php endif; ?>
+                        <!-- MENÚ -->
+                        <div class="cuadro shadow rounded-end p-4 w-25 vh-100"></div>
 
-    <?php if (session()->get('errors')): ?>
-        <div style="color: red;">
-            <ul>
-                <?php foreach (session()->get('errors') as $error): ?>
-                    <li><?= esc($error) ?></li>
-                <?php endforeach; ?>
-            </ul>
-        </div>
-    <?php endif; ?>
+                        <div class="contenido flex-grow-1">
 
-    <form action="<?= base_url('registro/guardar') ?>" method="post">
-  
-        <?= csrf_field() ?>
+                            <div class="d-flex flex-column align-items-center">
 
-        <label for="nombre">Nombre</label>
-        <input type="text" name="nombre" id="nombre" required>
-        <input type="text" name="apellido_p" id="apellido_p" required>
-        <input type="text" name="apellido_m" id="apellido_m" required>
+                                <h1 class="titulo fw-bold mt-5">
+                                    Pláticas de Medidas Preventivas en Casos de Extorsión
+                                </h1>
 
-        <br><br>
+                                <h2 class="subtitulo text-white mt-5">
+                                    Del 09 al 12 de junio de 2026
+                                </h2>
 
-        <label for="correo">Correo</label>
-        <input type="email" name="correo" id="correo" required>
+                                <h2 class="text-white mt-5">
+                                    Registro
+                                </h2>
 
-        <br><br>
+                            </div>
 
-        <label for="id_sexo">Sexo</label>
-        <select name="id_sexo" id="id_sexo" required>
-            <option value="">Seleccione una opción</option>
-            <?php foreach ($sexos as $sexo): ?>
-                <option value="<?= $sexo['id_sexo'] ?>">
-                    <?= esc($sexo['sexo']) ?>
-                </option>
-            <?php endforeach; ?>
-        </select>
+                            <?php if (session()->getFlashdata('success')): ?>
+                                <p style="color: green;">
+                                    <?= session()->getFlashdata('success') ?>
+                                </p>
+                            <?php endif; ?>
 
-        <br><br>
+                            <?php if (session()->get('errors')): ?>
+                                <div style="color: red;">
+                                    <ul>
+                                        <?php foreach (session()->get('errors') as $error): ?>
+                                            <li><?= esc($error) ?></li>
+                                        <?php endforeach; ?>
+                                    </ul>
+                                </div>
+                            <?php endif; ?>
 
-        <label for="id_dependencia">Dependencia</label>
-        <select name="id_dependencia" id="id_dependencia" required>
-            <option value="">Seleccione una opción</option>
-            <?php foreach ($dependencias as $dependencia): ?>
-                <option value="<?= $dependencia['id_dependencia'] ?>">
-                    <?= esc($dependencia['dependencia']) ?>
-                </option>
-            <?php endforeach; ?>
-        </select>
+                            <div class="container mt-5">
+                                <form action="<?= base_url('registro/guardar') ?>" method="post">
 
-        <br><br>
+                                    <?= csrf_field() ?>
 
-        <label for="id_estado">Estado</label>
-        <select name="id_estado" id="id_estado" required>
-            <option value="">Seleccione una opción</option>
-            <?php foreach ($estados as $estado): ?>
-                <option value="<?= $estado['id_estado'] ?>">
-                    <?= esc($estado['estado']) ?>
-                </option>
-            <?php endforeach; ?>
-        </select>
+                                    <div class="row g-4">
 
-        <br><br>
+                                        <div class="col-md-4">
+                                            <label class="form-label">Nombre:</label>
+                                            <input type="text" class="form-control linea" name="nombre" id="nombre" required>
+                                        </div>
 
-        <label for="id_municipio">Municipio</label>
-        <select name="id_municipio" id="id_municipio" required>
-            <option value="">Seleccione una opción</option>
-        </select>
+                                        <div class="col-md-4">
+                                            <label class="form-label">Apellido Paterno:</label>
+                                            <input type="text" class="form-control linea" name="apellido_p" id="apellido_p" required>
+                                        </div>
 
-        <br><br>
+                                        <div class="col-md-4">
+                                            <label class="form-label">Apellido Materno:</label>
+                                            <input type="text" class="form-control linea" name="apellido_m" id="apellido_m" required>
+                                        </div>
 
-        <label for="id_sector">Sector</label>
-        <select name="id_sector" id="id_sector" required>
-            <option value="">Seleccione una opción</option>
-            <?php foreach ($sectores as $sector): ?>
-                <option value="<?= $sector['id_sector'] ?>">
-                    <?= esc($sector['sector']) ?>
-                </option>
-            <?php endforeach; ?>
-        </select>
+                                        <div class="col-md-4">
+                                            <label for="correo">Correo</label>
+                                            <input type="email" name="correo" id="correo" required>
+                                        </div>
 
-        <br><br>
+                                        <div class="col-md-4">
+                                            <label for="id_sexo">Sexo</label>
+                                            <select name="id_sexo" id="id_sexo" required>
+                                                <option value="">Seleccione una opción</option>
+                                                <?php foreach ($sexos as $sexo): ?>
+                                                    <option value="<?= $sexo['id_sexo'] ?>">
+                                                        <?= esc($sexo['sexo']) ?>
+                                                    </option>
+                                                <?php endforeach; ?>
+                                            </select>
+                                        </div>
 
-        <label for="id_categoria">Categoría</label>
-        <select name="id_categoria" id="id_categoria" required>
-            <option value="">Seleccione una opción</option>
-        </select>
+                                        <div class="col-md-4">
+                                            <label for="id_dependencia">Dependencia</label>
+                                            <select name="id_dependencia" id="id_dependencia" required>
+                                                <option value="">Seleccione una opción</option>
+                                                <?php foreach ($dependencias as $dependencia): ?>
+                                                    <option value="<?= $dependencia['id_dependencia'] ?>">
+                                                        <?= esc($dependencia['dependencia']) ?>
+                                                    </option>
+                                                <?php endforeach; ?>
+                                            </select>
+                                        </div>
 
-        <br><br>
+                                        <div class="col-md-4">
+                                            <label for="id_estado">Estado</label>
+                                            <select name="id_estado" id="id_estado" required>
+                                                <option value="">Seleccione una opción</option>
+                                                <?php foreach ($estados as $estado): ?>
+                                                    <option value="<?= $estado['id_estado'] ?>">
+                                                        <?= esc($estado['estado']) ?>
+                                                    </option>
+                                                <?php endforeach; ?>
+                                            </select>
+                                        </div>
 
-        <button type="submit">Guardar registro</button>
-    </form>
+                                        <div class="col-md-4">
+                                            <label for="id_municipio">Municipio</label>
+                                            <select name="id_municipio" id="id_municipio" required>
+                                                <option value="">Seleccione una opción</option>
+                                            </select>
+                                        </div>
+
+                                        <div class="col-md-4">
+                                            <label for="id_sector">Sector</label>
+                                            <select name="id_sector" id="id_sector" required>
+                                                <option value="">Seleccione una opción</option>
+                                                <?php foreach ($sectores as $sector): ?>
+                                                    <option value="<?= $sector['id_sector'] ?>">
+                                                        <?= esc($sector['sector']) ?>
+                                                    </option>
+                                                <?php endforeach; ?>
+                                            </select>
+                                        </div>
+
+                                        <div class="col-md-4">
+                                            <label for="id_categoria">Categoría</label>
+                                            <select name="id_categoria" id="id_categoria" required>
+                                                <option value="">Seleccione una opción</option>
+                                            </select>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-12 d-flex justify-content-end mt-4">
+
+                                        <button class="btn boton-enviar px-5">
+                                            Enviar
+                                        </button>
+
+                                    </div>
+
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
     <script src="<?= base_url('assets/JS/index.js') ?>"></script>
 </body>
 

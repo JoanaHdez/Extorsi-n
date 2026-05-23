@@ -31,7 +31,10 @@ class Registro_Controller extends BaseController
         $data['sectores'] = $sector->findAll();
         $data['sexos'] = $sexo->findAll();
 
-        return view('Registro', $data);
+        $data['style'] = 'assets/Css/registro.css';
+
+        return view('head', $data)
+            .   view('Registro', $data);
     }
 
     public function guardar()

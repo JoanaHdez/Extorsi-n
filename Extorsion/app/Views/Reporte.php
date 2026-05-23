@@ -1,3 +1,5 @@
+
+
 <h1>Reportes</h1>
 
 <h3>Total de registros:</h3>
