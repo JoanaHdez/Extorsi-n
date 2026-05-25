@@ -1,0 +1,10 @@
+body{
+    background: #ece5e5;
+}
+
+.cuadro{
+    width: 250px;
+    height: 700px;
+    background: rgba(255,255,255,0.7);
+    backdrop-filter: blur(10px);
+}

@@ -1,4 +1,42 @@
+<div class="fondo-1 position-relative">
+    <h1 class="fw-bold mb-1 text-white">Formulario de registro</h1>
+</div>
+<div class="d-flex">
 
+    <!-- MENÚ -->
+    <div class="cuadro shadow rounded-5 p-4">
+
+        <!-- Logo -->
+        <h4 class="fw-bold mb-5">Logos</h4>
+
+        <!-- Opciones -->
+        <div class="d-flex flex-column gap-3">
+
+            <div class="bg-light rounded-pill p-3">
+                Dashboard
+            </div>
+
+            <div class="p-3">
+                Registros
+            </div>
+
+            <div class="p-3">
+                Reportes
+            </div>
+
+            <div class="p-3">
+                Exportaciones
+            </div>
+
+            <div class="p-3">
+                Configuración
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
 
 <h1>Reportes</h1>
 
@@ -17,10 +55,10 @@
     </tr>
 
     <?php foreach ($sexo as $fila): ?>
-        <tr>
-            <td><?= esc($fila['sexo']) ?></td>
-            <td><?= esc($fila['total']) ?></td>
-        </tr>
+    <tr>
+        <td><?= esc($fila['sexo']) ?></td>
+        <td><?= esc($fila['total']) ?></td>
+    </tr>
     <?php endforeach; ?>
 </table>
 
@@ -33,10 +71,10 @@
     </tr>
 
     <?php foreach ($dependencia as $fila): ?>
-        <tr>
-            <td><?= esc($fila['dependencia']) ?></td>
-            <td><?= esc($fila['total']) ?></td>
-        </tr>
+    <tr>
+        <td><?= esc($fila['dependencia']) ?></td>
+        <td><?= esc($fila['total']) ?></td>
+    </tr>
     <?php endforeach; ?>
 </table>
 
@@ -49,10 +87,10 @@
     </tr>
 
     <?php foreach ($estado as $fila): ?>
-        <tr>
-            <td><?= esc($fila['estado']) ?></td>
-            <td><?= esc($fila['total']) ?></td>
-        </tr>
+    <tr>
+        <td><?= esc($fila['estado']) ?></td>
+        <td><?= esc($fila['total']) ?></td>
+    </tr>
     <?php endforeach; ?>
 </table>
 
@@ -65,14 +103,14 @@
     </tr>
 
     <?php foreach ($municipio as $fila): ?>
-        <tr>
-            <td><?= esc($fila['municipio']) ?></td>
-            <td><?= esc($fila['total']) ?></td>
-        </tr>
-    <?php endforeach; ?>    
+    <tr>
+        <td><?= esc($fila['municipio']) ?></td>
+        <td><?= esc($fila['total']) ?></td>
+    </tr>
+    <?php endforeach; ?>
 </table>
 
-<h3>Registros por sector</h3>   
+<h3>Registros por sector</h3>
 
 <table border="1">
     <tr>
@@ -81,14 +119,14 @@
     </tr>
 
     <?php foreach ($sector as $fila): ?>
-        <tr>
-            <td><?= esc($fila['sector']) ?></td>
-            <td><?= esc($fila['total']) ?></td>
-        </tr>
+    <tr>
+        <td><?= esc($fila['sector']) ?></td>
+        <td><?= esc($fila['total']) ?></td>
+    </tr>
     <?php endforeach; ?>
 </table>
 
-<h3>Registros por categoría</h3>    
+<h3>Registros por categoría</h3>
 
 <table border="1">
     <tr>
@@ -97,10 +135,10 @@
     </tr>
 
     <?php foreach ($categoria as $fila): ?>
-        <tr>
-            <td><?= esc($fila['categoria']) ?></td>
-            <td><?= esc($fila['total']) ?></td>
-        </tr>
+    <tr>
+        <td><?= esc($fila['categoria']) ?></td>
+        <td><?= esc($fila['total']) ?></td>
+    </tr>
     <?php endforeach; ?>
 </table>
 

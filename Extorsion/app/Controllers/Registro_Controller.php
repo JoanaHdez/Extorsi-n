@@ -182,7 +182,7 @@ class Registro_Controller extends BaseController
     {
         $db = \Config\Database::connect();
 
-        $total = $db->query("
+        /*$total = $db->query("
         SELECT COUNT(*) AS total 
         FROM general");
 
@@ -244,8 +244,41 @@ class Registro_Controller extends BaseController
         $data['estado'] = $estado->getResultArray();
         $data['municipio'] = $municipio->getResultArray();
         $data['sector'] = $sector->getResultArray();
-        $data['categoria'] = $categoria->getResultArray();
-        return view('Reporte', $data);
+        $data['categoria'] = $categoria->getResultArray(); */
+
+
+        $data['total'] = 120;
+
+$data['sexo'] = [
+    ['sexo' => 'Masculino', 'total' => 70],
+    ['sexo' => 'Femenino', 'total' => 50],
+];
+
+$data['dependencia'] = [
+    ['dependencia' => 'Seguridad', 'total' => 40],
+    ['dependencia' => 'Administración', 'total' => 80],
+];
+
+$data['estado'] = [
+    ['estado' => 'CDMX', 'total' => 90],
+];
+
+$data['municipio'] = [
+    ['municipio' => 'Nezahualcóyotl', 'total' => 60],
+];
+
+$data['sector'] = [
+    ['sector' => 'Público', 'total' => 100],
+];
+
+$data['categoria'] = [
+    ['categoria' => 'Alta', 'total' => 30],
+    ['categoria' => 'Media', 'total' => 90],
+];
+
+$data['style'] = 'assets/Css/reporte.css';
+return view('head', $data)
+        . view('Reporte', $data);
     }
 
     public function exportar()
