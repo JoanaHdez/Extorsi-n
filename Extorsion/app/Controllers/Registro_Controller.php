@@ -17,7 +17,7 @@ class Registro_Controller extends BaseController
     public function index()
     {
 
-        /* $estado = new Estado_Model();
+        $estado = new Estado_Model();
         $municipio = new Municipio_Model();
         $dependencia = new Dependencia_Model();
         $categoria = new Categoria_Model();
@@ -29,7 +29,7 @@ class Registro_Controller extends BaseController
         $data['dependencias'] = $dependencia->findAll();
         $data['categorias'] = $categoria->findAll();
         $data['sectores'] = $sector->findAll();
-        $data['sexos'] = $sexo->findAll(); */
+        $data['sexos'] = $sexo->findAll();
 
         $data['style'] = 'assets/Css/registro.css';
 
@@ -182,7 +182,7 @@ class Registro_Controller extends BaseController
     {
         $db = \Config\Database::connect();
 
-        /*$total = $db->query("
+        $total = $db->query("
         SELECT COUNT(*) AS total 
         FROM general");
 
@@ -238,16 +238,28 @@ class Registro_Controller extends BaseController
         GROUP BY c.categoria
         ");
 
+        $registros = $db->query("
+SELECT 
+    d.nombre,
+    d.apellido_p,
+    d.apellido_m,
+    d.correo,
+    m.municipio
+FROM general g
+INNER JOIN dato d ON g.id_dato = d.id_dato
+INNER JOIN municipio m ON g.id_municipio = m.id_municipio
+");
+
         $data['total'] = $total->getRow()->total;
         $data['sexo'] = $sexo->getResultArray();
         $data['dependencia'] = $dependencia->getResultArray();
         $data['estado'] = $estado->getResultArray();
         $data['municipio'] = $municipio->getResultArray();
         $data['sector'] = $sector->getResultArray();
-        $data['categoria'] = $categoria->getResultArray(); */
+        $data['categoria'] = $categoria->getResultArray(); 
+$data['registros'] = $registros->getResultArray();
 
-
-        $data['total'] = 120;
+        /* $data['total'] = 120;
 
 $data['sexo'] = [
     ['sexo' => 'Masculino', 'total' => 70],
@@ -274,7 +286,7 @@ $data['sector'] = [
 $data['categoria'] = [
     ['categoria' => 'Alta', 'total' => 30],
     ['categoria' => 'Media', 'total' => 90],
-];
+]; */
 
 $data['style'] = 'assets/Css/reporte.css';
 return view('head', $data)

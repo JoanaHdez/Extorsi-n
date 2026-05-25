@@ -1,10 +1,242 @@
 body{
-    background: #ece5e5;
+    background: #ffffff;
 }
 
 .cuadro{
     width: 250px;
     height: 700px;
-    background: rgba(255,255,255,0.7);
+    background: linear-gradient(#00538E, #A40000);
     backdrop-filter: blur(10px);
+    display: flex;
+    flex-direction: column;
+}
+
+.logos-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    margin-bottom: 15px;
+}
+
+.logo-principal {
+    width: 85%;
+    max-width: 220px;
+    height: auto;
+    object-fit: contain;
+}
+
+.logo-secundario {
+    width: 100%;
+    max-width: 220px;
+    height: auto;
+    object-fit: contain;
+    opacity: 0.9;
+    margin-top: -5px;
+}
+
+.menu-salir {
+    margin-top: auto;     /* 👈 LO BAJA COMPLETAMENTE */
+    width: 100%;
+    display: flex;
+    justify-content: flex-start; /* 👈 izquierda */
+    padding-top: 10px;
+}
+
+.logo-salir {
+    width: 45px;
+    height: auto;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.logo-salir:hover {
+    transform: rotate(180deg);
+}
+
+.sidebar {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start; /* 👈 lo sube naturalmente */
+    height: 100vh;
+    padding-top: 10px;
+}
+
+.menu-wrapper {
+    display: flex;
+    justify-content: center; /* 👈 centra SOLO el menú */
+}
+.menu-opciones {
+    width: 100%;
+    align-items: flex-end;
+}
+
+.menu-item,
+.btn-exportar {
+    background: #b8893a;
+    color: white;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 600;
+    cursor: pointer;
+    text-decoration: none;
+    border-radius: 50px;
+    padding: 10px 14px;
+    width: fit-content;
+    max-width: 100%;
+    transition: all 0.25s ease;
+    margin-left: auto;
+}
+
+.menu-item,
+.btn-exportar {
+    transform-origin: right center; 
+}
+
+.menu-item:hover,
+.btn-exportar:hover {
+    padding: 10px 50px;
+    background: #a47730;
+    transform: translateX(-6px); 
+}
+
+.menu-item.active {
+    padding: 10px 50px;
+    background: #8f6a28;
+}
+
+.arrow {
+    font-size: 14px;
+    opacity: 0.9;
+}
+
+.card-modern {
+    border: none;
+    border-radius: 20px;
+    padding: 10px;
+    color: white;
+    overflow: hidden;
+    transition: all 0.25s ease;
+    min-height: 120px;
+}
+
+.card-modern:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 30px rgba(31,90,138,0.2);
+}
+
+.card-total {
+    background: linear-gradient(135deg, #0B2E4A, #123E63);
+}
+
+.card-comercio {
+    background: linear-gradient(135deg, #16A34A, #22C55E);
+    color: #FFFFFF;
+}
+
+.card-servicio {
+    background: linear-gradient(135deg, #F59E0B, #FBBF24);
+    color: #1F2937;
+}
+
+.card-modern {
+    border-radius: 18px;
+    border: none;
+    overflow: hidden;
+    position: relative;
+    color: white;
+}
+
+.card-icon-bg {
+    position: absolute;
+    right: 10px;
+    bottom: -10px;
+    font-size: 110px;
+    opacity: 0.1; 
+    pointer-events: none;
+    user-select: none;
+}
+
+.card-body {
+    position: relative;
+    z-index: 2;
+}
+.navbar-simple {
+    display: flex;
+    justify-content: center;
+    padding: 10px;
+}
+
+/* contenedor simple */
+.search-simple {
+    display: flex;
+    width: 100%;
+    max-width: 400px;
+}
+
+/* input */
+.search-simple input {
+    flex: 1;
+    padding: 8px 12px;
+
+    border: 1px solid #ccc;
+    border-right: none;
+
+    border-radius: 6px 0 0 6px;
+    outline: none;
+}
+
+/* botón */
+.search-simple button {
+    padding: 8px 14px;
+
+    background: #00538E; /* institucional */
+    color: white;
+
+    border: 1px solid #00538E;
+    border-radius: 0 6px 6px 0;
+
+    cursor: pointer;
+}
+
+.search-simple button:hover {
+    background: #003f6b;
+}
+
+canvas {
+    background: #fff;
+    border-radius: 12px;
+    padding: 10px;
+}
+
+#graficaDependencias,
+#graficaSexo,
+#graficaEstado {
+    height: 240px !important;
+}
+
+.tabla-scroll-wrapper {
+    max-height: 550px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.tabla-scroll {
+    max-height: 450px;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+.table thead th {
+    position: sticky;
+    top: 0;
+    background: white;
+    z-index: 2;
+}
+
+table {
+    font-size: 14px;
 }
