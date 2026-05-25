@@ -17,7 +17,7 @@ class Registro_Controller extends BaseController
     public function index()
     {
 
-        $estado = new Estado_Model();
+        /* $estado = new Estado_Model();
         $municipio = new Municipio_Model();
         $dependencia = new Dependencia_Model();
         $categoria = new Categoria_Model();
@@ -29,13 +29,13 @@ class Registro_Controller extends BaseController
         $data['dependencias'] = $dependencia->findAll();
         $data['categorias'] = $categoria->findAll();
         $data['sectores'] = $sector->findAll();
-        $data['sexos'] = $sexo->findAll();
+        $data['sexos'] = $sexo->findAll(); */
 
         $data['style'] = 'assets/Css/registro.css';
 
         return view('head', $data)
             .   view('Registro', $data);
-    }
+    } 
 
     public function guardar()
     {

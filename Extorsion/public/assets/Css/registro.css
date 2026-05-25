@@ -1,7 +1,7 @@
 body{
     margin: 0;
     padding: 0;
-    background: #ece5e5;
+    background: #ffffff;
 }
 
 /* MENU */
@@ -24,7 +24,11 @@ background: linear-gradient(#00538E, #A40000);
     color: black;
 }
 
-/* INPUTS */
+form label.form-label {
+    font-weight: 600;
+    color: #6c757d;
+}
+
 .linea{
     border: none;
     border-bottom: 1px solid #bdbdbd;
