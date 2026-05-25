@@ -53,9 +53,42 @@
                                     Exportar
                                 </a>
 
-                                <div class="menu-item mt-4">
+                                <div class="menu-item mt-4" id="menuFiltro">
                                     <span class="arrow">❮</span> Filtro
                                 </div>
+                                <form class="filter-panel" id="dashboardFiltros">
+                                    <div class="filter-title">Filtros</div>
+
+                                    <label>
+                                        Estado
+                                        <select id="filtroEstado" aria-label="Estado">
+                                            <option value="">Todos</option>
+                                        </select>
+                                    </label>
+
+                                    <label>
+                                        Municipio
+                                        <select id="filtroMunicipio" aria-label="Municipio">
+                                            <option value="">Todos</option>
+                                        </select>
+                                    </label>
+
+                                    <label>
+                                        Sector
+                                        <select id="filtroSector" aria-label="Sector">
+                                            <option value="">Todos</option>
+                                        </select>
+                                    </label>
+
+                                    <label>
+                                        Categoria
+                                        <select id="filtroCategoria" aria-label="Categoria">
+                                            <option value="">Todas</option>
+                                        </select>
+                                    </label>
+
+                                    <button type="button" id="limpiarFiltros">Limpiar filtros</button>
+                                </form>
                             </div>
 
                             <div class="menu-salir">
@@ -126,7 +159,7 @@
 
                                                     <div class="flex-grow-1">
                                                         <h6>Total de registros</h6>
-                                                        <h2 class="fw-bold"><?= $total ?></h2>
+                                                        <h2 class="fw-bold" id="dashboardTotal"><?= $total ?></h2>
                                                     </div>
 
                                                     <div class="card-icon-bg">
@@ -138,13 +171,13 @@
                                         </div>
 
                                         <div class="col-sm-4">
-                                            <div class="card-comercio card-modern card-green-light">
+                                            <div class="card-comercio card-modern card-green-light" data-sector-card="Comercial">
                                                 <div class="card-body d-flex align-items-center">
 
                                                     <div class="flex-grow-1">
                                                         <h6>Sector Comercial</h6>
 
-                                                        <h2 class="fw-bold">
+                                                        <h2 class="fw-bold" id="totalSectorComercial">
                                                             <?php foreach ($sector as $fila): ?>
                                                             <?php if ($fila['sector'] == 'Comercial'): ?>
                                                             <?= esc($fila['total']) ?>
@@ -162,13 +195,13 @@
                                         </div>
 
                                         <div class="col-sm-4">
-                                            <div class="card-servicio card-modern card-green-soft">
+                                            <div class="card-servicio card-modern card-green-soft" data-sector-card="Servicio">
                                                 <div class="card-body d-flex align-items-center">
 
                                                     <div class="flex-grow-1">
                                                         <h6>Sector Servicio</h6>
 
-                                                        <h2 class="fw-bold">
+                                                        <h2 class="fw-bold" id="totalSectorServicio">
                                                             <?php foreach ($sector as $fila): ?>
                                                             <?php if ($fila['sector'] == 'Servicio'): ?>
                                                             <?= esc($fila['total']) ?>
@@ -186,9 +219,9 @@
                                         </div>
                                     </div>
 
-                                    <div class="row">
+                                    <div class="row g-4 dashboard-grid">
                                         <!-- <div class="col-sm-4 g-5">
-                                            <h3>Registros por dependencia</h3>
+                                            <h3>Registros por dÃ­a</h3>
 
                                             <table border="1">
                                                 <tr>
@@ -205,8 +238,8 @@
                                             </table>
                                         </div> -->
 
-                                        <div class="col-sm-4 g-4">
-                                            <h3>Registros por dependencia</h3>
+                                        <div class="col-lg-8 g-4 dashboard-panel chart-panel chart-panel-large">
+                                            <h3>Registros por dÃ­a</h3>
 
                                             <canvas class="mt-4" id="graficaDependencias"></canvas>
                                         </div>
@@ -229,25 +262,24 @@
                                             </table>
                                         </div> -->
 
-                                        <div class="col-sm-4 g-4">
+                                        <div class="col-lg-4 g-4 dashboard-panel chart-panel">
                                             <h3>Registros por sexo</h3>
 
                                             <canvas class="mt-4" id="graficaSexo"></canvas>
                                         </div>
 
-                                        <div class="col-sm-4 g-5">
+                                        <div class="col-lg-8 g-5 dashboard-panel table-panel">
                                             <nav class="navbar-simple">
-    <form class="search-simple">
+                                                <form class="search-simple" id="buscarRegistrosForm">
 
-        <input type="search"
-               placeholder="Buscar..."
-               aria-label="Search">
+                                                    <input type="search" id="buscarRegistros"
+                                                        placeholder="Buscar..." aria-label="Search">
 
-        <button type="submit">Buscar</button>
+                                                    <button type="submit">Buscar</button>
 
-    </form>
-</nav>
-                                            <!-- <div class="col-sm-12 g-5">
+                                                </form>
+                                            </nav>
+                                            <div class="col-sm-12 g-5">
                                                 <div class="tabla-scroll-wrapper">
                                                     <div class="tabla-scroll">
 
@@ -262,7 +294,7 @@
                                                             </thead>
                                                             <tbody>
                                                                 <?php $i = 1; foreach ($registros as $fila): ?>
-                                                                <tr>
+                                                                <tr class="registro-tabla">
                                                                     <th><?= $i++ ?></th>
 
                                                                     <td>
@@ -279,39 +311,20 @@
                                                         </table>
                                                     </div>
                                                 </div>
-                                            </div> -->
+                                            </div>
                                         </div>
-                                    </div>
+                                        <div class="col-lg-4 g-4 dashboard-side-stack">
+                                            <div class="dashboard-panel chart-panel chart-panel-small">
+                                                <h3>Registros por estado</h3>
+                                                <canvas class="mt-4" id="graficaEstado"></canvas>
+                                            </div>
 
-                                    <div class="row">
-                                        <!-- <div class="col-sm-4 g-5">
-                                            <h3>Registros por estado</h3>
-                                            <table border="1">
-                                                <tr>
-                                                    <th>Estado</th>
-                                                    <th>Total</th>
-                                                </tr>
-
-                                                <?php foreach ($estado as $fila): ?>
-                                                <tr>
-                                                    <td><?= esc($fila['estado']) ?></td>
-                                                    <td><?= esc($fila['total']) ?></td>
-                                                </tr>
-                                                <?php endforeach; ?>
-                                            </table>
-                                        </div> -->
-                                        <div class="col-sm-4 g-4">
-                                            <h3>Registros por estado</h3>
-                                            <canvas class="mt-4" id="graficaEstado"></canvas>
-                                        </div>
-
-                                        <div class="col-sm-4 g-5">
-                                            <div class="card mt-4 style=" width: 18rem;">
+                                            <div class="sector-info-card mt-4">
                                                 <div class="card-body">
-                                                    <h5 class="card-title">Informacion del Sector Comercial</h5>
-                                                    <p class="card-text">With supporting text below as a natural
-                                                        lead-in
-                                                        to additional content.</p>
+                                                    <h5 class="card-title" id="sectorInfoTitulo">Informacion del Sector</h5>
+                                                    <p class="card-text" id="sectorInfoTexto">
+                                                        Seleccione una card de sector para ver su informacion.
+                                                    </p>
                                                 </div>
                                             </div>
                                         </div>
@@ -329,13 +342,16 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 
     <script>
-    window.dependenciasData = <?= json_encode($dependencia) ?>;
+    window.dependenciasData = <?= json_encode($dias) ?>;
     </script>
     <script>
     window.sexoData = <?= json_encode($sexo) ?>;
     </script>
     <script>
     window.estadoData = <?= json_encode($estado) ?>;
+    </script>
+    <script>
+    window.dashboardData = <?= json_encode($dashboard) ?>;
     </script>
 
     <script src="<?= base_url('assets/JS/index.js') ?>"></script>

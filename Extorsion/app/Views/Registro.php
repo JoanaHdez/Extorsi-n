@@ -103,15 +103,8 @@
 
                                         <div class="col-md-4">
                                             <label class="form-label">Dependencia</label>
-                                            <select class="form-select select-estilo" name="id_dependencia"
-                                                id="id_dependencia" required>
-                                                <option value="">Seleccione una opción</option>
-                                                <?php foreach ($dependencias as $dependencia): ?>
-                                                <option value="<?= $dependencia['id_dependencia'] ?>">
-                                                    <?= esc($dependencia['dependencia']) ?>
-                                                </option>
-                                                <?php endforeach;?>
-                                            </select>
+                                            <input type="text" class="form-control linea" name="dependencia"
+                                                id="dependencia" required>
                                         </div>
 
                                         <div class="col-md-4">
@@ -154,6 +147,12 @@
                                                 id="id_categoria" required>
                                                 <option value="">Seleccione una opción</option>
                                             </select>
+                                        </div>
+
+                                        <div class="col-md-4" id="categoria_otro_contenedor" style="display: none;">
+                                            <label class="form-label">Especifique categoría</label>
+                                            <input type="text" class="form-control linea" name="categoria_otro"
+                                                id="categoria_otro">
                                         </div>
                                     </div>
 

@@ -12,7 +12,7 @@ background: linear-gradient(#00538E, #A40000);
 }
 
 .contenido{
-    height: 100vh;
+    min-height: 100vh;
 }
 
 .titulo{
@@ -58,5 +58,100 @@ form label.form-label {
 .boton-enviar:hover{
     background-color: #00386d;
     color: white;
+}
+
+@media (max-width: 768px) {
+    body {
+        overflow-x: hidden;
+    }
+
+    main.container-fluid,
+    .container-fluid {
+        padding-left: 0;
+        padding-right: 0;
+    }
+
+    .container-fluid.p-0 > .d-flex {
+        flex-direction: column;
+    }
+
+    .cuadro {
+        width: 100% !important;
+        height: auto !important;
+        min-height: auto;
+        border-radius: 0 !important;
+        padding: 16px !important;
+        flex-direction: row !important;
+        justify-content: center !important;
+        gap: 16px !important;
+    }
+
+    .cuadro img {
+        max-width: 120px !important;
+        margin-bottom: 0 !important;
+    }
+
+    .contenido {
+        min-height: auto;
+        width: 100%;
+    }
+
+    .titulo {
+        font-size: 1.25rem;
+        line-height: 1.3;
+        text-align: center;
+        margin-top: 24px !important;
+        padding: 0 16px;
+    }
+
+    .subtitulo,
+    .contenido h2 {
+        font-size: 1.05rem;
+        text-align: center;
+        margin-top: 14px !important;
+        padding: 0 16px;
+    }
+
+    .contenido .container {
+        padding-left: 18px !important;
+        padding-right: 18px !important;
+        margin-top: 20px !important;
+    }
+
+    form .row {
+        --bs-gutter-x: 0;
+        --bs-gutter-y: 1.2rem;
+    }
+
+    form .col-md-4 {
+        width: 100%;
+    }
+
+    .linea,
+    .select-estilo {
+        min-height: 44px;
+        font-size: 16px;
+    }
+
+    .col-12.d-flex.justify-content-end {
+        justify-content: stretch !important;
+        margin-top: 28px !important;
+    }
+
+    .boton-enviar {
+        width: 100%;
+        min-height: 48px;
+        font-size: 16px;
+    }
+}
+
+@media (max-width: 420px) {
+    .cuadro img {
+        max-width: 96px !important;
+    }
+
+    .titulo {
+        font-size: 1.12rem;
+    }
 }
 

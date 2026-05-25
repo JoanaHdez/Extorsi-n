@@ -13,8 +13,9 @@ class General_Model extends Model
     protected $allowedFields = [
         'id_dato',
         'id_sexo',
-        'id_dependencia',
+        'dependencia',
         'id_municipio',
         'id_categoria',
+        'categoria_otro',
     ];
 }

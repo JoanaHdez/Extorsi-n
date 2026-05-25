@@ -5,7 +5,6 @@ namespace App\Controllers;
 use App\Controllers\BaseController;
 use App\Models\Categoria_Model;
 use App\Models\Dato_Model;
-use App\Models\Dependencia_Model;
 use App\Models\Estado_Model;
 use App\Models\General_Model;
 use App\Models\Municipio_Model;
@@ -19,14 +18,12 @@ class Registro_Controller extends BaseController
 
         $estado = new Estado_Model();
         $municipio = new Municipio_Model();
-        $dependencia = new Dependencia_Model();
         $categoria = new Categoria_Model();
         $sector = new Sector_Model();
         $sexo = new Sexo_Model();
 
         $data['estados'] = $estado->findAll();
         $data['municipios'] = $municipio->findAll();
-        $data['dependencias'] = $dependencia->findAll();
         $data['categorias'] = $categoria->findAll();
         $data['sectores'] = $sector->findAll();
         $data['sexos'] = $sexo->findAll();
@@ -45,7 +42,7 @@ class Registro_Controller extends BaseController
             'apellido_m' => 'required|max_length[100]',
             'correo' => 'required|valid_email',
             'id_sexo' => 'required|integer',
-            'id_dependencia' => 'required|integer',
+            'dependencia' => 'required|max_length[100]',
             'id_estado' => 'required|integer',
             'id_municipio' => 'required|integer',
             'id_sector' => 'required|integer',
@@ -68,7 +65,7 @@ class Registro_Controller extends BaseController
             'id_sexo' => [
                 'required' => 'El campo sexo es obligatorio.',
             ],
-            'id_dependencia' => [
+            'dependencia' => [
                 'required' => 'El campo dependencia es obligatorio.',
             ],
             'id_estado' => [
@@ -91,6 +88,17 @@ class Registro_Controller extends BaseController
                 ->withInput()
                 ->with('errors', $this->validator->getErrors());
         }
+        $categoria = new Categoria_Model();
+        $categoriaSeleccionada = $categoria->find($this->request->getPost('id_categoria'));
+        $esOtraCategoria = $categoriaSeleccionada
+            && strtolower(trim((string) $categoriaSeleccionada['categoria'])) === 'otros';
+
+        if ($esOtraCategoria && trim((string) $this->request->getPost('categoria_otro')) === '') {
+            return redirect()->back()
+                ->withInput()
+                ->with('errors', ['categoria_otro' => 'Debe especificar la categoría cuando selecciona Otros.']);
+        }
+
         $dato = new Dato_Model();
         $general = new General_Model();
 
@@ -104,9 +112,12 @@ class Registro_Controller extends BaseController
         $general->insert([
             'id_dato' => $idDato,
             'id_sexo' => $this->request->getPost('id_sexo'),
-            'id_dependencia' => $this->request->getPost('id_dependencia'),
+            'dependencia' => trim((string) $this->request->getPost('dependencia')),
             'id_municipio' => $this->request->getPost('id_municipio'),
             'id_categoria' => $this->request->getPost('id_categoria'),
+            'categoria_otro' => $esOtraCategoria
+                ? trim((string) $this->request->getPost('categoria_otro'))
+                : null,
         ]);
 
         return redirect()->to('/registro')->with('success', 'Registro guardado correctamente.');
@@ -146,18 +157,21 @@ class Registro_Controller extends BaseController
         d.apellido_m,
         d.correo,
         s.sexo,
-        dep.dependencia,
+        g.dependencia,
         e.estado,
         m.municipio,
         sec.sector,
-        c.categoria,
+        CASE
+            WHEN LOWER(c.categoria) = 'otros' AND g.categoria_otro IS NOT NULL AND g.categoria_otro <> ''
+                THEN g.categoria_otro
+            ELSE c.categoria
+        END AS categoria,
         g.fecha_registro
 
         FROM general g
 
         inner join dato d on g.id_dato = d.id_dato
         inner join sexo s on g.id_sexo = s.id_sexo
-        inner join dependencia dep on g.id_dependencia = dep.id_dependencia
         inner join municipio m on g.id_municipio = m.id_municipio
         INNER JOIN estado e 
             ON m.id_estado = e.id_estado
@@ -195,11 +209,18 @@ class Registro_Controller extends BaseController
         ");
 
         $dependencia = $db->query("
-        SELECT d.dependencia, COUNT(*) AS total
+        SELECT g.dependencia, COUNT(*) AS total
         FROM general g
-        JOIN dependencia d
-        ON g.id_dependencia = d.id_dependencia
-        GROUP BY d.dependencia
+        WHERE g.dependencia IS NOT NULL
+        AND g.dependencia <> ''
+        GROUP BY g.dependencia
+        ");
+
+        $dias = $db->query("
+        SELECT DATE(g.fecha_registro) AS fecha, COUNT(*) AS total
+        FROM general g
+        GROUP BY DATE(g.fecha_registro)
+        ORDER BY fecha
         ");
 
         $estado = $db->query("
@@ -231,11 +252,19 @@ class Registro_Controller extends BaseController
         ");
 
         $categoria = $db->query("
-        SELECT c.categoria, COUNT(*) AS total
-        FROM general g
-        JOIN categoria c
-        ON g.id_categoria = c.id_categoria
-        GROUP BY c.categoria
+        SELECT categoria, COUNT(*) AS total
+        FROM (
+            SELECT
+                CASE
+                    WHEN LOWER(c.categoria) = 'otros' AND g.categoria_otro IS NOT NULL AND g.categoria_otro <> ''
+                        THEN g.categoria_otro
+                    ELSE c.categoria
+                END AS categoria
+            FROM general g
+            JOIN categoria c
+            ON g.id_categoria = c.id_categoria
+        ) categorias
+        GROUP BY categoria
         ");
 
         $registros = $db->query("
@@ -250,14 +279,38 @@ INNER JOIN dato d ON g.id_dato = d.id_dato
 INNER JOIN municipio m ON g.id_municipio = m.id_municipio
 ");
 
+        $dashboard = $db->query("
+        SELECT
+            g.id_general,
+            s.sexo,
+            e.estado,
+            m.municipio,
+            sec.sector,
+            CASE
+                WHEN LOWER(c.categoria) = 'otros' AND g.categoria_otro IS NOT NULL AND g.categoria_otro <> ''
+                    THEN g.categoria_otro
+                ELSE c.categoria
+            END AS categoria,
+            DATE(g.fecha_registro) AS fecha,
+            g.fecha_registro
+        FROM general g
+        INNER JOIN sexo s ON g.id_sexo = s.id_sexo
+        INNER JOIN municipio m ON g.id_municipio = m.id_municipio
+        INNER JOIN estado e ON m.id_estado = e.id_estado
+        INNER JOIN categoria c ON g.id_categoria = c.id_categoria
+        INNER JOIN sector sec ON c.id_sector = sec.id_sector
+        ");
+
         $data['total'] = $total->getRow()->total;
         $data['sexo'] = $sexo->getResultArray();
         $data['dependencia'] = $dependencia->getResultArray();
+        $data['dias'] = $dias->getResultArray();
         $data['estado'] = $estado->getResultArray();
         $data['municipio'] = $municipio->getResultArray();
         $data['sector'] = $sector->getResultArray();
         $data['categoria'] = $categoria->getResultArray(); 
-$data['registros'] = $registros->getResultArray();
+        $data['registros'] = $registros->getResultArray();
+        $data['dashboard'] = $dashboard->getResultArray();
 
         /* $data['total'] = 120;
 
@@ -304,18 +357,21 @@ return view('head', $data)
         d.apellido_m,
         d.correo,
         s.sexo,
-        dep.dependencia,
+        g.dependencia,
         e.estado,
         m.municipio,
         sec.sector,
-        c.categoria,
+        CASE
+            WHEN LOWER(c.categoria) = 'otros' AND g.categoria_otro IS NOT NULL AND g.categoria_otro <> ''
+                THEN g.categoria_otro
+            ELSE c.categoria
+        END AS categoria,
         g.fecha_registro
 
         FROM general g
 
         INNER JOIN dato d ON g.id_dato = d.id_dato
         INNER JOIN sexo s ON g.id_sexo = s.id_sexo
-        INNER JOIN dependencia dep ON g.id_dependencia = dep.id_dependencia
         INNER JOIN municipio m ON g.id_municipio = m.id_municipio
         INNER JOIN estado e ON m.id_estado = e.id_estado
         INNER JOIN categoria c ON g.id_categoria = c.id_categoria
