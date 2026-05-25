@@ -1,10 +1,9 @@
-<body>
+﻿<body>
     <main class="container-fluid">
         <section>
             <div>
                 <div class="container-fluid p-0">
                     <div class="d-flex">
-                        <!-- MENÚ -->
                         <div
                             class="cuadro shadow rounded-end p-4 w-15 vh-100 d-flex flex-column justify-content-start align-items-center gap-2">
                             <div class="logos-container">
@@ -17,44 +16,22 @@
 
                             </div>
 
-                            <!-- Opciones -->
-                            <!-- <div class="d-flex flex-column gap-3">
-
-                                <div class="bg-light rounded-pill p-3">
-                                    Dashboard
-                                </div>
-
-                                <div class="p-3">
-                                    Registros
-                                </div>
-
-                                <div class="p-3">
-                                    Reportes
-                                </div>
-
-                                <div class="p-3">
-                                    Exportaciones
-                                </div>
-
-                                <div class="p-3">
-                                    Configuración
-                                </div>
-
-                            </div> -->
-
                             <div class="menu-wrapper d-flex flex-column gap-3 menu-opciones mt-5">
 
                                 <div class="menu-item">
-                                    <span class="arrow">❮</span> Dashboard
+                                    <span class="arrow">
+                                        << /span> Dashboard
                                 </div>
 
                                 <a href="/reporte/exportar" class="btn-exportar mt-4">
-                                    <span class="arrow">❮</span>
-                                    Exportar
+                                    <span class="arrow">
+                                        << /span>
+                                            Exportar
                                 </a>
 
                                 <div class="menu-item mt-4" id="menuFiltro">
-                                    <span class="arrow">❮</span> Filtro
+                                    <span class="arrow">
+                                        << /span> Filtro
                                 </div>
                                 <form class="filter-panel" id="dashboardFiltros">
                                     <div class="filter-title">Filtros</div>
@@ -112,45 +89,6 @@
                                 <div class="row g-5">
                                     <h3 class="titulo fw-bold mt-4">Dashboard</h3>
 
-                                    <!-- <div class="row">
-                                        <div class="col-sm-4 g-3">
-                                            <div class="card">
-                                                <div class="card-body">
-                                                    <h5 class="card-title">Total de registros</h5>
-                                                    <p class="card-text"><?= $total?></p>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="col-sm-4 g-3">
-                                            <div class="card">
-                                                <div class="card-body">
-                                                    <h5 class="card-title">Total del Sector Comercial</h5>
-                                                    <p class="card-text"><?php foreach ($sector as $fila): ?>
-                                                        <tr>
-                                                            <td><?= esc($fila['sector']) ?></td>
-                                                            <td><?= esc($fila['total']) ?></td>
-                                                        </tr>
-                                                        <?php endforeach; ?>
-                                                    </p>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="col-sm-4 g-3">
-                                            <div class="card">
-                                                <div class="card-body">
-                                                    <h5 class="card-title">Total del Sector Servicio</h5>
-                                                    <p class="card-text"><?php foreach ($sector as $fila): ?>
-                                                        <tr>
-                                                            <td><?= esc($fila['sector']) ?></td>
-                                                            <td><?= esc($fila['total']) ?></td>
-                                                        </tr>
-                                                        <?php endforeach; ?>
-                                                    </p>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div> -->
-
                                     <div class="row g-3">
 
                                         <div class="col-sm-4">
@@ -163,7 +101,7 @@
                                                     </div>
 
                                                     <div class="card-icon-bg">
-                                                        📊
+                                                        <img src="<?= base_url('assets/img/registro.png') ?>">
                                                     </div>
 
                                                 </div>
@@ -171,7 +109,8 @@
                                         </div>
 
                                         <div class="col-sm-4">
-                                            <div class="card-comercio card-modern card-green-light" data-sector-card="Comercial">
+                                            <div class="card-comercio card-modern card-green-light"
+                                                data-sector-card="Comercial">
                                                 <div class="card-body d-flex align-items-center">
 
                                                     <div class="flex-grow-1">
@@ -187,7 +126,7 @@
                                                     </div>
 
                                                     <div class="card-icon-bg">
-                                                        🏪
+                                                        <img src="<?= base_url('assets/img/mercado.png') ?>">
                                                     </div>
 
                                                 </div>
@@ -195,7 +134,8 @@
                                         </div>
 
                                         <div class="col-sm-4">
-                                            <div class="card-servicio card-modern card-green-soft" data-sector-card="Servicio">
+                                            <div class="card-servicio card-modern card-green-soft"
+                                                data-sector-card="Servicio">
                                                 <div class="card-body d-flex align-items-center">
 
                                                     <div class="flex-grow-1">
@@ -211,7 +151,8 @@
                                                     </div>
 
                                                     <div class="card-icon-bg">
-                                                        🛠️
+                                                        <img src="<?= base_url('assets/img/bien.png') ?>">
+
                                                     </div>
 
                                                 </div>
@@ -220,47 +161,12 @@
                                     </div>
 
                                     <div class="row g-4 dashboard-grid">
-                                        <!-- <div class="col-sm-4 g-5">
-                                            <h3>Registros por dÃ­a</h3>
-
-                                            <table border="1">
-                                                <tr>
-                                                    <th>Dependencia</th>
-                                                    <th>Total</th>
-                                                </tr>
-
-                                                <?php foreach ($dependencia as $fila): ?>
-                                                <tr>
-                                                    <td><?= esc($fila['dependencia']) ?></td>
-                                                    <td><?= esc($fila['total']) ?></td>
-                                                </tr>
-                                                <?php endforeach; ?>
-                                            </table>
-                                        </div> -->
 
                                         <div class="col-lg-8 g-4 dashboard-panel chart-panel chart-panel-large">
-                                            <h3>Registros por dÃ­a</h3>
+                                            <h3>Registros por día</h3>
 
                                             <canvas class="mt-4" id="graficaDependencias"></canvas>
                                         </div>
-
-                                        <!-- <div class="col-sm-4 g-5">
-                                            <h3>Registros por sexo</h3>
-
-                                            <table border="1">
-                                                <tr>
-                                                    <th>Sexo</th>
-                                                    <th>Total</th>
-                                                </tr>
-
-                                                <?php foreach ($sexo as $fila): ?>
-                                                <tr>
-                                                    <td><?= esc($fila['sexo']) ?></td>
-                                                    <td><?= esc($fila['total']) ?></td>
-                                                </tr>
-                                                <?php endforeach; ?>
-                                            </table>
-                                        </div> -->
 
                                         <div class="col-lg-4 g-4 dashboard-panel chart-panel">
                                             <h3>Registros por sexo</h3>
@@ -272,8 +178,8 @@
                                             <nav class="navbar-simple">
                                                 <form class="search-simple" id="buscarRegistrosForm">
 
-                                                    <input type="search" id="buscarRegistros"
-                                                        placeholder="Buscar..." aria-label="Search">
+                                                    <input type="search" id="buscarRegistros" placeholder="Buscar..."
+                                                        aria-label="Search">
 
                                                     <button type="submit">Buscar</button>
 
@@ -321,7 +227,8 @@
 
                                             <div class="sector-info-card mt-4">
                                                 <div class="card-body">
-                                                    <h5 class="card-title" id="sectorInfoTitulo">Informacion del Sector</h5>
+                                                    <h5 class="card-title" id="sectorInfoTitulo">Informacion del Sector
+                                                    </h5>
                                                     <p class="card-text" id="sectorInfoTexto">
                                                         Seleccione una card de sector para ver su informacion.
                                                     </p>
@@ -341,15 +248,6 @@
     </main>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 
-    <script>
-    window.dependenciasData = <?= json_encode($dias) ?>;
-    </script>
-    <script>
-    window.sexoData = <?= json_encode($sexo) ?>;
-    </script>
-    <script>
-    window.estadoData = <?= json_encode($estado) ?>;
-    </script>
     <script>
     window.dashboardData = <?= json_encode($dashboard) ?>;
     </script>

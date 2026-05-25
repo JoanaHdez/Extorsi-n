@@ -4,10 +4,7 @@ body{
     background: #ffffff;
 }
 
-/* MENU */
 .cuadro {
-/* width: 250px; 
-height: 700px; */
 background: linear-gradient(#00538E, #A40000);
 }
 
@@ -41,14 +38,12 @@ form label.form-label {
     border-bottom: 2px solid #0d6efd;
 }
 
-/* SELECTS */
 .select-estilo{
     border-radius: 10px;
     background-color: #d9d9d9;
     border: none;
 }
 
-/* BOTON */
 .boton-enviar{
     background-color: #004b93;
     color: white;

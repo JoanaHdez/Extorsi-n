@@ -22,11 +22,11 @@ class Registro_Controller extends BaseController
         $sector = new Sector_Model();
         $sexo = new Sexo_Model();
 
-        $data['estados'] = $estado->findAll();
-        $data['municipios'] = $municipio->findAll();
-        $data['categorias'] = $categoria->findAll();
-        $data['sectores'] = $sector->findAll();
-        $data['sexos'] = $sexo->findAll();
+        $data['estados'] = $estado->orderBy('estado', 'ASC')->findAll();
+        $data['municipios'] = $municipio->orderBy('municipio', 'ASC')->findAll();
+        $data['categorias'] = $categoria->orderBy('categoria', 'ASC')->findAll();
+        $data['sectores'] = $sector->orderBy('sector', 'ASC')->findAll();
+        $data['sexos'] = $sexo->orderBy('sexo', 'ASC')->findAll();
 
         $data['style'] = 'assets/Css/registro.css';
 
@@ -78,7 +78,7 @@ class Registro_Controller extends BaseController
                 'required' => 'El campo sector es obligatorio.',
             ],
             'id_categoria' => [
-                'required' => 'El campo categoría es obligatorio.',
+                'required' => 'El campo categorÃ­a es obligatorio.',
             ],
         ];
 
@@ -96,7 +96,7 @@ class Registro_Controller extends BaseController
         if ($esOtraCategoria && trim((string) $this->request->getPost('categoria_otro')) === '') {
             return redirect()->back()
                 ->withInput()
-                ->with('errors', ['categoria_otro' => 'Debe especificar la categoría cuando selecciona Otros.']);
+                ->with('errors', ['categoria_otro' => 'Debe especificar la categorÃ­a cuando selecciona Otros.']);
         }
 
         $dato = new Dato_Model();
@@ -129,6 +129,7 @@ class Registro_Controller extends BaseController
 
         $municipios = $municipio
             ->where('id_estado', $id_municipio)
+            ->orderBy('municipio', 'ASC')
             ->findAll();
 
         return $this->response->setJSON($municipios);
@@ -140,6 +141,7 @@ class Registro_Controller extends BaseController
 
         $categorias = $categoria
             ->where('id_sector', $id_sector)
+            ->orderBy('categoria', 'ASC')
             ->findAll();
 
         return $this->response->setJSON($categorias);
@@ -200,45 +202,11 @@ class Registro_Controller extends BaseController
         SELECT COUNT(*) AS total 
         FROM general");
 
-        $sexo = $db->query("
-        SELECT s.sexo, COUNT(*) AS total
-        FROM general g
-        INNER JOIN sexo s 
-        ON g.id_sexo = s.id_sexo
-        GROUP BY s.sexo
-        ");
-
-        $dependencia = $db->query("
-        SELECT g.dependencia, COUNT(*) AS total
-        FROM general g
-        WHERE g.dependencia IS NOT NULL
-        AND g.dependencia <> ''
-        GROUP BY g.dependencia
-        ");
-
         $dias = $db->query("
         SELECT DATE(g.fecha_registro) AS fecha, COUNT(*) AS total
         FROM general g
         GROUP BY DATE(g.fecha_registro)
         ORDER BY fecha
-        ");
-
-        $estado = $db->query("
-        SELECT e.estado, COUNT(*) AS total
-        FROM general g
-        JOIN municipio m
-        ON g.id_municipio = m.id_municipio
-        JOIN estado e
-        ON m.id_estado = e.id_estado
-        GROUP BY e.estado
-        ");
-
-        $municipio = $db->query("
-        SELECT m.municipio, COUNT(*) AS total
-        FROM general g
-        JOIN municipio m
-        ON g.id_municipio = m.id_municipio
-        GROUP BY m.municipio
         ");
 
         $sector = $db->query("
@@ -249,22 +217,6 @@ class Registro_Controller extends BaseController
         JOIN sector sec
         ON c.id_sector = sec.id_sector
         GROUP BY sec.sector
-        ");
-
-        $categoria = $db->query("
-        SELECT categoria, COUNT(*) AS total
-        FROM (
-            SELECT
-                CASE
-                    WHEN LOWER(c.categoria) = 'otros' AND g.categoria_otro IS NOT NULL AND g.categoria_otro <> ''
-                        THEN g.categoria_otro
-                    ELSE c.categoria
-                END AS categoria
-            FROM general g
-            JOIN categoria c
-            ON g.id_categoria = c.id_categoria
-        ) categorias
-        GROUP BY categoria
         ");
 
         $registros = $db->query("
@@ -302,48 +254,15 @@ INNER JOIN municipio m ON g.id_municipio = m.id_municipio
         ");
 
         $data['total'] = $total->getRow()->total;
-        $data['sexo'] = $sexo->getResultArray();
-        $data['dependencia'] = $dependencia->getResultArray();
         $data['dias'] = $dias->getResultArray();
-        $data['estado'] = $estado->getResultArray();
-        $data['municipio'] = $municipio->getResultArray();
         $data['sector'] = $sector->getResultArray();
-        $data['categoria'] = $categoria->getResultArray(); 
         $data['registros'] = $registros->getResultArray();
         $data['dashboard'] = $dashboard->getResultArray();
 
-        /* $data['total'] = 120;
+        $data['style'] = 'assets/Css/reporte.css';
 
-$data['sexo'] = [
-    ['sexo' => 'Masculino', 'total' => 70],
-    ['sexo' => 'Femenino', 'total' => 50],
-];
-
-$data['dependencia'] = [
-    ['dependencia' => 'Seguridad', 'total' => 40],
-    ['dependencia' => 'Administración', 'total' => 80],
-];
-
-$data['estado'] = [
-    ['estado' => 'CDMX', 'total' => 90],
-];
-
-$data['municipio'] = [
-    ['municipio' => 'Nezahualcóyotl', 'total' => 60],
-];
-
-$data['sector'] = [
-    ['sector' => 'Público', 'total' => 100],
-];
-
-$data['categoria'] = [
-    ['categoria' => 'Alta', 'total' => 30],
-    ['categoria' => 'Media', 'total' => 90],
-]; */
-
-$data['style'] = 'assets/Css/reporte.css';
-return view('head', $data)
-        . view('Reporte', $data);
+        return view('head', $data)
+            . view('Reporte', $data);
     }
 
     public function exportar()
@@ -395,7 +314,7 @@ return view('head', $data)
             'Estado',
             'Municipio',
             'Sector',
-            'Categoría',
+            'Categoria',
             'Fecha de Registro'
         ]);
 

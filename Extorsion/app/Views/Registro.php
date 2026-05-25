@@ -1,22 +1,16 @@
-<body>
+﻿<body>
     <main class="container-fluid">
         <section>
             <div>
                 <div class="container-fluid p-0">
-                    <!-- <div class="fondo-1 position-relative">
-                        <h1 class="fw-bold mb-1 text-white">Formulario de registro</h1>
-                    </div> -->
 
                     <div class="d-flex">
-
-                        <!-- MENÚ -->
-                        <!-- <div class="cuadro shadow rounded-end p-4 w-25 vh-100"></div> -->
 
                         <div
                             class="cuadro shadow rounded-end p-4 w-25 vh-100 d-flex flex-column justify-content-center align-items-center gap-2">
 
-                            <img src="<?= base_url('assets/img/comisaria.png') ?>" class="img-fluid"
-                                style="max-width: 80%;" alt="Imagen arriba">
+                            <img src="<?= base_url('assets/img/ayun.png') ?>" class="img-fluid mb-3"
+                                    alt="Logo principal" style="max-width: 80%;">
 
                             <img src="<?= base_url('assets/img/comisaria.png') ?>" class="img-fluid mb-3"
                                 style="max-width: 80%;" alt="Imagen abajo">
@@ -28,7 +22,7 @@
                             <div class="d-flex flex-column align-items-center">
 
                                 <h1 class="titulo fw-bold mt-5">
-                                    Pláticas de Medidas Preventivas en Casos de Extorsión
+                                    Platicas de Medidas Preventivas en Casos de Extorsión
                                 </h1>
 
                                 <h2 class="subtitulo mt-4">
@@ -92,7 +86,7 @@
                                             <label class="form-label">Sexo</label>
                                             <select class="form-select select-estilo" name="id_sexo" id="id_sexo"
                                                 required>
-                                                <option value="">Seleccione una opción</option>
+                                                <option value="">Seleccionar</option>
                                                 <?php foreach ($sexos as $sexo): ?>
                                                 <option value="<?= $sexo['id_sexo'] ?>">
                                                     <?= esc($sexo['sexo']) ?>
@@ -111,7 +105,7 @@
                                             <label class="form-label">Estado</label>
                                             <select class="form-select select-estilo" name="id_estado" id="id_estado"
                                                 required>
-                                                <option value="">Seleccione una opción</option>
+                                                <option value="">Seleccionar</option>
                                                 <?php foreach ($estados as $estado): ?>
                                                 <option value="<?= $estado['id_estado'] ?>">
                                                     <?= esc($estado['estado']) ?>
@@ -124,7 +118,7 @@
                                             <label class="form-label">Municipio</label>
                                             <select class="form-select select-estilo" name="id_municipio"
                                                 id="id_municipio" required>
-                                                <option value="">Seleccione una opción</option>
+                                                <option value="">Seleccionar</option>
                                             </select>
                                         </div>
 
@@ -132,7 +126,7 @@
                                             <label class="form-label">Sector</label>
                                             <select class="form-select select-estilo" name="id_sector" id="id_sector"
                                                 required>
-                                                <option value="">Seleccione una opción</option>
+                                                <option value="">Seleccionar</option>
                                                 <?php foreach ($sectores as $sector): ?>
                                                 <option value="<?= $sector['id_sector'] ?>">
                                                     <?= esc($sector['sector']) ?>
@@ -145,7 +139,7 @@
                                             <label class="form-label">Categoría</label>
                                             <select class="form-select select-estilo" name="id_categoria"
                                                 id="id_categoria" required>
-                                                <option value="">Seleccione una opción</option>
+                                                <option value="">Seleccionar</option>
                                             </select>
                                         </div>
 
@@ -176,3 +170,4 @@
 </body>
 
 </html>
+

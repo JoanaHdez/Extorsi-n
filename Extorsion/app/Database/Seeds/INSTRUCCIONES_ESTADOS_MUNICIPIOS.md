@@ -1,8 +1,34 @@
 # Carga de estados y municipios
 
-## Archivo que se edita
+## Opcion 1: usar JSON listo
 
-Usa este archivo:
+Puedes usar este repositorio:
+
+```text
+https://github.com/cisnerosnow/json-estados-municipios-mexico
+```
+
+Descarga el archivo:
+
+```text
+estados-municipios.json
+```
+
+Y guardalo aqui:
+
+```text
+app/Database/Seeds/estados-municipios.json
+```
+
+Luego ejecuta:
+
+```powershell
+php spark db:seed EstadosMunicipiosSeeder
+```
+
+## Opcion 2: usar CSV
+
+Si prefieres usar CSV, edita este archivo:
 
 ```text
 app/Database/Seeds/estados_municipios.csv
@@ -17,7 +43,7 @@ Estado de Mexico,Ecatepec de Morelos
 Jalisco,Zapopan
 ```
 
-## Pasos
+## Pasos para CSV
 
 1. Descarga una lista de municipios en CSV.
 2. Deja solo dos columnas: `estado` y `municipio`.
@@ -31,6 +57,8 @@ php spark db:seed EstadosMunicipiosSeeder
 
 ## Importante
 
+- Si existe `estados-municipios.json`, el Seeder usara ese archivo primero.
+- Si no existe el JSON, usara `estados_municipios.csv`.
 - El Seeder no duplica estados ni municipios existentes.
 - Si un estado no existe, lo crea.
 - Si un municipio no existe dentro de ese estado, lo crea.

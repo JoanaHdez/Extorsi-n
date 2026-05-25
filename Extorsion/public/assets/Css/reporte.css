@@ -48,10 +48,10 @@ body{
 }
 
 .menu-salir {
-    margin-top: auto;     /* 👈 LO BAJA COMPLETAMENTE */
+    margin-top: auto;     
     width: 100%;
     display: flex;
-    justify-content: flex-start; /* 👈 izquierda */
+    justify-content: flex-start; 
     padding-top: 10px;
 }
 
@@ -70,14 +70,14 @@ body{
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: flex-start; /* 👈 lo sube naturalmente */
+    justify-content: flex-start; 
     height: 100vh;
     padding-top: 10px;
 }
 
 .menu-wrapper {
     display: flex;
-    justify-content: center; /* 👈 centra SOLO el menú */
+    justify-content: center; 
 }
 .menu-opciones {
     width: 100%;
@@ -247,14 +247,14 @@ body{
     padding: 10px;
 }
 
-/* contenedor simple */
+
 .search-simple {
     display: flex;
     width: 100%;
     max-width: 400px;
 }
 
-/* input */
+
 .search-simple input {
     flex: 1;
     padding: 8px 12px;
@@ -266,11 +266,11 @@ body{
     outline: none;
 }
 
-/* botón */
+
 .search-simple button {
     padding: 8px 14px;
 
-    background: #00538E; /* institucional */
+    background: #00538E; 
     color: white;
 
     border: 1px solid #00538E;
