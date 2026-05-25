@@ -233,32 +233,53 @@ document.addEventListener("DOMContentLoaded", function () {
         return datos.filter(registro => registro.sector === sector).length;
     }
 
-    function actualizarInfoSector(datos) {
-        if (!sectorInfoTitulo || !sectorInfoTexto) {
-            return;
-        }
-
-        if (!sectorSeleccionado) {
-            sectorInfoTitulo.textContent = 'Informacion del Sector';
-            sectorInfoTexto.textContent = 'Seleccione una card de sector para ver su informacion.';
-            return;
-        }
-
-        const total = totalPorSector(datos, sectorSeleccionado);
-        const categorias = datos
-            .filter(registro => registro.sector === sectorSeleccionado)
-            .reduce((acumulado, registro) => {
-                const categoria = registro.categoria || 'Sin categoria';
-                acumulado[categoria] = (acumulado[categoria] || 0) + 1;
-                return acumulado;
-            }, {});
-
-        const categoriaPrincipal = Object.keys(categorias)
-            .sort((a, b) => categorias[b] - categorias[a])[0] || 'Sin datos';
-
-        sectorInfoTitulo.textContent = `Informacion del Sector ${sectorSeleccionado}`;
-        sectorInfoTexto.textContent = `Sector: ${sectorSeleccionado}. Total: ${total}. Categoria con mas registros: ${categoriaPrincipal}.`;
+        function actualizarInfoSector(datos) {
+    if (!sectorInfoTitulo || !sectorInfoTexto) {
+        return;
     }
+
+    if (!sectorSeleccionado) {
+        sectorInfoTitulo.textContent = 'Informacion del Sector';
+        sectorInfoTexto.innerHTML = 'Seleccione una card de sector para ver su informacion.';
+        return;
+    }
+
+    const registrosSector = datos.filter(
+        registro => registro.sector === sectorSeleccionado
+    );
+
+    const total = registrosSector.length;
+
+    const categorias = registrosSector.reduce((acumulado, registro) => {
+
+        const categoria = registro.categoria || 'Sin categoria';
+
+        acumulado[categoria] = (acumulado[categoria] || 0) + 1;
+
+        return acumulado;
+
+    }, {});
+
+    let html = `
+        <strong>Total del sector:</strong> ${total}
+        <hr>
+    `;
+
+    Object.keys(categorias)
+        .sort((a, b) => categorias[b] - categorias[a])
+        .forEach(categoria => {
+
+            html += `
+                <div class="d-flex justify-content-between mb-2">
+                    <span>${categoria}</span>
+                    <strong>${categorias[categoria]}</strong>
+                </div>
+            `;
+        });
+
+    sectorInfoTitulo.textContent = `Sector ${sectorSeleccionado}`;
+    sectorInfoTexto.innerHTML = html;
+}
 
     function actualizarDashboard() {
         const datosFiltrados = filtrarRegistros();

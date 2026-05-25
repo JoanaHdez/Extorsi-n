@@ -20,18 +20,18 @@
 
                                 <div class="menu-item">
                                     <span class="arrow">
-                                        << /span> Dashboard
+                                        < </span> Dashboard
                                 </div>
 
                                 <a href="/reporte/exportar" class="btn-exportar mt-4">
                                     <span class="arrow">
-                                        << /span>
+                                        < </span>
                                             Exportar
                                 </a>
 
                                 <div class="menu-item mt-4" id="menuFiltro">
                                     <span class="arrow">
-                                        << /span> Filtro
+                                        < </span> Filtro
                                 </div>
                                 <form class="filter-panel" id="dashboardFiltros">
                                     <div class="filter-title">Filtros</div>
