@@ -11,7 +11,7 @@ if (estado) {
             return;
         }
 
-        fetch(`/registro/municipios/${estadoId}`)
+        fetch(`./registro/municipios/${estadoId}`)
         .then(r => r.json())
         .then(data => {
             municipioSelect.innerHTML = '<option value="">Seleccione un municipio</option>';
@@ -60,7 +60,7 @@ if (sector) {
             return;
         }
 
-        fetch(`/registro/categorias/${sectorId}`)
+        fetch(`./registro/categorias/${sectorId}`)
         .then(r => r.json())
         .then(data => {
             categoriaSelect.innerHTML = '<option value="">Seleccione una categoría</option>';
