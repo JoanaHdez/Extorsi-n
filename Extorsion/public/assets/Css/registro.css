@@ -12,7 +12,7 @@ body{
     width: 500%;
     max-width: 90%;
     height: auto;
-    filter: drop-shadow(0 0 8px rgba(255,255,255,0.9));
+    filter: drop-shadow(0 0 8px rgb(255, 255, 255));
 }
 
 .toast-institucional{
@@ -38,7 +38,7 @@ body{
     flex-shrink: 0;
 }
 .cuadro img{
-    filter: drop-shadow(0 0 10px rgba(255,255,255,0.8));
+    filter: drop-shadow(0 0 10px rgb(255, 255, 255));
 }
 
 .contenido{
