@@ -5,7 +5,40 @@ body{
 }
 
 .cuadro {
-background: linear-gradient(#00538E, #A40000);
+    background: linear-gradient(180deg, #00538E 0%, #0B2E4A 100%);
+}
+
+.logo-secundario{
+    width: 500%;
+    max-width: 90%;
+    height: auto;
+    filter: drop-shadow(0 0 8px rgba(255,255,255,0.9));
+}
+
+.toast-institucional{
+    background: #00538E; /* azul institucional */
+    color: #fff;
+    border-left: 6px solid #16A34A; /* verde solo como acento */
+    border-radius: 14px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.18);
+    overflow: hidden;
+}
+
+.icon-check{
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: #16A34A;
+    color: white;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-weight: bold;
+    font-size: 18px;
+    flex-shrink: 0;
+}
+.cuadro img{
+    filter: drop-shadow(0 0 10px rgba(255,255,255,0.8));
 }
 
 .contenido{
@@ -81,6 +114,10 @@ form label.form-label {
         gap: 16px !important;
     }
 
+    .logo-secundario{
+        width: 300%;
+    }
+
     .cuadro img {
         max-width: 120px !important;
         margin-bottom: 0 !important;
@@ -141,6 +178,9 @@ form label.form-label {
 }
 
 @media (max-width: 420px) {
+    .logo-secundario{
+        width: 250%;
+    }
     .cuadro img {
         max-width: 96px !important;
     }

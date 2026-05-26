@@ -102,23 +102,38 @@ class Registro_Controller extends BaseController
         $dato = new Dato_Model();
         $general = new General_Model();
 
-        $idDato = $dato->insert([
+        /* $idDato = $dato->insert([
             'nombre' => $this->request->getPost('nombre'),
             'apellido_p' => $this->request->getPost('apellido_p'),
             'apellido_m' => $this->request->getPost('apellido_m'),
             'correo' => $this->request->getPost('correo'),
-        ]);
+        ]); */
+
+        /* $idDato = $dato->insert([
+    'nombre' => mb_strtoupper($this->request->getPost('nombre')),
+    'apellido_p' => mb_strtoupper($this->request->getPost('apellido_p')),
+    'apellido_m' => mb_strtoupper($this->request->getPost('apellido_m')),
+    'correo' => mb_strtoupper($this->request->getPost('correo')),
+ 
+]); */
+
+$idDato = $dato->insert([
+    'nombre' => mb_strtoupper($this->sinAcentos(trim($this->request->getPost('nombre')))),
+    'apellido_p' => mb_strtoupper($this->sinAcentos(trim($this->request->getPost('apellido_p')))),
+    'apellido_m' => mb_strtoupper($this->sinAcentos(trim($this->request->getPost('apellido_m')))),
+    'correo' => mb_strtoupper(trim($this->request->getPost('correo'))),
+]);
 
         $general->insert([
-            'id_dato' => $idDato,
-            'id_sexo' => $this->request->getPost('id_sexo'),
-            'dependencia' => trim((string) $this->request->getPost('dependencia')),
-            'id_municipio' => $this->request->getPost('id_municipio'),
-            'id_categoria' => $this->request->getPost('id_categoria'),
-            'categoria_otro' => $esOtraCategoria
-                ? trim((string) $this->request->getPost('categoria_otro'))
-                : null,
-        ]);
+    'id_dato' => $idDato,
+    'id_sexo' => $this->request->getPost('id_sexo'),
+    'dependencia' => mb_strtoupper($this->sinAcentos(trim($this->request->getPost('dependencia')))),
+    'id_municipio' => $this->request->getPost('id_municipio'),
+    'id_categoria' => $this->request->getPost('id_categoria'),
+    'categoria_otro' => $esOtraCategoria
+        ? mb_strtoupper($this->sinAcentos(trim($this->request->getPost('categoria_otro'))))
+        : null,
+]);
 
         return redirect()->to('/registro')->with('success', 'Registro guardado correctamente.');
     }
@@ -337,4 +352,11 @@ class Registro_Controller extends BaseController
         fclose($output);
         exit;
     }
+
+    private function sinAcentos($cadena)
+{
+    $buscar = ['á','é','í','ó','ú','Á','É','Í','Ó','Ú','ñ','Ñ'];
+    $reemplazar = ['a','e','i','o','u','A','E','I','O','U','n','N'];
+    return str_replace($buscar, $reemplazar, $cadena);
+}
 }

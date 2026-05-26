@@ -10,10 +10,9 @@
                             class="cuadro shadow rounded-end p-4 w-25 vh-100 d-flex flex-column justify-content-center align-items-center gap-2">
 
                             <img src="<?= base_url('assets/img/ayun.png') ?>" class="img-fluid mb-3"
-                                    alt="Logo principal" style="max-width: 80%;">
+                                alt="Logo principal" style="max-width: 80%;">
 
-                            <img src="<?= base_url('assets/img/comisaria.png') ?>" class="img-fluid mb-3"
-                                style="max-width: 80%;" alt="Imagen abajo">
+                            <img src="<?= base_url('assets/img/comisaria.png') ?>" class="logo-secundario mb-3">
 
                         </div>
 
@@ -36,9 +35,36 @@
                             </div>
 
                             <?php if (session()->getFlashdata('success')): ?>
-                            <p style="color: green;">
-                                <?= session()->getFlashdata('success') ?>
-                            </p>
+                            <div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 9999;">
+
+                                <div id="successToast"
+                                    class="toast align-items-center border-0 shadow-lg toast-institucional"
+                                    role="alert">
+
+                                    <div class="d-flex align-items-center">
+
+                                        <div class="toast-body d-flex align-items-center gap-3 py-3">
+
+                                            <div class="icon-check">
+                                                ✓
+                                            </div>
+
+                                            <div>
+                                                <div class="fw-bold">Registro exitoso</div>
+                                                <div class="small">
+                                                    <?= session()->getFlashdata('success') ?>
+                                                </div>
+                                            </div>
+
+                                        </div>
+
+                                        <button type="button" class="btn-close btn-close-white me-2 m-auto"
+                                            data-bs-dismiss="toast"></button>
+
+                                    </div>
+                                </div>
+
+                            </div>
                             <?php endif; ?>
 
                             <?php if (session()->get('errors')): ?>
@@ -61,19 +87,21 @@
                                         <div class="col-md-4">
                                             <label class="form-label">Nombre:</label>
                                             <input type="text" class="form-control linea" name="nombre" id="nombre"
-                                                required>
+                                                required oninput="this.value = this.value.toUpperCase()">
                                         </div>
 
                                         <div class="col-md-4">
                                             <label class="form-label">Apellido Paterno:</label>
                                             <input type="text" class="form-control linea" name="apellido_p"
-                                                id="apellido_p" required>
+                                                id="apellido_p" required
+                                                oninput="this.value = this.value.toUpperCase()">
                                         </div>
 
                                         <div class="col-md-4">
                                             <label class="form-label">Apellido Materno:</label>
                                             <input type="text" class="form-control linea" name="apellido_m"
-                                                id="apellido_m" required>
+                                                id="apellido_m" required
+                                                oninput="this.value = this.value.toUpperCase()">
                                         </div>
 
                                         <div class="col-md-4">
@@ -98,7 +126,8 @@
                                         <div class="col-md-4">
                                             <label class="form-label">Dependencia</label>
                                             <input type="text" class="form-control linea" name="dependencia"
-                                                id="dependencia" required>
+                                                id="dependencia" required
+                                                oninput="this.value = this.value.toUpperCase()">
                                         </div>
 
                                         <div class="col-md-4">
@@ -146,7 +175,7 @@
                                         <div class="col-md-4" id="categoria_otro_contenedor" style="display: none;">
                                             <label class="form-label">Especifique categoría</label>
                                             <input type="text" class="form-control linea" name="categoria_otro"
-                                                id="categoria_otro">
+                                                id="categoria_otro" oninput="this.value = this.value.toUpperCase()">
                                         </div>
                                     </div>
 
@@ -169,5 +198,20 @@
     <script src="<?= base_url('assets/JS/index.js') ?>"></script>
 </body>
 
-</html>
+<?php if (session()->getFlashdata('success')): ?>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
 
+    const toastEl = document.getElementById('successToast');
+
+    const toast = new bootstrap.Toast(toastEl, {
+        delay: 3000,
+        autohide: true
+    });
+
+    toast.show();
+});
+</script>
+<?php endif; ?>
+
+</html>
