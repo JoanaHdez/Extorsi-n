@@ -68,11 +68,11 @@
                                 </form>
                             </div>
 
-                            <div class="menu-salir">
+                            <a href="/registro" class="menu-salir text-decoration-none">
                                 <img src="<?= base_url('assets/img/cerrar-sesion.png') ?>" class="logo-salir"
                                     alt="Logo salir">
                                 <h4 class="mt-2" style="color: white;">Salir</h4>
-                            </div>
+                            </a>
                         </div>
 
                         <div class="contenido flex-grow-1">

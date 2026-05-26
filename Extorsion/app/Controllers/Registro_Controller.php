@@ -78,7 +78,7 @@ class Registro_Controller extends BaseController
                 'required' => 'El campo sector es obligatorio.',
             ],
             'id_categoria' => [
-                'required' => 'El campo categorÃ­a es obligatorio.',
+                'required' => 'El campo categorí­a es obligatorio.',
             ],
         ];
 
@@ -96,7 +96,7 @@ class Registro_Controller extends BaseController
         if ($esOtraCategoria && trim((string) $this->request->getPost('categoria_otro')) === '') {
             return redirect()->back()
                 ->withInput()
-                ->with('errors', ['categoria_otro' => 'Debe especificar la categorÃ­a cuando selecciona Otros.']);
+                ->with('errors', ['categoria_otro' => 'Debe especificar la categorí­a cuando selecciona Otros.']);
         }
 
         $dato = new Dato_Model();
@@ -220,16 +220,16 @@ class Registro_Controller extends BaseController
         ");
 
         $registros = $db->query("
-SELECT 
-    d.nombre,
-    d.apellido_p,
-    d.apellido_m,
-    d.correo,
-    m.municipio
-FROM general g
-INNER JOIN dato d ON g.id_dato = d.id_dato
-INNER JOIN municipio m ON g.id_municipio = m.id_municipio
-");
+        SELECT 
+            d.nombre,
+            d.apellido_p,
+            d.apellido_m,
+            d.correo,
+            m.municipio
+        FROM general g
+        INNER JOIN dato d ON g.id_dato = d.id_dato
+        INNER JOIN municipio m ON g.id_municipio = m.id_municipio
+        ");
 
         $dashboard = $db->query("
         SELECT
