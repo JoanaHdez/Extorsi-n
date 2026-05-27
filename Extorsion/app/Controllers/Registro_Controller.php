@@ -89,10 +89,15 @@ class Registro_Controller extends BaseController
                 ->with('errors', $this->validator->getErrors());
         }
         $dependenciaTexto = mb_strtolower(
-            trim($this->request->getPost('dependencia'))
+            $this->sinAcentos(
+                trim($this->request->getPost('dependencia'))
+            )
         );
 
-        $esComisaria = strpos($dependenciaTexto, 'comisaria') !== false;
+
+        $esComisaria =
+            strpos($dependenciaTexto, 'comisaria') !== false
+            || strpos($dependenciaTexto, 'cgsc') !== false;
 
         $categoria = new Categoria_Model();
 

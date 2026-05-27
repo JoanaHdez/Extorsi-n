@@ -1,423 +1,710 @@
-body{
-    background: #ffffff;
+body {
+  background: #ffffff;
 }
 
-.cuadro{
-    width: 250px;
-    height: 100vh;
-    min-height: 100vh;
-    background: linear-gradient(#00538E, #A40000);
-    backdrop-filter: blur(10px);
-    display: flex;
-    flex-direction: column;
-    position: sticky;
-    top: 0;
-    flex: 0 0 250px;
-    align-self: flex-start;
-    z-index: 10;
-    overflow-y: auto;
-    overflow-x: hidden;
+.cuadro {
+  width: 250px;
+  height: 100vh;
+  min-height: 100vh;
+  background: linear-gradient(#00538e, #a40000);
+  backdrop-filter: blur(10px);
+  display: flex;
+  flex-direction: column;
+  position: sticky;
+  top: 0;
+  flex: 0 0 250px;
+  align-self: flex-start;
+  z-index: 10;
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 
 .contenido {
-    min-width: 0;
+  min-width: 0;
 }
 
 .logos-container {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    width: 100%;
-    margin-bottom: 15px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  margin-bottom: 15px;
 }
 
 .logo-principal {
-    width: 85%;
-    max-width: 220px;
-    height: auto;
-    object-fit: contain;
-    filter: drop-shadow(0 0 8px rgb(255, 255, 255));
-
+  width: 85%;
+  max-width: 220px;
+  height: auto;
+  object-fit: contain;
+  filter: drop-shadow(0 0 8px rgb(255, 255, 255));
 }
 
 .logo-secundario {
-    width: 100%;
-    max-width: 220px;
-    height: auto;
-    object-fit: contain;
-    opacity: 0.9;
-    margin-top: -5px;
-    filter: drop-shadow(0 0 8px rgb(255, 255, 255));
+  width: 100%;
+  max-width: 220px;
+  height: auto;
+  object-fit: contain;
+  opacity: 0.9;
+  margin-top: -5px;
+  filter: drop-shadow(0 0 8px rgb(255, 255, 255));
 }
 
 .menu-salir {
-    margin-top: auto;     
-    width: 100%;
-    display: flex;
-    justify-content: flex-start; 
-    padding-top: 10px;
+  margin-top: auto;
+  width: 100%;
+  display: flex;
+  justify-content: flex-start;
+  padding-top: 10px;
 }
 
 .logo-salir {
-    width: 45px;
-    height: auto;
-    cursor: pointer;
-    transition: all 0.2s ease;
+  width: 45px;
+  height: auto;
+  cursor: pointer;
+  transition: all 0.2s ease;
 }
 
 .logo-salir:hover {
-    transform: rotate(180deg);
+  transform: rotate(180deg);
 }
 
 .sidebar {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: flex-start; 
-    height: 100vh;
-    padding-top: 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  height: 100vh;
+  padding-top: 10px;
 }
 
 .menu-wrapper {
-    display: flex;
-    justify-content: center; 
+  display: flex;
+  justify-content: center;
 }
 .menu-opciones {
-    width: 100%;
-    align-items: flex-end;
+  width: 100%;
+  align-items: flex-end;
 }
 
 .menu-item,
 .btn-exportar {
-    background: #b8893a;
-    color: white;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    font-weight: 600;
-    cursor: pointer;
-    text-decoration: none;
-    border-radius: 50px;
-    padding: 10px 14px;
-    width: fit-content;
-    max-width: 100%;
-    transition: all 0.25s ease;
-    margin-left: auto;
+  background: #b8893a;
+  color: white;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
+  border-radius: 50px;
+  padding: 10px 14px;
+  width: fit-content;
+  max-width: 100%;
+  transition: all 0.25s ease;
+  margin-left: auto;
 }
 
 .menu-item,
 .btn-exportar {
-    transform-origin: right center; 
+  transform-origin: right center;
 }
 
 .menu-item:hover,
 .btn-exportar:hover {
-    padding: 10px 50px;
-    background: #a47730;
-    transform: translateX(-6px); 
+  padding: 10px 50px;
+  background: #a47730;
+  transform: translateX(-6px);
 }
 
 .menu-item.active {
-    padding: 10px 50px;
-    background: #8f6a28;
+  padding: 10px 50px;
+  background: #8f6a28;
 }
 
 .filter-panel {
-    display: none;
-    flex-direction: column;
-    gap: 10px;
-    width: 100%;
-    margin-top: 4px;
-    padding: 12px;
-    align-items: stretch;
-    background: rgba(255, 255, 255, 0.14);
-    border: 1px solid rgba(255, 255, 255, 0.24);
-    border-radius: 14px;
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12);
+  display: none;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+  margin-top: 4px;
+  padding: 12px;
+  align-items: stretch;
+  background: rgba(255, 255, 255, 0.14);
+  border: 1px solid rgba(255, 255, 255, 0.24);
+  border-radius: 14px;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12);
 }
 
 .filter-panel.active {
-    display: flex;
+  display: flex;
 }
 
 .filter-title {
-    color: #ffffff;
-    font-size: 13px;
-    font-weight: 800;
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
 }
 
 .filter-panel label {
-    color: rgba(255, 255, 255, 0.9);
-    display: flex;
-    flex-direction: column;
-    gap: 5px;
-    font-size: 12px;
-    font-weight: 700;
+  color: rgba(255, 255, 255, 0.9);
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  font-size: 12px;
+  font-weight: 700;
 }
 
 .filter-panel select,
 .filter-panel button {
-    width: 100%;
-    padding: 8px 10px;
-    border: 1px solid rgba(255, 255, 255, 0.45);
-    border-radius: 9px;
-    outline: none;
-    font-size: 13px;
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid rgba(255, 255, 255, 0.45);
+  border-radius: 9px;
+  outline: none;
+  font-size: 13px;
 }
 
 .filter-panel button {
-    background: #B8893A;
-    color: white;
-    border-color: #B8893A;
-    cursor: pointer;
-    font-weight: 800;
-    margin-top: 2px;
+  background: #b8893a;
+  color: white;
+  border-color: #b8893a;
+  cursor: pointer;
+  font-weight: 800;
+  margin-top: 2px;
 }
 
 .filter-panel button:hover {
-    background: #a47730;
+  background: #a47730;
 }
 
 .arrow {
-    font-size: 14px;
-    opacity: 0.9;
+  font-size: 14px;
+  opacity: 0.9;
 }
 
 .card-modern {
-    border: none;
-    border-radius: 20px;
-    padding: 10px;
-    color: white;
-    overflow: hidden;
-    transition: all 0.25s ease;
-    min-height: 120px;
+  border: none;
+  border-radius: 20px;
+  padding: 10px;
+  color: white;
+  overflow: hidden;
+  transition: all 0.25s ease;
+  min-height: 120px;
 }
 
 .card-modern:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 15px 30px rgba(31,90,138,0.2);
+  transform: translateY(-5px);
+  box-shadow: 0 15px 30px rgba(31, 90, 138, 0.2);
 }
 
 .card-modern[data-sector-card] {
-    cursor: pointer;
+  cursor: pointer;
 }
 
 .card-modern[data-sector-card].active {
-    box-shadow: 0 0 0 3px rgba(0,83,142,0.25), 0 15px 30px rgba(31,90,138,0.2);
+  box-shadow:
+    0 0 0 3px rgba(0, 83, 142, 0.25),
+    0 15px 30px rgba(31, 90, 138, 0.2);
 }
 
 .card-total {
-    background: linear-gradient(135deg, #0B2E4A, #123E63);
+  background: linear-gradient(135deg, #0b2e4a, #123e63);
 }
 
 .card-comercio {
-    background: linear-gradient(135deg, #16A34A, #22C55E);
-    color: #FFFFFF;
+  background: linear-gradient(135deg, #16a34a, #22c55e);
+  color: #ffffff;
 }
 
 .card-servicio {
-    background: linear-gradient(135deg, #F59E0B, #FBBF24);
-    color: #1F2937;
+  background: linear-gradient(135deg, #f59e0b, #fbbf24);
+  color: #1f2937;
 }
 
 .card-modern {
-    border-radius: 18px;
-    border: none;
-    overflow: hidden;
-    position: relative;
-    color: white;
+  border-radius: 18px;
+  border: none;
+  overflow: hidden;
+  position: relative;
+  color: white;
 }
 
 .card-icon-bg {
-    position: absolute;
-    right: 10px;
-    bottom: -10px;
-    font-size: 110px;
-    opacity: 0.1; 
-    pointer-events: none;
-    user-select: none;
+  position: absolute;
+  right: 10px;
+  bottom: -10px;
+  font-size: 110px;
+  opacity: 0.1;
+  pointer-events: none;
+  user-select: none;
 }
 
 .card-body {
-    position: relative;
-    z-index: 2;
+  position: relative;
+  z-index: 2;
 }
 .navbar-simple {
-    display: flex;
-    justify-content: center;
-    padding: 10px;
+  display: flex;
+  justify-content: center;
+  padding: 10px;
 }
-
 
 .search-simple {
-    display: flex;
-    width: 100%;
-    max-width: 400px;
+  display: flex;
+  width: 100%;
+  max-width: 400px;
 }
-
 
 .search-simple input {
-    flex: 1;
-    padding: 8px 12px;
+  flex: 1;
+  padding: 8px 12px;
 
-    border: 1px solid #ccc;
-    border-right: none;
+  border: 1px solid #ccc;
+  border-right: none;
 
-    border-radius: 6px 0 0 6px;
-    outline: none;
+  border-radius: 6px 0 0 6px;
+  outline: none;
 }
 
-
 .search-simple button {
-    padding: 8px 14px;
+  padding: 8px 14px;
 
-    background: #00538E; 
-    color: white;
+  background: #00538e;
+  color: white;
 
-    border: 1px solid #00538E;
-    border-radius: 0 6px 6px 0;
+  border: 1px solid #00538e;
+  border-radius: 0 6px 6px 0;
 
-    cursor: pointer;
+  cursor: pointer;
 }
 
 .search-simple button:hover {
-    background: #003f6b;
+  background: #003f6b;
 }
 
 canvas {
-    width: 100% !important;
-    background: linear-gradient(180deg, #ffffff, #f8fafc);
-    border-radius: 14px;
-    padding: 12px;
+  width: 100% !important;
+  background: linear-gradient(180deg, #ffffff, #f8fafc);
+  border-radius: 14px;
+  padding: 12px;
 }
 
 #graficaDependencias,
 #graficaSexo,
 #graficaEstado {
-    height: 260px !important;
+  height: 260px !important;
 }
 
 .dashboard-grid,
 .dashboard-grid-secondary {
-    align-items: stretch;
+  align-items: stretch;
 }
 
 .dashboard-panel {
-    background: #ffffff;
-    border: 1px solid rgba(15, 23, 42, 0.08);
-    border-radius: 16px;
-    box-shadow: 0 14px 35px rgba(15, 23, 42, 0.08);
-    padding: 18px;
+  background: #ffffff;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  border-radius: 16px;
+  box-shadow: 0 14px 35px rgba(15, 23, 42, 0.08);
+  padding: 18px;
 }
 
 .chart-panel h3,
 .table-panel h3 {
-    margin: 0 0 12px;
-    font-size: 18px;
-    font-weight: 700;
-    color: #0B2E4A;
+  margin: 0 0 12px;
+  font-size: 18px;
+  font-weight: 700;
+  color: #0b2e4a;
 }
 
 .chart-panel-large #graficaDependencias {
-    height: 310px !important;
+  height: 310px !important;
 }
 
 .chart-panel-small #graficaEstado {
-    height: 220px !important;
+  height: 220px !important;
 }
 
 .table-panel {
-    margin-top: 4px;
+  margin-top: 4px;
 }
 
 .dashboard-side-stack {
-    display: flex;
-    flex-direction: column;
+  display: flex;
+  flex-direction: column;
 }
 
-.table-panel .navbar-simple {
-    justify-content: flex-start;
-    padding: 0 0 14px;
-}
-
-.sector-info-card {
-    min-height: 210px;
-    background:
-        linear-gradient(135deg, rgba(0, 83, 142, 0.96), rgba(164, 0, 0, 0.9)),
-        #00538E;
-    color: white;
-    border: none;
-    border-radius: 16px;
-    box-shadow: 0 16px 36px rgba(15, 23, 42, 0.18);
-    overflow: hidden;
-    position: relative;
-}
-
-.sector-info-card::after {
-    content: "";
-    position: absolute;
-    right: -45px;
-    bottom: -55px;
-    width: 170px;
-    height: 170px;
-    border-radius: 999px;
-    border: 32px solid rgba(255, 255, 255, 0.12);
-}
-
-.sector-info-card .card-body {
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    gap: 10px;
-    padding: 24px;
-}
-
-.sector-info-card h5 {
-    margin: 0;
-    font-size: 22px;
-    font-weight: 800;
-}
-
-.sector-info-card p {
-    margin: 0;
-    color: rgba(255, 255, 255, 0.88);
-    line-height: 1.55;
+.table {
+  min-width: 700px;
 }
 
 .tabla-scroll-wrapper {
-    height: 360px;
-    max-height: 360px;
-    overflow: hidden;
-    display: flex;
-    flex-direction: column;
-    border: 1px solid rgba(15, 23, 42, 0.08);
-    border-radius: 12px;
+  max-height: 360px;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.table-panel .navbar-simple {
+  justify-content: flex-start;
+  padding: 0 0 14px;
+}
+
+.sector-info-card {
+  min-height: 210px;
+  background:
+    linear-gradient(135deg, rgba(0, 83, 142, 0.96), rgba(164, 0, 0, 0.9)),
+    #00538e;
+  color: white;
+  border: none;
+  border-radius: 16px;
+  box-shadow: 0 16px 36px rgba(15, 23, 42, 0.18);
+  overflow: hidden;
+  position: relative;
+}
+
+.sector-info-card::after {
+  content: "";
+  position: absolute;
+  right: -45px;
+  bottom: -55px;
+  width: 170px;
+  height: 170px;
+  border-radius: 999px;
+  border: 32px solid rgba(255, 255, 255, 0.12);
+}
+
+.sector-info-card .card-body {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 10px;
+  padding: 24px;
+}
+
+.sector-info-card h5 {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 800;
+}
+
+.sector-info-card p {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.88);
+  line-height: 1.55;
+}
+
+.tabla-scroll-wrapper {
+  height: 360px;
+  max-height: 360px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  border-radius: 12px;
 }
 
 .tabla-scroll {
-    height: 100%;
-    overflow-y: auto;
-    overflow-x: hidden;
+  height: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 
 .table thead th {
-    position: sticky;
-    top: 0;
-    background: #f8fafc;
-    z-index: 2;
-    color: #0B2E4A;
-    font-weight: 700;
+  position: sticky;
+  top: 0;
+  background: #f8fafc;
+  z-index: 2;
+  color: #0b2e4a;
+  font-weight: 700;
 }
 
 table {
-    font-size: 14px;
-    margin-bottom: 0 !important;
+  font-size: 14px;
+  margin-bottom: 0 !important;
 }
 
 .table td,
 .table th {
-    vertical-align: middle;
+  vertical-align: middle;
+}
+
+@media (max-width: 768px) {
+  body {
+    overflow-x: hidden;
+  }
+
+  .container-fluid.p-0 > .d-flex {
+    flex-direction: column;
+  }
+
+  .mobile-topbar {
+    position: fixed;
+    top: 0;
+    left: 0;
+
+    width: 100%;
+    height: 70px;
+
+    background: linear-gradient(180deg, #00538e 0%, #0b2e4a 100%);
+
+    z-index: 1100;
+
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  }
+
+  .menu-toggle {
+    position: fixed;
+
+    top: 12px;
+    left: 15px;
+
+    width: 45px;
+    height: 45px;
+
+    border: none;
+    border-radius: 10px;
+
+    background: rgba(255, 255, 255, 0.15);
+    color: white;
+
+    font-size: 24px;
+    font-weight: bold;
+
+    z-index: 3000;
+  }
+
+  .menu-overlay {
+    position: fixed;
+    inset: 0;
+
+    background: rgba(0, 0, 0, 0.45);
+
+    opacity: 0;
+    visibility: hidden;
+
+    transition: 0.3s ease;
+
+    z-index: 998;
+  }
+
+  .menu-overlay.active {
+    opacity: 1;
+    visibility: visible;
+  }
+
+  .cuadro {
+    position: fixed;
+
+    top: 0;
+    left: -280px;
+
+    width: 260px;
+    height: 100vh;
+
+    z-index: 1200;
+
+    transition: 0.3s ease;
+
+    overflow-y: auto;
+
+    padding: 20px;
+  }
+
+  .cuadro.active {
+    left: 0;
+  }
+
+  .contenido {
+    width: 100%;
+    padding-top: 55px;
+    padding-left: 30px;
+    padding-right: 12px;
+
+    box-sizing: border-box;
+  }
+
+  .logos-container {
+    text-align: center;
+  }
+
+  .logo-principal,
+  .logo-secundario {
+    max-width: 150px;
+    margin: auto;
+  }
+
+  .menu-opciones {
+    width: 100%;
+    margin-top: 20px;
+  }
+
+  .menu-item,
+  .btn-exportar {
+    width: 100%;
+    justify-content: center;
+    margin-bottom: 12px;
+  }
+
+  .menu-item:hover,
+  .btn-exportar:hover {
+    transform: none;
+    padding: 10px 14px;
+  }
+
+  .dashboard-grid,
+  .dashboard-grid-secondary {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .chart-panel,
+  .table-panel,
+  .sector-info-card {
+    width: 100%;
+  }
+
+  .navbar-simple {
+    width: 100%;
+    padding-right: 0;
+  }
+
+  .search-simple {
+    width: 100%;
+    max-width: 100%;
+
+    box-sizing: border-box;
+  }
+
+  .search-simple input {
+    min-width: 0;
+  }
+
+  #graficaDependencias,
+  #graficaSexo,
+  #graficaEstado {
+    height: 240px !important;
+  }
+
+  .table-panel {
+    overflow-x: hidden; /* evita scroll doble raro */
+  }
+
+  .tabla-scroll-wrapper {
+    width: 100%;
+    overflow-x: auto !important;
+    overflow-y: hidden !important;
+    -webkit-overflow-scrolling: touch;
+
+    display: block; 
+  }
+
+  .tabla-scroll {
+    width: max-content; 
+  }
+
+  table {
+    min-width: 700px;
+    width: max-content; 
+  }
+
+  th,
+  td {
+    white-space: nowrap;
+  }
+
+  .dashboard-panel,
+  .card-modern,
+  .sector-info-card {
+    margin-left: 2px;
+    margin-right: 2px;
+  }
+
+  .dashboard-cards {
+    order: 1;
+  }
+
+  .chart-dia {
+    order: 2;
+  }
+
+  .chart-sexo {
+    order: 3;
+  }
+
+  .chart-estado {
+    order: 4;
+  }
+
+  .sector-info-card {
+    order: 5;
+  }
+
+  .table-panel {
+    order: 6;
+  }
+}
+
+@media (max-width: 420px) {
+
+  .contenido {
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+
+  .dashboard-panel,
+  .card-modern,
+  .sector-info-card {
+    margin-left: 0;
+    margin-right: 0;
+    padding: 12px;
+  }
+
+  #graficaDependencias,
+  #graficaSexo,
+  #graficaEstado {
+    height: 200px !important;
+  }
+
+  .search-simple input {
+    font-size: 14px;
+    padding: 6px 8px;
+  }
+
+  .search-simple button {
+    padding: 6px 10px;
+    font-size: 14px;
+  }
+
+  .table-panel {
+    overflow-x: hidden;
+  }
+
+  .tabla-scroll-wrapper {
+    width: 100%;
+    overflow-x: auto !important;
+    overflow-y: hidden !important;
+    -webkit-overflow-scrolling: touch;
+
+    display: block;
+  }
+
+  .tabla-scroll {
+    width: max-content;
+  }
+
+  table {
+    min-width: 650px; 
+    width: max-content;
+    font-size: 13px;
+  }
+
+  th,
+  td {
+    white-space: nowrap;
+    padding: 6px 8px; 
+  }
+
 }

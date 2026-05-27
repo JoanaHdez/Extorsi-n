@@ -4,19 +4,17 @@ if (estado) {
     const estadoId = this.value;
     const municipioSelect = document.getElementById("id_municipio");
 
-    municipioSelect.innerHTML = '<option value="">Cargando...</option>';
+    municipioSelect.innerHTML = '<option value=""></option>';
 
     if (!estadoId) {
       municipioSelect.innerHTML =
-        '<option value="">Seleccione un estado</option>';
+        '<option value="" disabled selected hidden></option>';
       return;
     }
 
     fetch(`./registro/municipios/${estadoId}`)
       .then((r) => r.json())
       .then((data) => {
-        municipioSelect.innerHTML =
-          '<option value="">Seleccione un municipio</option>';
         data.forEach((m) => {
           const option = document.createElement("option");
           option.value = m.id_municipio;
@@ -29,51 +27,77 @@ if (estado) {
 
 const sector = document.getElementById("id_sector");
 const categoriaSelect = document.getElementById("id_categoria");
+const dependenciaInput = document.getElementById("dependencia");
+
 const categoriaOtroContenedor = document.getElementById(
   "categoria_otro_contenedor",
 );
 const categoriaOtroInput = document.getElementById("categoria_otro");
 
-const dependenciaInput = document.getElementById("dependencia");
-
+console.log(sector);
+console.log(categoriaSelect);
+console.log(dependenciaInput);
 function validarComisaria() {
+  console.log("Ejecutando validarComisaria");
+
   if (!dependenciaInput) {
+    console.log("No existe dependencia");
     return;
   }
 
-  const texto = dependenciaInput.value.toLowerCase();
+  if (!sector) {
+    console.log("No existe sector");
+    return;
+  }
 
-  const esComisaria = texto.includes("comisaria");
+  if (!categoriaSelect) {
+    console.log("No existe categoria");
+    return;
+  }
+
+  const texto = dependenciaInput.value
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[^a-z0-9\s]/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
+
+  console.log("Texto:", texto);
+
+  const esComisaria = texto.includes("comisaria") || texto.includes("cgsc");
+
+  console.log("Es comisaria:", esComisaria);
 
   if (esComisaria) {
     sector.value = "";
     sector.disabled = true;
-    sector.required = false;
 
-    categoriaSelect.innerHTML =
-      '<option value="">No aplica para Comisaria</option>';
-
+    categoriaSelect.value = "";
     categoriaSelect.disabled = true;
-    categoriaSelect.required = false;
 
-    categoriaOtroContenedor.style.display = "none";
-    categoriaOtroInput.required = false;
-    categoriaOtroInput.value = "";
+    categoriaSelect.innerHTML = '<option value="">NO APLICA</option>';
+
+    console.log("Deshabilitado");
   } else {
     sector.disabled = false;
-    sector.required = true;
-
     categoriaSelect.disabled = false;
-    categoriaSelect.required = true;
 
-    categoriaSelect.innerHTML =
-      '<option value="">Seleccione una categoría</option>';
+    console.log("Habilitado");
   }
 }
 
-if (dependenciaInput) {
-  dependenciaInput.addEventListener("input", validarComisaria);
-}
+document.addEventListener("DOMContentLoaded", function () {
+  if (dependenciaInput) {
+    dependenciaInput.addEventListener("input", validarComisaria);
+
+    dependenciaInput.addEventListener("keyup", validarComisaria);
+
+    dependenciaInput.addEventListener("change", validarComisaria);
+
+    validarComisaria();
+  }
+});
+
 function actualizarCampoCategoriaOtro() {
   if (!categoriaSelect || !categoriaOtroContenedor || !categoriaOtroInput) {
     return;
@@ -112,14 +136,25 @@ if (sector) {
     fetch(`./registro/categorias/${sectorId}`)
       .then((r) => r.json())
       .then((data) => {
-        categoriaSelect.innerHTML =
-          '<option value="">Seleccione una categoría</option>';
-        data.forEach((c) => {
+        categoriaSelect.innerHTML = '<option value="">Selecciona</option>';
+
+        const ordenadas = data.sort((a, b) => {
+          const aCat = a.categoria.toLowerCase();
+          const bCat = b.categoria.toLowerCase();
+
+          if (aCat === "otros") return 1;
+          if (bCat === "otros") return -1;
+
+          return aCat.localeCompare(bCat, "es");
+        });
+
+        ordenadas.forEach((c) => {
           const option = document.createElement("option");
           option.value = c.id_categoria;
           option.textContent = c.categoria;
           categoriaSelect.appendChild(option);
         });
+
         actualizarCampoCategoriaOtro();
       });
   });
@@ -179,7 +214,17 @@ document.addEventListener("DOMContentLoaded", function () {
   }));
 
   function opcionesUnicas(campo, datos = registros) {
-    return [...new Set(datos.map((r) => r[campo]).filter(Boolean))].sort();
+    const unicas = [...new Set(datos.map((r) => r[campo]).filter(Boolean))];
+
+    return unicas.sort((a, b) => {
+      const aLower = a.toLowerCase();
+      const bLower = b.toLowerCase();
+
+      if (aLower === "otros") return 1;
+      if (bLower === "otros") return -1;
+
+      return aLower.localeCompare(bLower, "es");
+    });
   }
 
   function llenarSelect(select, opciones, etiqueta) {
@@ -570,3 +615,19 @@ document.addEventListener("DOMContentLoaded", function () {
 
   actualizarDashboard();
 });
+
+const menuToggle = document.getElementById("menuToggle");
+const cuadro = document.querySelector(".cuadro");
+const menuOverlay = document.getElementById("menuOverlay");
+
+if (menuToggle && cuadro && menuOverlay) {
+  menuToggle.addEventListener("click", function () {
+    cuadro.classList.toggle("active");
+    menuOverlay.classList.toggle("active");
+  });
+
+  menuOverlay.addEventListener("click", function () {
+    cuadro.classList.remove("active");
+    menuOverlay.classList.remove("active");
+  });
+}

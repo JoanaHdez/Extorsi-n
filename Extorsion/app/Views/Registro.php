@@ -25,7 +25,7 @@
                                 </h1>
 
                                 <h3 class="subtitulo mt-4">
-                                    Unidad de Antisecuestro y Antiextorsión de la Secretaria de Seguridad y Protección
+                                    Unidad de Antisecuestro y Antiextorsión de la Secretaría de Seguridad y Protección
                                     Ciudadana
                                 </h3>
                                 <h3 class="subtitulo mt-4">
@@ -123,7 +123,7 @@
                                             <label class="form-label">Sexo</label>
                                             <select class="form-select select-estilo" name="id_sexo" id="id_sexo"
                                                 required>
-                                                <option value="">Seleccionar</option>
+                                                <option value="" selected disabled hidden>Seleccionar</option>
                                                 <?php foreach ($sexos as $sexo): ?>
                                                 <option value="<?= $sexo['id_sexo'] ?>">
                                                     <?= esc($sexo['sexo']) ?>
@@ -143,7 +143,7 @@
                                             <label class="form-label">Estado</label>
                                             <select class="form-select select-estilo" name="id_estado" id="id_estado"
                                                 required>
-                                                <option value="">Seleccionar</option>
+                                                <option value="" selected disabled hidden>Seleccionar</option>
                                                 <?php foreach ($estados as $estado): ?>
                                                 <option value="<?= $estado['id_estado'] ?>">
                                                     <?= esc($estado['estado']) ?>
@@ -156,7 +156,7 @@
                                             <label class="form-label">Municipio</label>
                                             <select class="form-select select-estilo" name="id_municipio"
                                                 id="id_municipio" required>
-                                                <option value="">Seleccionar</option>
+                                                <option value="" selected disabled hidden>Seleccionar</option>
                                             </select>
                                         </div>
 
@@ -164,7 +164,7 @@
                                             <label class="form-label">Sector</label>
                                             <select class="form-select select-estilo" name="id_sector" id="id_sector"
                                                 required>
-                                                <option value="">Seleccionar</option>
+                                                <option value="" selected disabled hidden>Seleccionar</option>
                                                 <?php foreach ($sectores as $sector): ?>
                                                 <option value="<?= $sector['id_sector'] ?>">
                                                     <?= esc($sector['sector']) ?>
@@ -177,7 +177,7 @@
                                             <label class="form-label">Categoría</label>
                                             <select class="form-select select-estilo" name="id_categoria"
                                                 id="id_categoria" required>
-                                                <option value="">Seleccionar</option>
+                                                <option value="" selected disabled hidden>Seleccionar</option>
                                             </select>
                                         </div>
 
