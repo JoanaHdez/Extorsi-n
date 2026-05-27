@@ -32,7 +32,7 @@ class Registro_Controller extends BaseController
 
         return view('head', $data)
             .   view('Registro', $data);
-    } 
+    }
 
     public function guardar()
     {
@@ -45,8 +45,8 @@ class Registro_Controller extends BaseController
             'dependencia' => 'required|max_length[100]',
             'id_estado' => 'required|integer',
             'id_municipio' => 'required|integer',
-            'id_sector' => 'required|integer',
-            'id_categoria' => 'required|integer',
+            'id_sector' => 'permit_empty|integer',
+            'id_categoria' => 'permit_empty|integer',
         ];
 
         $messages = [
@@ -88,52 +88,76 @@ class Registro_Controller extends BaseController
                 ->withInput()
                 ->with('errors', $this->validator->getErrors());
         }
-        $categoria = new Categoria_Model();
-        $categoriaSeleccionada = $categoria->find($this->request->getPost('id_categoria'));
-        $esOtraCategoria = $categoriaSeleccionada
-            && strtolower(trim((string) $categoriaSeleccionada['categoria'])) === 'otros';
+        $dependenciaTexto = mb_strtolower(
+            trim($this->request->getPost('dependencia'))
+        );
 
-        if ($esOtraCategoria && trim((string) $this->request->getPost('categoria_otro')) === '') {
+        $esComisaria = strpos($dependenciaTexto, 'comisaria') !== false;
+
+        $categoria = new Categoria_Model();
+
+        $categoriaId = $this->request->getPost('id_categoria');
+
+        $categoriaSeleccionada = null;
+
+        if (!empty($categoriaId)) {
+            $categoriaSeleccionada = $categoria->find($categoriaId);
+        }
+
+        $esOtraCategoria = false;
+
+        if ($categoriaSeleccionada) {
+            $esOtraCategoria =
+                strtolower(trim((string) $categoriaSeleccionada['categoria'])) === 'otros';
+        }
+
+        if (
+            !$esComisaria &&
+            $esOtraCategoria &&
+            trim((string) $this->request->getPost('categoria_otro')) === ''
+        ) {
+
             return redirect()->back()
                 ->withInput()
-                ->with('errors', ['categoria_otro' => 'Debe especificar la categorí­a cuando selecciona Otros.']);
+                ->with('errors', [
+                    'categoria_otro' => 'Debe especificar la categoría cuando selecciona Otros.'
+                ]);
+        }
+
+        $db = \Config\Database::connect();
+
+        $totalRegistros = $db->table('general')->countAll();
+
+        if ($totalRegistros >= 600) {
+
+            return redirect()->back()
+                ->withInput()
+                ->with('errors', [
+                    'limite' => 'El sistema ha alcanzado el límite máximo de 600 registros.'
+                ]);
         }
 
         $dato = new Dato_Model();
         $general = new General_Model();
-
-        /* $idDato = $dato->insert([
-            'nombre' => $this->request->getPost('nombre'),
-            'apellido_p' => $this->request->getPost('apellido_p'),
-            'apellido_m' => $this->request->getPost('apellido_m'),
-            'correo' => $this->request->getPost('correo'),
-        ]); */
-
-        /* $idDato = $dato->insert([
-    'nombre' => mb_strtoupper($this->request->getPost('nombre')),
-    'apellido_p' => mb_strtoupper($this->request->getPost('apellido_p')),
-    'apellido_m' => mb_strtoupper($this->request->getPost('apellido_m')),
-    'correo' => mb_strtoupper($this->request->getPost('correo')),
- 
-]); */
-
-$idDato = $dato->insert([
-    'nombre' => mb_strtoupper($this->sinAcentos(trim($this->request->getPost('nombre')))),
-    'apellido_p' => mb_strtoupper($this->sinAcentos(trim($this->request->getPost('apellido_p')))),
-    'apellido_m' => mb_strtoupper($this->sinAcentos(trim($this->request->getPost('apellido_m')))),
-    'correo' => mb_strtoupper(trim($this->request->getPost('correo'))),
-]);
+        $idDato = $dato->insert([
+            'nombre' => mb_strtoupper($this->sinAcentos(trim($this->request->getPost('nombre')))),
+            'apellido_p' => mb_strtoupper($this->sinAcentos(trim($this->request->getPost('apellido_p')))),
+            'apellido_m' => mb_strtoupper($this->sinAcentos(trim($this->request->getPost('apellido_m')))),
+            'correo' => mb_strtoupper(trim($this->request->getPost('correo'))),
+        ]);
 
         $general->insert([
-    'id_dato' => $idDato,
-    'id_sexo' => $this->request->getPost('id_sexo'),
-    'dependencia' => mb_strtoupper($this->sinAcentos(trim($this->request->getPost('dependencia')))),
-    'id_municipio' => $this->request->getPost('id_municipio'),
-    'id_categoria' => $this->request->getPost('id_categoria'),
-    'categoria_otro' => $esOtraCategoria
-        ? mb_strtoupper($this->sinAcentos(trim($this->request->getPost('categoria_otro'))))
-        : null,
-]);
+            'id_dato' => $idDato,
+            'id_sexo' => $this->request->getPost('id_sexo'),
+            'dependencia' => mb_strtoupper($this->sinAcentos(trim($this->request->getPost('dependencia')))),
+            'id_municipio' => $this->request->getPost('id_municipio'),
+            'id_categoria' => !$esComisaria && !empty($categoriaId)
+                ? $categoriaId
+                : null,
+            'categoria_otro' => $esOtraCategoria
+                ? mb_strtoupper($this->sinAcentos(trim($this->request->getPost('categoria_otro'))))
+                : null,
+        ]);
 
         return redirect()->to('/registro')->with('success', 'Registro guardado correctamente.');
     }
@@ -192,10 +216,12 @@ $idDato = $dato->insert([
         inner join municipio m on g.id_municipio = m.id_municipio
         INNER JOIN estado e 
             ON m.id_estado = e.id_estado
-        inner join categoria c on g.id_categoria = c.id_categoria
-        INNER JOIN sector sec 
-            ON c.id_sector = sec.id_sector
-        ";
+        LEFT JOIN categoria c 
+        ON g.id_categoria = c.id_categoria
+
+        LEFT JOIN sector sec 
+        ON c.id_sector = sec.id_sector
+                ";
 
         if (!empty($buscar)) {
             $sql .= " 
@@ -264,9 +290,9 @@ $idDato = $dato->insert([
         INNER JOIN sexo s ON g.id_sexo = s.id_sexo
         INNER JOIN municipio m ON g.id_municipio = m.id_municipio
         INNER JOIN estado e ON m.id_estado = e.id_estado
-        INNER JOIN categoria c ON g.id_categoria = c.id_categoria
-        INNER JOIN sector sec ON c.id_sector = sec.id_sector
-        ");
+        LEFT JOIN categoria c ON g.id_categoria = c.id_categoria
+        LEFT JOIN sector sec ON c.id_sector = sec.id_sector
+                ");
 
         $data['total'] = $total->getRow()->total;
         $data['dias'] = $dias->getResultArray();
@@ -294,13 +320,19 @@ $idDato = $dato->insert([
         g.dependencia,
         e.estado,
         m.municipio,
-        sec.sector,
-        CASE
-            WHEN LOWER(c.categoria) = 'otros' AND g.categoria_otro IS NOT NULL AND g.categoria_otro <> ''
-                THEN g.categoria_otro
-            ELSE c.categoria
+        IFNULL(sec.sector, 'NO APLICA') AS sector,
+                CASE
+            WHEN c.categoria IS NULL
+                THEN 'NO APLICA'
+
+        WHEN LOWER(c.categoria) = 'otros'
+            AND g.categoria_otro IS NOT NULL
+            AND g.categoria_otro <> ''
+            THEN g.categoria_otro
+
+        ELSE c.categoria
         END AS categoria,
-        g.fecha_registro
+                g.fecha_registro
 
         FROM general g
 
@@ -308,9 +340,9 @@ $idDato = $dato->insert([
         INNER JOIN sexo s ON g.id_sexo = s.id_sexo
         INNER JOIN municipio m ON g.id_municipio = m.id_municipio
         INNER JOIN estado e ON m.id_estado = e.id_estado
-        INNER JOIN categoria c ON g.id_categoria = c.id_categoria
-        INNER JOIN sector sec ON c.id_sector = sec.id_sector
-        ");
+        LEFT JOIN categoria c ON g.id_categoria = c.id_categoria
+        LEFT JOIN sector sec ON c.id_sector = sec.id_sector
+                ");
 
         $registros = $query->getResultArray();
 
@@ -354,9 +386,9 @@ $idDato = $dato->insert([
     }
 
     private function sinAcentos($cadena)
-{
-    $buscar = ['á','é','í','ó','ú','Á','É','Í','Ó','Ú','ñ','Ñ'];
-    $reemplazar = ['a','e','i','o','u','A','E','I','O','U','n','N'];
-    return str_replace($buscar, $reemplazar, $cadena);
-}
+    {
+        $buscar = ['á', 'é', 'í', 'ó', 'ú', 'Á', 'É', 'Í', 'Ó', 'Ú', 'ñ', 'Ñ'];
+        $reemplazar = ['a', 'e', 'i', 'o', 'u', 'A', 'E', 'I', 'O', 'U', 'n', 'N'];
+        return str_replace($buscar, $reemplazar, $cadena);
+    }
 }

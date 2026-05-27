@@ -1,7 +1,26 @@
+@font-face {
+    font-family: 'Exo2';
+    src: url('../fonts/Exo2-Regular.ttf') format('truetype');
+    font-weight: 400;
+}
+
+@font-face {
+    font-family: 'Exo2';
+    src: url('../fonts/Exo2-Bold.ttf') format('truetype');
+    font-weight: 700;
+}
+
 body{
     margin: 0;
     padding: 0;
-    background: #ffffff;
+    background-color: #f4f6f9;
+    background-image: url('../img/coyote.svg');
+    background-repeat: no-repeat;
+    background-size: 70%;
+    background-position: right center;
+    background-attachment: fixed;
+    font-family: 'Exo2', sans-serif;
+
 }
 
 .cuadro {
@@ -47,11 +66,15 @@ body{
 
 .titulo{
     color: black;
-
+font-family: 'Exo2', sans-serif;
+    font-weight: 700;
+    letter-spacing: 1px;
 }
 
 .subtitulo{
     color: black;
+    font-family: 'Exo2', sans-serif;
+    font-weight: 400;
 }
 
 form label.form-label {

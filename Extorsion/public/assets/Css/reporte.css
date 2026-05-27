@@ -36,6 +36,8 @@ body{
     max-width: 220px;
     height: auto;
     object-fit: contain;
+    filter: drop-shadow(0 0 8px rgb(255, 255, 255));
+
 }
 
 .logo-secundario {
@@ -45,6 +47,7 @@ body{
     object-fit: contain;
     opacity: 0.9;
     margin-top: -5px;
+    filter: drop-shadow(0 0 8px rgb(255, 255, 255));
 }
 
 .menu-salir {

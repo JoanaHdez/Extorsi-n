@@ -23,9 +23,9 @@
                                         < </span> Dashboard
                                 </div>
 
-                                <a href="/reporte/exportar" class="btn-exportar mt-4">
+                                <a href="<?= base_url('index.php/reporte/exportar') ?>" class="btn-exportar mt-4">
                                     <span class="arrow">
-                                        < </span>
+                                        <</span>
                                             Exportar
                                 </a>
 
@@ -221,7 +221,7 @@
                                         </div>
                                         <div class="col-lg-4 g-4 dashboard-side-stack">
                                             <div class="dashboard-panel chart-panel chart-panel-small">
-                                                <h3>Registros por estado</h3>
+                                                <h3>Registros por Estado</h3>
                                                 <canvas class="mt-4" id="graficaEstado"></canvas>
                                             </div>
 

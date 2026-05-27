@@ -20,16 +20,20 @@
 
                             <div class="d-flex flex-column align-items-center">
 
-                                <h1 class="titulo fw-bold mt-5">
-                                    Platicas de Medidas Preventivas en Casos de Extorsión
+                                <h1 class="titulo  mt-5">
+                                    Pláticas de Medidas Preventivas en Casos de Extorsión
                                 </h1>
 
-                                <h2 class="subtitulo mt-4">
+                                <h3 class="subtitulo mt-4">
+                                    Unidad de Antisecuestro y Antiextorsión de la Secretaria de Seguridad y Protección
+                                    Ciudadana
+                                </h3>
+                                <h3 class="subtitulo mt-4">
                                     Del 09 al 12 de junio de 2026
-                                </h2>
+                                </h3>
 
                                 <h2 class="mt-4">
-                                    Registro
+                                    Registro de Asistencia
                                 </h2>
 
                             </div>
@@ -78,6 +82,11 @@
                             <?php endif; ?>
 
                             <div class="container px-5 py-4 mt-5">
+                                <?php if(session('errors.limite')): ?>
+                                <div class="alert alert-danger">
+                                    <?= session('errors.limite') ?>
+                                </div>
+                                <?php endif; ?>
                                 <form action="<?= base_url('registro/guardar') ?>" method="post">
 
                                     <?= csrf_field() ?>
