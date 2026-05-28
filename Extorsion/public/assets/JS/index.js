@@ -27,76 +27,66 @@ if (estado) {
 
 const sector = document.getElementById("id_sector");
 const categoriaSelect = document.getElementById("id_categoria");
-const dependenciaInput = document.getElementById("dependencia");
+const dependenciaSelect = document.getElementById("id_dependencia");
+
 
 const categoriaOtroContenedor = document.getElementById(
   "categoria_otro_contenedor",
 );
 const categoriaOtroInput = document.getElementById("categoria_otro");
 
-console.log(sector);
-console.log(categoriaSelect);
-console.log(dependenciaInput);
-function validarComisaria() {
-  console.log("Ejecutando validarComisaria");
+function validarDependencia() {
 
-  if (!dependenciaInput) {
-    console.log("No existe dependencia");
+  console.log(dependenciaSelect.value);
+
+  if (!dependenciaSelect || !sector || !categoriaSelect) {
     return;
   }
 
-  if (!sector) {
-    console.log("No existe sector");
-    return;
-  }
+  const dependenciaId = dependenciaSelect.value;
 
-  if (!categoriaSelect) {
-    console.log("No existe categoria");
-    return;
-  }
+  const deshabilitar =
+    dependenciaId === "4" ||
+    dependenciaId === "5";
 
-  const texto = dependenciaInput.value
-    .toLowerCase()
-    .normalize("NFD")
-    .replace(/[^a-z0-9\s]/g, "")
-    .replace(/\s+/g, " ")
-    .trim();
-
-  console.log("Texto:", texto);
-
-  const esComisaria = texto.includes("comisaria") || texto.includes("cgsc");
-
-  console.log("Es comisaria:", esComisaria);
-
-  if (esComisaria) {
+  if (deshabilitar) {
     sector.value = "";
     sector.disabled = true;
 
     categoriaSelect.value = "";
     categoriaSelect.disabled = true;
 
-    categoriaSelect.innerHTML = '<option value="">NO APLICA</option>';
+    categoriaSelect.innerHTML =
+      '<option value="">NO APLICA</option>';
 
-    console.log("Deshabilitado");
+    categoriaOtroContenedor.style.display = "none";
+    categoriaOtroInput.value = "";
+    categoriaOtroInput.required = false;
+
   } else {
     sector.disabled = false;
     categoriaSelect.disabled = false;
 
-    console.log("Habilitado");
+    categoriaSelect.innerHTML =
+      '<option value="" selected disabled hidden>Seleccionar</option>';
   }
 }
 
 document.addEventListener("DOMContentLoaded", function () {
-  if (dependenciaInput) {
-    dependenciaInput.addEventListener("input", validarComisaria);
 
-    dependenciaInput.addEventListener("keyup", validarComisaria);
+  if (dependenciaSelect) {
 
-    dependenciaInput.addEventListener("change", validarComisaria);
+    dependenciaSelect.addEventListener(
+      "change",
+      validarDependencia
+    );
 
-    validarComisaria();
+    validarDependencia();
   }
 });
+
+console.log(sector);
+console.log(categoriaSelect);
 
 function actualizarCampoCategoriaOtro() {
   if (!categoriaSelect || !categoriaOtroContenedor || !categoriaOtroInput) {
@@ -121,6 +111,10 @@ function actualizarCampoCategoriaOtro() {
 
 if (sector) {
   sector.addEventListener("change", function () {
+
+    if (categoriaSelect.disabled) {
+  return;
+}
     const sectorId = this.value;
 
     categoriaSelect.innerHTML = '<option value="">Cargando...</option>';

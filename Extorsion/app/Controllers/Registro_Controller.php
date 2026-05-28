@@ -5,11 +5,13 @@ namespace App\Controllers;
 use App\Controllers\BaseController;
 use App\Models\Categoria_Model;
 use App\Models\Dato_Model;
+use App\Models\Dependencia_Model;
 use App\Models\Estado_Model;
 use App\Models\General_Model;
 use App\Models\Municipio_Model;
 use App\Models\Sector_Model;
 use App\Models\Sexo_Model;
+
 
 class Registro_Controller extends BaseController
 {
@@ -21,12 +23,14 @@ class Registro_Controller extends BaseController
         $categoria = new Categoria_Model();
         $sector = new Sector_Model();
         $sexo = new Sexo_Model();
+        $dependencia = new Dependencia_Model();
 
         $data['estados'] = $estado->orderBy('estado', 'ASC')->findAll();
         $data['municipios'] = $municipio->orderBy('municipio', 'ASC')->findAll();
         $data['categorias'] = $categoria->orderBy('categoria', 'ASC')->findAll();
         $data['sectores'] = $sector->orderBy('sector', 'ASC')->findAll();
         $data['sexos'] = $sexo->orderBy('sexo', 'ASC')->findAll();
+        $data['dependencias'] = $dependencia->orderBy('dependencia', 'ASC')->findAll();
 
         $data['style'] = 'assets/Css/registro.css';
 
@@ -42,7 +46,7 @@ class Registro_Controller extends BaseController
             'apellido_m' => 'required|max_length[100]',
             'correo' => 'required|valid_email',
             'id_sexo' => 'required|integer',
-            'dependencia' => 'required|max_length[100]',
+            'id_dependencia' => 'required|integer',
             'id_estado' => 'required|integer',
             'id_municipio' => 'required|integer',
             'id_sector' => 'permit_empty|integer',
@@ -65,9 +69,9 @@ class Registro_Controller extends BaseController
             'id_sexo' => [
                 'required' => 'El campo sexo es obligatorio.',
             ],
-            'dependencia' => [
-                'required' => 'El campo dependencia es obligatorio.',
-            ],
+            'id_dependencia' => [
+    'required' => 'El campo dependencia es obligatorio.',
+],
             'id_estado' => [
                 'required' => 'El campo estado es obligatorio.',
             ],
@@ -88,16 +92,11 @@ class Registro_Controller extends BaseController
                 ->withInput()
                 ->with('errors', $this->validator->getErrors());
         }
-        $dependenciaTexto = mb_strtolower(
-            $this->sinAcentos(
-                trim($this->request->getPost('dependencia'))
-            )
-        );
+        $idDependencia = (int) $this->request->getPost('id_dependencia');
 
-
-        $esComisaria =
-            strpos($dependenciaTexto, 'comisaria') !== false
-            || strpos($dependenciaTexto, 'cgsc') !== false;
+$esDependenciaInstitucional =
+    $idDependencia === 1
+    || $idDependencia === 2;
 
         $categoria = new Categoria_Model();
 
@@ -117,8 +116,8 @@ class Registro_Controller extends BaseController
         }
 
         if (
-            !$esComisaria &&
-            $esOtraCategoria &&
+    !$esDependenciaInstitucional &&
+                $esOtraCategoria &&
             trim((string) $this->request->getPost('categoria_otro')) === ''
         ) {
 
@@ -154,9 +153,9 @@ class Registro_Controller extends BaseController
         $general->insert([
             'id_dato' => $idDato,
             'id_sexo' => $this->request->getPost('id_sexo'),
-            'dependencia' => mb_strtoupper($this->sinAcentos(trim($this->request->getPost('dependencia')))),
+            'id_dependencia' => $idDependencia,
             'id_municipio' => $this->request->getPost('id_municipio'),
-            'id_categoria' => !$esComisaria && !empty($categoriaId)
+            'id_categoria' => !$esDependenciaInstitucional && !empty($categoriaId)
                 ? $categoriaId
                 : null,
             'categoria_otro' => $esOtraCategoria
@@ -322,7 +321,7 @@ class Registro_Controller extends BaseController
         d.apellido_m,
         d.correo,
         s.sexo,
-        g.dependencia,
+        dep.dependencia,
         e.estado,
         m.municipio,
         IFNULL(sec.sector, 'NO APLICA') AS sector,
@@ -347,7 +346,9 @@ class Registro_Controller extends BaseController
         INNER JOIN estado e ON m.id_estado = e.id_estado
         LEFT JOIN categoria c ON g.id_categoria = c.id_categoria
         LEFT JOIN sector sec ON c.id_sector = sec.id_sector
-                ");
+        LEFT JOIN dependencia dep
+ON g.id_dependencia = dep.id_dependencia");
+                
 
         $registros = $query->getResultArray();
 

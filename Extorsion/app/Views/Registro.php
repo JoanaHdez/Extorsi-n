@@ -134,11 +134,22 @@
 
                                         <div class="col-md-4">
                                             <label class="form-label">Dependencia</label>
-                                            <input type="text" class="form-control linea" name="dependencia"
-                                                id="dependencia" required
-                                                oninput="this.value = this.value.toUpperCase()">
-                                        </div>
 
+                                            <select class="form-select select-estilo" name="id_dependencia"
+                                                id="id_dependencia" required>
+
+                                                <option value="" selected disabled hidden>
+                                                    Seleccionar
+                                                </option>
+
+                                                <?php foreach ($dependencias as $dependencia): ?>
+                                                <option value="<?= $dependencia['id_dependencia'] ?>">
+                                                    <?= esc($dependencia['dependencia']) ?>
+                                                </option>
+                                                <?php endforeach; ?>
+
+                                            </select>
+                                        </div>
                                         <div class="col-md-4">
                                             <label class="form-label">Estado</label>
                                             <select class="form-select select-estilo" name="id_estado" id="id_estado"
