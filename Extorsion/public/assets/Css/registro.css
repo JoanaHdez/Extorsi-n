@@ -1,215 +1,237 @@
 @font-face {
-    font-family: 'Exo2';
-    src: url('../fonts/Exo2-Regular.ttf') format('truetype');
-    font-weight: 400;
+  font-family: "Exo2";
+  src: url("../fonts/Exo2-Regular.ttf") format("truetype");
+  font-weight: 400;
 }
 
 @font-face {
-    font-family: 'Exo2';
-    src: url('../fonts/Exo2-Bold.ttf') format('truetype');
-    font-weight: 700;
+  font-family: "Exo2";
+  src: url("../fonts/Exo2-Bold.ttf") format("truetype");
+  font-weight: 700;
 }
 
-body{
-    margin: 0;
-    padding: 0;
-    background-color: #f4f6f9;
-    background-image: url('../img/coyote.svg');
-    background-repeat: no-repeat;
-    background-size: 70%;
-    background-position: right center;
-    background-attachment: fixed;
-    font-family: 'Exo2', sans-serif;
-
+body {
+  margin: 0;
+  padding: 0;
+  background-color: #f4f6f9;
+  background-image: url("../img/coyote.svg");
+  background-repeat: no-repeat;
+  background-size: 70%;
+  background-position: right center;
+  background-attachment: fixed;
+  font-family: "Exo2", sans-serif;
 }
 
 .cuadro {
-    background: linear-gradient(180deg, #00538E 0%, #0B2E4A 100%);
+  background: linear-gradient(180deg, #00538e 0%, #0b2e4a 100%);
 }
 
-.logo-secundario{
-    width: 500%;
-    max-width: 90%;
-    height: auto;
-    filter: drop-shadow(0 0 8px rgb(255, 255, 255));
+.logo-secundario {
+  width: 500%;
+  max-width: 90%;
+  height: auto;
+  filter: drop-shadow(0 0 8px rgb(255, 255, 255));
 }
 
-.toast-institucional{
-    background: #00538E; /* azul institucional */
-    color: #fff;
-    border-left: 6px solid #16A34A; /* verde solo como acento */
-    border-radius: 14px;
-    box-shadow: 0 10px 25px rgba(0,0,0,0.18);
-    overflow: hidden;
+.toast-institucional {
+  background: #00538e; /* azul institucional */
+  color: #fff;
+  border-left: 6px solid #16a34a; /* verde solo como acento */
+  border-radius: 14px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.18);
+  overflow: hidden;
 }
 
-.icon-check{
-    width: 30px;
-    height: 30px;
-    border-radius: 50%;
-    background: #16A34A;
-    color: white;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    font-weight: bold;
-    font-size: 18px;
-    flex-shrink: 0;
+.icon-check {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: #16a34a;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 18px;
+  flex-shrink: 0;
 }
-.cuadro img{
-    filter: drop-shadow(0 0 10px rgb(255, 255, 255));
-}
-
-.contenido{
-    min-height: 100vh;
+.cuadro img {
+  filter: drop-shadow(0 0 10px rgb(255, 255, 255));
 }
 
-.titulo{
-    color: black;
-font-family: 'Exo2', sans-serif;
-    font-weight: 700;
-    letter-spacing: 1px;
+.contenido {
+  min-height: 100vh;
 }
 
-.subtitulo{
-    color: black;
-    font-family: 'Exo2', sans-serif;
-    font-weight: 400;
+.titulo {
+  color: black;
+  font-family: "Exo2", sans-serif;
+  font-weight: 700;
+  letter-spacing: 1px;
+}
+
+.subtitulo {
+  color: black;
+  font-family: "Exo2", sans-serif;
+  font-weight: 400;
 }
 
 form label.form-label {
-    font-weight: 600;
-    color: #6c757d;
+  font-weight: 600;
+  color: #6c757d;
 }
 
-.linea{
-    border: none;
-    border-bottom: 1px solid #bdbdbd;
-    border-radius: 0;
-    background: transparent;
+.linea {
+  border: none;
+  border-bottom: 1px solid #bdbdbd;
+  border-radius: 0;
+  background: transparent;
 }
 
-.linea:focus{
-    box-shadow: none;
-    border-bottom: 2px solid #0d6efd;
+.linea:focus {
+  box-shadow: none;
+  border-bottom: 2px solid #0d6efd;
 }
 
-.select-estilo{
-    border-radius: 10px;
-    background-color: #d9d9d9;
-    border: none;
+.select-estilo {
+  border-radius: 10px;
+  background-color: #d9d9d9;
+  border: none;
 }
 
-.boton-enviar{
-    background-color: #004b93;
-    color: white;
-    border-radius: 8px;
+.boton-enviar {
+  background-color: #004b93;
+  color: white;
+  border-radius: 8px;
 }
 
-.boton-enviar:hover{
-    background-color: #00386d;
-    color: white;
+.boton-enviar:hover {
+  background-color: #00386d;
+  color: white;
 }
 
 @media (max-width: 768px) {
-    body {
-        overflow-x: hidden;
-    }
+  body {
+    margin: 0;
+    padding: 0;
+    background-color: #f4f6f9;
+    background-image: url("../img/coyote.svg");
+    background-repeat: no-repeat;
+    background-size: 120%;
+    background-position: center;
+    background-position: right center;
+    background-attachment: fixed;
+    font-family: "Exo2", sans-serif;
+    overflow-x: hidden;
+  }
 
-    main.container-fluid,
-    .container-fluid {
-        padding-left: 0;
-        padding-right: 0;
-    }
+  main.container-fluid,
+  .container-fluid {
+    padding-left: 0;
+    padding-right: 0;
+  }
 
-    .container-fluid.p-0 > .d-flex {
-        flex-direction: column;
-    }
+  .container-fluid.p-0 > .d-flex {
+    flex-direction: column;
+  }
 
-    .cuadro {
-        width: 100% !important;
-        height: auto !important;
-        min-height: auto;
-        border-radius: 0 !important;
-        padding: 16px !important;
-        flex-direction: row !important;
-        justify-content: center !important;
-        gap: 16px !important;
-    }
+  .cuadro {
+    width: 100% !important;
+    height: auto !important;
+    min-height: auto;
+    border-radius: 0 !important;
+    padding: 16px !important;
+    flex-direction: row !important;
+    justify-content: center !important;
+    gap: 16px !important;
+  }
 
-    .logo-secundario{
-        width: 300%;
-    }
+  .logo-secundario {
+    width: 300%;
+  }
 
-    .cuadro img {
-        max-width: 120px !important;
-        margin-bottom: 0 !important;
-    }
+  .cuadro img {
+    max-width: 120px !important;
+    margin-bottom: 0 !important;
+  }
 
-    .contenido {
-        min-height: auto;
-        width: 100%;
-    }
+  .contenido {
+    min-height: auto;
+    width: 100%;
+  }
 
-    .titulo {
-        font-size: 1.25rem;
-        line-height: 1.3;
-        text-align: center;
-        margin-top: 24px !important;
-        padding: 0 16px;
-    }
+  .titulo {
+    font-size: 1.25rem;
+    line-height: 1.3;
+    text-align: center;
+    margin-top: 24px !important;
+    padding: 0 16px;
+  }
 
-    .subtitulo,
-    .contenido h2 {
-        font-size: 1.05rem;
-        text-align: center;
-        margin-top: 14px !important;
-        padding: 0 16px;
-    }
+  .subtitulo,
+  .contenido h2 {
+    font-size: 1.05rem;
+    text-align: center;
+    margin-top: 14px !important;
+    padding: 0 16px;
+  }
 
-    .contenido .container {
-        padding-left: 18px !important;
-        padding-right: 18px !important;
-        margin-top: 20px !important;
-    }
+  .contenido .container {
+    padding-left: 18px !important;
+    padding-right: 18px !important;
+    margin-top: 20px !important;
+  }
 
-    form .row {
-        --bs-gutter-x: 0;
-        --bs-gutter-y: 1.2rem;
-    }
+  form .row {
+    --bs-gutter-x: 0;
+    --bs-gutter-y: 1.2rem;
+  }
 
-    form .col-md-4 {
-        width: 100%;
-    }
+  form .col-md-4 {
+    width: 100%;
+  }
 
-    .linea,
-    .select-estilo {
-        min-height: 44px;
-        font-size: 16px;
-    }
+  .linea,
+  .select-estilo {
+    min-height: 44px;
+    font-size: 16px;
+  }
 
-    .col-12.d-flex.justify-content-end {
-        justify-content: stretch !important;
-        margin-top: 28px !important;
-    }
+  .col-12.d-flex.justify-content-end {
+    justify-content: stretch !important;
+    margin-top: 28px !important;
+  }
 
-    .boton-enviar {
-        width: 100%;
-        min-height: 48px;
-        font-size: 16px;
-    }
+  .boton-enviar {
+    width: 100%;
+    min-height: 48px;
+    font-size: 16px;
+  }
 }
 
 @media (max-width: 420px) {
-    .logo-secundario{
-        width: 250%;
-    }
-    .cuadro img {
-        max-width: 96px !important;
-    }
+  body {
+    margin: 0;
+    padding: 0;
+    background-color: #f4f6f9;
+    background-image: url("../img/coyote.svg");
+    background-repeat: no-repeat;
+    background-size: 120%;
+    background-position: center;
+    background-position: right center;
+    background-attachment: fixed;
+    font-family: "Exo2", sans-serif;
+    overflow-x: hidden;
+  }
 
-    .titulo {
-        font-size: 1.12rem;
-    }
+  .logo-secundario {
+    width: 250%;
+  }
+  .cuadro img {
+    max-width: 96px !important;
+  }
+
+  .titulo {
+    font-size: 1.12rem;
+  }
 }
-

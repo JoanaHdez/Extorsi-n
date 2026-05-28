@@ -648,10 +648,21 @@ table {
 }
 
 @media (max-width: 420px) {
+body {
+    overflow-x: hidden;
+  }
+
+  .container-fluid.p-0 > .d-flex {
+    flex-direction: column;
+  }
 
   .contenido {
-    padding-left: 12px;
+    width: 100%;
+    padding-top: 55px;
+    padding-left: 30px;
     padding-right: 12px;
+
+    box-sizing: border-box;
   }
 
   .dashboard-panel,
