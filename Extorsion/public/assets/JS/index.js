@@ -4,11 +4,13 @@ if (estado) {
     const estadoId = this.value;
     const municipioSelect = document.getElementById("id_municipio");
 
-    municipioSelect.innerHTML = '<option value=""></option>';
+    municipioSelect.innerHTML =
+      '<option value="" selected disabled hidden>Seleccionar</option>';
 
     if (!estadoId) {
       municipioSelect.innerHTML =
-        '<option value="" disabled selected hidden></option>';
+        '<option value="" selected disabled hidden>Seleccionar</option>';
+
       return;
     }
 
@@ -29,14 +31,12 @@ const sector = document.getElementById("id_sector");
 const categoriaSelect = document.getElementById("id_categoria");
 const dependenciaSelect = document.getElementById("id_dependencia");
 
-
 const categoriaOtroContenedor = document.getElementById(
   "categoria_otro_contenedor",
 );
 const categoriaOtroInput = document.getElementById("categoria_otro");
 
 function validarDependencia() {
-
   console.log(dependenciaSelect.value);
 
   if (!dependenciaSelect || !sector || !categoriaSelect) {
@@ -45,9 +45,7 @@ function validarDependencia() {
 
   const dependenciaId = dependenciaSelect.value;
 
-  const deshabilitar =
-    dependenciaId === "4" ||
-    dependenciaId === "5";
+  const deshabilitar = dependenciaId === "4" || dependenciaId === "5";
 
   if (deshabilitar) {
     sector.value = "";
@@ -56,13 +54,11 @@ function validarDependencia() {
     categoriaSelect.value = "";
     categoriaSelect.disabled = true;
 
-    categoriaSelect.innerHTML =
-      '<option value="">NO APLICA</option>';
+    categoriaSelect.innerHTML = '<option value="">NO APLICA</option>';
 
     categoriaOtroContenedor.style.display = "none";
     categoriaOtroInput.value = "";
     categoriaOtroInput.required = false;
-
   } else {
     sector.disabled = false;
     categoriaSelect.disabled = false;
@@ -73,13 +69,8 @@ function validarDependencia() {
 }
 
 document.addEventListener("DOMContentLoaded", function () {
-
   if (dependenciaSelect) {
-
-    dependenciaSelect.addEventListener(
-      "change",
-      validarDependencia
-    );
+    dependenciaSelect.addEventListener("change", validarDependencia);
 
     validarDependencia();
   }
@@ -111,10 +102,9 @@ function actualizarCampoCategoriaOtro() {
 
 if (sector) {
   sector.addEventListener("change", function () {
-
     if (categoriaSelect.disabled) {
-  return;
-}
+      return;
+    }
     const sectorId = this.value;
 
     categoriaSelect.innerHTML = '<option value="">Cargando...</option>';
@@ -122,7 +112,8 @@ if (sector) {
 
     if (!sectorId) {
       categoriaSelect.innerHTML =
-        '<option value="">Seleccione un sector</option>';
+        '<option value="" selected disabled hidden>Seleccionar</option>';
+
       actualizarCampoCategoriaOtro();
       return;
     }
@@ -130,7 +121,8 @@ if (sector) {
     fetch(`./registro/categorias/${sectorId}`)
       .then((r) => r.json())
       .then((data) => {
-        categoriaSelect.innerHTML = '<option value="">Selecciona</option>';
+        categoriaSelect.innerHTML =
+          '<option value="" selected disabled hidden>Seleccionar</option>';
 
         const ordenadas = data.sort((a, b) => {
           const aCat = a.categoria.toLowerCase();
