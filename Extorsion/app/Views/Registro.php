@@ -135,20 +135,8 @@
                                         <div class="col-md-4">
                                             <label class="form-label">Dependencia</label>
 
-                                            <select class="form-select select-estilo" name="id_dependencia"
-                                                id="id_dependencia" required>
-
-                                                <option value="" selected disabled hidden>
-                                                    Seleccionar
-                                                </option>
-
-                                                <?php foreach ($dependencias as $dependencia): ?>
-                                                <option value="<?= $dependencia['id_dependencia'] ?>">
-                                                    <?= esc($dependencia['dependencia']) ?>
-                                                </option>
-                                                <?php endforeach; ?>
-
-                                            </select>
+                                            <input type="text" class="form-control linea" name="dependencia"
+                                                id="dependencia" maxlength="150" required>
                                         </div>
                                         <div class="col-md-4">
                                             <label class="form-label">Estado</label>

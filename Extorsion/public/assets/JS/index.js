@@ -29,52 +29,11 @@ if (estado) {
 
 const sector = document.getElementById("id_sector");
 const categoriaSelect = document.getElementById("id_categoria");
-const dependenciaSelect = document.getElementById("id_dependencia");
 
 const categoriaOtroContenedor = document.getElementById(
   "categoria_otro_contenedor",
 );
 const categoriaOtroInput = document.getElementById("categoria_otro");
-
-function validarDependencia() {
-  console.log(dependenciaSelect.value);
-
-  if (!dependenciaSelect || !sector || !categoriaSelect) {
-    return;
-  }
-
-  const dependenciaId = dependenciaSelect.value;
-
-  const deshabilitar = dependenciaId === "4" || dependenciaId === "5";
-
-  if (deshabilitar) {
-    sector.value = "";
-    sector.disabled = true;
-
-    categoriaSelect.value = "";
-    categoriaSelect.disabled = true;
-
-    categoriaSelect.innerHTML = '<option value="">NO APLICA</option>';
-
-    categoriaOtroContenedor.style.display = "none";
-    categoriaOtroInput.value = "";
-    categoriaOtroInput.required = false;
-  } else {
-    sector.disabled = false;
-    categoriaSelect.disabled = false;
-
-    categoriaSelect.innerHTML =
-      '<option value="" selected disabled hidden>Seleccionar</option>';
-  }
-}
-
-document.addEventListener("DOMContentLoaded", function () {
-  if (dependenciaSelect) {
-    dependenciaSelect.addEventListener("change", validarDependencia);
-
-    validarDependencia();
-  }
-});
 
 console.log(sector);
 console.log(categoriaSelect);

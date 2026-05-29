@@ -46,7 +46,7 @@ class Registro_Controller extends BaseController
             'apellido_m' => 'required|max_length[100]',
             'correo' => 'required|valid_email',
             'id_sexo' => 'required|integer',
-            'id_dependencia' => 'required|integer',
+            'dependencia' => 'required|max_length[150]',
             'id_estado' => 'required|integer',
             'id_municipio' => 'required|integer',
             'id_sector' => 'permit_empty|integer',
@@ -69,9 +69,9 @@ class Registro_Controller extends BaseController
             'id_sexo' => [
                 'required' => 'El campo sexo es obligatorio.',
             ],
-            'id_dependencia' => [
-    'required' => 'El campo dependencia es obligatorio.',
-],
+            'dependencia' => [
+                'required' => 'El campo dependencia es obligatorio.',
+            ],
             'id_estado' => [
                 'required' => 'El campo estado es obligatorio.',
             ],
@@ -92,11 +92,6 @@ class Registro_Controller extends BaseController
                 ->withInput()
                 ->with('errors', $this->validator->getErrors());
         }
-        $idDependencia = (int) $this->request->getPost('id_dependencia');
-
-$esDependenciaInstitucional =
-    $idDependencia === 1
-    || $idDependencia === 2;
 
         $categoria = new Categoria_Model();
 
@@ -116,8 +111,7 @@ $esDependenciaInstitucional =
         }
 
         if (
-    !$esDependenciaInstitucional &&
-                $esOtraCategoria &&
+            $esOtraCategoria &&
             trim((string) $this->request->getPost('categoria_otro')) === ''
         ) {
 
@@ -153,16 +147,27 @@ $esDependenciaInstitucional =
         $general->insert([
             'id_dato' => $idDato,
             'id_sexo' => $this->request->getPost('id_sexo'),
-            'id_dependencia' => $idDependencia,
+
+            'dependencia' => mb_strtoupper(
+                $this->sinAcentos(
+                    trim($this->request->getPost('dependencia'))
+                )
+            ),
+
             'id_municipio' => $this->request->getPost('id_municipio'),
-            'id_categoria' => !$esDependenciaInstitucional && !empty($categoriaId)
+
+            'id_categoria' => !empty($categoriaId)
                 ? $categoriaId
                 : null,
+
             'categoria_otro' => $esOtraCategoria
-                ? mb_strtoupper($this->sinAcentos(trim($this->request->getPost('categoria_otro'))))
+                ? mb_strtoupper(
+                    $this->sinAcentos(
+                        trim($this->request->getPost('categoria_otro'))
+                    )
+                )
                 : null,
         ]);
-
         return redirect()->to('/registro')->with('success', 'Registro guardado correctamente.');
     }
 
@@ -348,7 +353,7 @@ $esDependenciaInstitucional =
         LEFT JOIN sector sec ON c.id_sector = sec.id_sector
         LEFT JOIN dependencia dep
 ON g.id_dependencia = dep.id_dependencia");
-                
+
 
         $registros = $query->getResultArray();
 
