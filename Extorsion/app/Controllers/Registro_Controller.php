@@ -5,10 +5,11 @@ namespace App\Controllers;
 use App\Controllers\BaseController;
 use App\Models\Categoria_Model;
 use App\Models\Dato_Model;
-use App\Models\Dependencia_Model;
 use App\Models\Estado_Model;
 use App\Models\General_Model;
+use App\Models\General_Personal_Model;
 use App\Models\Municipio_Model;
+use App\Models\Personal_Model;
 use App\Models\Sector_Model;
 use App\Models\Sexo_Model;
 
@@ -23,14 +24,12 @@ class Registro_Controller extends BaseController
         $categoria = new Categoria_Model();
         $sector = new Sector_Model();
         $sexo = new Sexo_Model();
-        $dependencia = new Dependencia_Model();
 
         $data['estados'] = $estado->orderBy('estado', 'ASC')->findAll();
         $data['municipios'] = $municipio->orderBy('municipio', 'ASC')->findAll();
         $data['categorias'] = $categoria->orderBy('categoria', 'ASC')->findAll();
         $data['sectores'] = $sector->orderBy('sector', 'ASC')->findAll();
         $data['sexos'] = $sexo->orderBy('sexo', 'ASC')->findAll();
-        $data['dependencias'] = $dependencia->orderBy('dependencia', 'ASC')->findAll();
 
         $data['style'] = 'assets/Css/registro.css';
 
@@ -244,6 +243,82 @@ class Registro_Controller extends BaseController
         return view('Listado', $data);
     }
 
+    public function guardarPersonal()
+    {
+
+        $rules = [
+            'nomina' => 'required|integer',
+            'correo' => 'required|valid_email',
+            'id_municipio' => 'required|integer'
+        ];
+
+        if (!$this->validate($rules)) {
+
+            return $this->response->setJSON([
+                'success' => false,
+                'message' => 'Datos inválidos'
+            ]);
+        }
+
+        $personal = new Personal_Model();
+
+        $empleado = $personal
+            ->where('nomina', $this->request->getPost('nomina'))
+            ->first();
+
+        if (!$empleado) {
+
+            return $this->response->setJSON([
+                'success' => false,
+                'message' => 'La nómina no existe'
+            ]);
+        }
+
+        $generalPersonal = new \App\Models\General_Personal_Model();
+
+        $generalPersonal->insert([
+            'nomina' => $this->request->getPost('nomina'),
+            'correo' => strtoupper(trim($this->request->getPost('correo'))),
+            'id_municipio' => $this->request->getPost('id_municipio')
+        ]);
+
+        return $this->response->setJSON([
+            'success' => true,
+            'message' => 'Registro guardado correctamente'
+        ]);
+    }
+
+    public function buscarNomina($nomina)
+    {
+        $personal = new Personal_Model();
+
+        $registro = $personal
+            ->select('
+            personal.nomina,
+            personal.nombre,
+            personal.apellido_p,
+            personal.apellido_m,
+            personal.area,
+            personal.funcion,
+            sexo.sexo
+        ')
+            ->join('sexo', 'sexo.id_sexo = personal.id_sexo', 'left')
+            ->where('personal.nomina', $nomina)
+            ->first();
+
+        if (!$registro) {
+            return $this->response->setJSON([
+                'success' => false,
+                'message' => 'No se encontró la nómina.'
+            ]);
+        }
+
+        return $this->response->setJSON([
+            'success' => true,
+            'data' => $registro
+        ]);
+    }
+
     public function reporte()
     {
         $db = \Config\Database::connect();
@@ -326,7 +401,7 @@ class Registro_Controller extends BaseController
         d.apellido_m,
         d.correo,
         s.sexo,
-        dep.dependencia,
+        g.dependencia,
         e.estado,
         m.municipio,
         IFNULL(sec.sector, 'NO APLICA') AS sector,
@@ -350,9 +425,7 @@ class Registro_Controller extends BaseController
         INNER JOIN municipio m ON g.id_municipio = m.id_municipio
         INNER JOIN estado e ON m.id_estado = e.id_estado
         LEFT JOIN categoria c ON g.id_categoria = c.id_categoria
-        LEFT JOIN sector sec ON c.id_sector = sec.id_sector
-        LEFT JOIN dependencia dep
-ON g.id_dependencia = dep.id_dependencia");
+        LEFT JOIN sector sec ON c.id_sector = sec.id_sector");
 
 
         $registros = $query->getResultArray();

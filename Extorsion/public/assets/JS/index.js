@@ -1,3 +1,202 @@
+ document.addEventListener("DOMContentLoaded", function () {
+  console.log("Intentando abrir modal");
+
+  const modalElement = document.getElementById("modalComisaria");
+
+  console.log(modalElement);
+
+  if (modalElement) {
+    const modal = new bootstrap.Modal(modalElement);
+    modal.show();
+  }
+});
+
+let nominaEncontrada = null;
+
+const btnNo = document.getElementById("btnComisariaNo");
+
+if (btnNo) {
+  btnNo.addEventListener("click", function () {
+    const modalElement = document.getElementById("modalComisaria");
+
+    const modal = bootstrap.Modal.getInstance(modalElement);
+
+    modal.hide();
+  });
+}
+
+const btnSi = document.getElementById("btnComisariaSi");
+
+if (btnSi) {
+  btnSi.addEventListener("click", function () {
+    const modalComisaria = bootstrap.Modal.getInstance(
+      document.getElementById("modalComisaria"),
+    );
+
+    modalComisaria.hide();
+
+    const modalNomina = new bootstrap.Modal(
+      document.getElementById("modalNomina"),
+    );
+
+    modalNomina.show();
+  });
+}
+
+const btnBuscarNomina = document.getElementById("btnBuscarNomina");
+
+if (btnBuscarNomina) {
+  btnBuscarNomina.addEventListener("click", function () {
+    const nomina = document.getElementById("nominaBusqueda").value.trim();
+
+    const mensaje = document.getElementById("mensajeNomina");
+
+    fetch(`./registro/buscar-nomina/${nomina}`)
+      .then((response) => response.json())
+      .then((resultado) => {
+        console.log(resultado);
+
+        if (!resultado.success) {
+          mensaje.classList.remove("text-success");
+          mensaje.classList.add("text-danger");
+
+          mensaje.textContent = "No se encontró la nómina";
+
+          return;
+        }
+
+        const empleado = resultado.data;
+
+        nominaEncontrada = empleado.nomina;
+
+console.log("Nomina guardada:", nominaEncontrada);
+
+        // Llenar formulario principal oculto
+        document.getElementById("nombre").value = empleado.nombre.trim();
+
+        document.getElementById("apellido_p").value =
+          empleado.apellido_p.trim();
+
+        document.getElementById("apellido_m").value =
+          empleado.apellido_m.trim();
+
+        // Llenar modal de verificación
+        document.getElementById("modalNombre").value = empleado.nombre.trim();
+
+        document.getElementById("modalApellidoP").value =
+          empleado.apellido_p.trim();
+
+        document.getElementById("modalApellidoM").value =
+          empleado.apellido_m.trim();
+
+        document.getElementById("modalArea").value = empleado.area ?? "";
+
+        document.getElementById("modalFuncion").value = empleado.funcion ?? "";
+
+        document.getElementById("modalSexo").value = empleado.sexo ?? "";
+
+        mensaje.classList.remove("text-danger");
+        mensaje.classList.add("text-success");
+
+        mensaje.textContent = "Nómina encontrada";
+
+        const modalNomina = bootstrap.Modal.getInstance(
+          document.getElementById("modalNomina"),
+        );
+
+        modalNomina.hide();
+
+        const estadoOriginal = document.getElementById("id_estado");
+
+        const estadoModal = document.getElementById("modalEstado");
+
+        estadoModal.innerHTML = estadoOriginal.innerHTML;
+
+        // Esperar a que cierre el modal actual
+        setTimeout(() => {
+          const modalDatos = new bootstrap.Modal(
+            document.getElementById("modalDatosComisaria"),
+          );
+
+          modalDatos.show();
+        }, 300);
+      })
+      .catch((error) => {
+        console.error(error);
+
+        mensaje.classList.remove("text-success");
+        mensaje.classList.add("text-danger");
+
+        mensaje.textContent = "Error al consultar la nómina";
+      });
+  });
+}
+
+const btnConfirmar = document.getElementById("btnConfirmarComisaria");
+
+if (btnConfirmar) {
+  btnConfirmar.addEventListener("click", function () {
+    document.getElementById("correo").value =
+      document.getElementById("modalCorreo").value;
+
+    document.getElementById("id_estado").value =
+      document.getElementById("modalEstado").value;
+
+    document.getElementById("id_municipio").value =
+      document.getElementById("modalMunicipio").value;
+
+    const modal = bootstrap.Modal.getInstance(
+      document.getElementById("modalDatosComisaria"),
+    );
+
+    modal.hide();
+  });
+}
+
+const modalEstado =
+    document.getElementById("modalEstado"); 
+
+if (modalEstado) {
+
+    modalEstado.addEventListener("change", function () {
+
+        const estadoId = this.value;
+
+        const municipioModal =
+            document.getElementById("modalMunicipio");
+
+        municipioModal.innerHTML =
+            '<option value="" selected disabled hidden>Seleccionar</option>';
+
+        if (!estadoId) {
+            return;
+        }
+
+        fetch(`./registro/municipios/${estadoId}`)
+            .then(r => r.json())
+            .then(data => {
+
+                data.forEach(m => {
+
+                    const option =
+                        document.createElement("option");
+
+                    option.value =
+                        m.id_municipio;
+
+                    option.textContent =
+                        m.municipio;
+
+                    municipioModal.appendChild(option);
+
+                });
+
+            });
+
+    });
+
+}
+
 const estado = document.getElementById("id_estado");
 if (estado) {
   estado.addEventListener("change", function () {
