@@ -11,6 +11,21 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 });
 
+
+function mostrarToast(titulo, mensaje) {
+  const toastEl = document.getElementById("toastGlobal");
+
+  document.getElementById("toastTitulo").textContent = titulo;
+  document.getElementById("toastMensaje").textContent = mensaje;
+
+  const toast = new bootstrap.Toast(toastEl, {
+    delay: 3000,
+    autohide: true
+  });
+
+  toast.show();
+}
+
 let nominaEncontrada = null;
 
 const btnNo = document.getElementById("btnComisariaNo");
@@ -69,7 +84,7 @@ if (btnBuscarNomina) {
 
         nominaEncontrada = empleado.nomina;
 
-        console.log("Nomina guardada:", nominaEncontrada);
+console.log("Nomina guardada:", nominaEncontrada);
 
         // Llenar formulario principal oculto
         document.getElementById("nombre").value = empleado.nombre.trim();
@@ -136,6 +151,7 @@ const btnConfirmar = document.getElementById("btnConfirmarComisaria");
 
 if (btnConfirmar) {
   btnConfirmar.addEventListener("click", function () {
+
     const correo = document.getElementById("modalCorreo").value.trim();
     const municipio = document.getElementById("modalMunicipio").value;
 
@@ -145,12 +161,8 @@ if (btnConfirmar) {
     }
 
     // CSRF primero
-    const csrfName = document.querySelector(
-      'input[name="csrf_test_name"]',
-    ).name;
-    const csrfValue = document.querySelector(
-      'input[name="csrf_test_name"]',
-    ).value;
+    const csrfName = document.querySelector('input[name="csrf_test_name"]').name;
+    const csrfValue = document.querySelector('input[name="csrf_test_name"]').value;
 
     // FormData solo UNA vez
     const formData = new FormData();
@@ -164,61 +176,76 @@ if (btnConfirmar) {
 
     fetch("./registro/guardar-personal", {
       method: "POST",
-      body: formData,
+      body: formData
     })
-      .then((response) => response.json())
-      .then((resultado) => {
+      .then(response => response.json())
+      .then(resultado => {
+
         console.log(resultado);
 
         if (!resultado.success) {
-          alert(resultado.message);
+          mostrarToast("Error", resultado.message);
           return;
         }
 
         const modal = bootstrap.Modal.getInstance(
-          document.getElementById("modalDatosComisaria"),
+          document.getElementById("modalDatosComisaria")
         );
 
         modal.hide();
 
-        alert("Registro guardado correctamente");
+        mostrarToast("Registro exitoso", "Datos de personal guardados correctamente");
       })
-      .catch((error) => {
+      .catch(error => {
         console.error(error);
-        alert("Error al guardar");
+        mostrarToast("Error", "No se pudo guardar el registro");
       });
+
   });
 }
 
-const modalEstado = document.getElementById("modalEstado");
+const modalEstado =
+    document.getElementById("modalEstado"); 
 
 if (modalEstado) {
-  modalEstado.addEventListener("change", function () {
-    const estadoId = this.value;
 
-    const municipioModal = document.getElementById("modalMunicipio");
+    modalEstado.addEventListener("change", function () {
 
-    municipioModal.innerHTML =
-      '<option value="" selected disabled hidden>Seleccionar</option>';
+        const estadoId = this.value;
 
-    if (!estadoId) {
-      return;
-    }
+        const municipioModal =
+            document.getElementById("modalMunicipio");
 
-    fetch(`./registro/municipios/${estadoId}`)
-      .then((r) => r.json())
-      .then((data) => {
-        data.forEach((m) => {
-          const option = document.createElement("option");
+        municipioModal.innerHTML =
+            '<option value="" selected disabled hidden>Seleccionar</option>';
 
-          option.value = m.id_municipio;
+        if (!estadoId) {
+            return;
+        }
 
-          option.textContent = m.municipio;
+        fetch(`./registro/municipios/${estadoId}`)
+            .then(r => r.json())
+            .then(data => {
 
-          municipioModal.appendChild(option);
-        });
-      });
-  });
+                data.forEach(m => {
+
+                    const option =
+                        document.createElement("option");
+
+                    option.value =
+                        m.id_municipio;
+
+                    option.textContent =
+                        m.municipio;
+
+                    municipioModal.appendChild(option);
+
+                });
+
+            });
+
+    });
+
 }
 
 const estado = document.getElementById("id_estado");

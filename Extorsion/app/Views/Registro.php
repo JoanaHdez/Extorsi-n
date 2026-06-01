@@ -402,6 +402,26 @@
         </section>
     </main>
     <script src="<?= base_url('assets/JS/index.js') ?>"></script>
+
+    <div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 9999;">
+        <div id="toastGlobal"
+            class="toast align-items-center border-0 shadow-lg toast-institucional"
+            role="alert">
+            <div class="d-flex align-items-center">
+                <div class="toast-body d-flex align-items-center gap-3 py-3">
+                    <div class="icon-check">✓</div>
+                    <div>
+                        <div class="fw-bold" id="toastTitulo">Éxito</div>
+                        <div class="small" id="toastMensaje">Operación realizada correctamente</div>
+                    </div>
+                </div>
+
+                <button type="button"
+                    class="btn-close btn-close-white me-2 m-auto"
+                    data-bs-dismiss="toast"></button>
+            </div>
+        </div>
+    </div>
 </body>
 
 <?php if (session()->getFlashdata('success')): ?>
