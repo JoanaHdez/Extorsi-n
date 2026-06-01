@@ -401,6 +401,10 @@
             </div>
         </section>
     </main>
+    <script>
+        window.mostrarModalComisaria = <?= session()->getFlashdata('success') ? 'false' : 'true' ?>;
+    </script>
+
     <script src="<?= base_url('assets/JS/index.js') ?>"></script>
 
     <div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 9999;">

@@ -1,16 +1,15 @@
 document.addEventListener("DOMContentLoaded", function () {
-  console.log("Intentando abrir modal");
+  if (!window.mostrarModalComisaria) {
+    return; // 👈 ya se registró, no mostrar nada
+  }
 
   const modalElement = document.getElementById("modalComisaria");
-
-  console.log(modalElement);
 
   if (modalElement) {
     const modal = new bootstrap.Modal(modalElement);
     modal.show();
   }
 });
-
 
 function mostrarToast(titulo, mensaje) {
   const toastEl = document.getElementById("toastGlobal");
@@ -20,7 +19,7 @@ function mostrarToast(titulo, mensaje) {
 
   const toast = new bootstrap.Toast(toastEl, {
     delay: 3000,
-    autohide: true
+    autohide: true,
   });
 
   toast.show();
@@ -84,15 +83,15 @@ if (btnBuscarNomina) {
 
         nominaEncontrada = empleado.nomina;
 
-console.log("Nomina guardada:", nominaEncontrada);
+        console.log("Nomina guardada:", nominaEncontrada);
 
         // Llenar formulario principal oculto
-        document.getElementById("nombre").value = empleado.nombre.trim();
+        document.getElementById("modalNombre").value = empleado.nombre.trim();
 
-        document.getElementById("apellido_p").value =
+        document.getElementById("modalApellidoP").value =
           empleado.apellido_p.trim();
 
-        document.getElementById("apellido_m").value =
+        document.getElementById("modalApellidoM").value =
           empleado.apellido_m.trim();
 
         // Llenar modal de verificación
@@ -151,7 +150,6 @@ const btnConfirmar = document.getElementById("btnConfirmarComisaria");
 
 if (btnConfirmar) {
   btnConfirmar.addEventListener("click", function () {
-
     const correo = document.getElementById("modalCorreo").value.trim();
     const municipio = document.getElementById("modalMunicipio").value;
 
@@ -161,8 +159,12 @@ if (btnConfirmar) {
     }
 
     // CSRF primero
-    const csrfName = document.querySelector('input[name="csrf_test_name"]').name;
-    const csrfValue = document.querySelector('input[name="csrf_test_name"]').value;
+    const csrfName = document.querySelector(
+      'input[name="csrf_test_name"]',
+    ).name;
+    const csrfValue = document.querySelector(
+      'input[name="csrf_test_name"]',
+    ).value;
 
     // FormData solo UNA vez
     const formData = new FormData();
@@ -176,11 +178,10 @@ if (btnConfirmar) {
 
     fetch("./registro/guardar-personal", {
       method: "POST",
-      body: formData
+      body: formData,
     })
-      .then(response => response.json())
-      .then(resultado => {
-
+      .then((response) => response.json())
+      .then((resultado) => {
         console.log(resultado);
 
         if (!resultado.success) {
@@ -189,63 +190,52 @@ if (btnConfirmar) {
         }
 
         const modal = bootstrap.Modal.getInstance(
-          document.getElementById("modalDatosComisaria")
+          document.getElementById("modalDatosComisaria"),
         );
 
         modal.hide();
 
-        mostrarToast("Registro exitoso", "Datos de personal guardados correctamente");
+        mostrarToast(
+          "Registro exitoso",
+          "Datos de personal guardados correctamente",
+        );
       })
-      .catch(error => {
+      .catch((error) => {
         console.error(error);
         mostrarToast("Error", "No se pudo guardar el registro");
       });
-
   });
 }
 
-const modalEstado =
-    document.getElementById("modalEstado"); 
+const modalEstado = document.getElementById("modalEstado");
 
 if (modalEstado) {
+  modalEstado.addEventListener("change", function () {
+    const estadoId = this.value;
 
-    modalEstado.addEventListener("change", function () {
+    const municipioModal = document.getElementById("modalMunicipio");
 
-        const estadoId = this.value;
+    municipioModal.innerHTML =
+      '<option value="" selected disabled hidden>Seleccionar</option>';
 
-        const municipioModal =
-            document.getElementById("modalMunicipio");
+    if (!estadoId) {
+      return;
+    }
 
-        municipioModal.innerHTML =
-            '<option value="" selected disabled hidden>Seleccionar</option>';
+    fetch(`./registro/municipios/${estadoId}`)
+      .then((r) => r.json())
+      .then((data) => {
+        data.forEach((m) => {
+          const option = document.createElement("option");
 
-        if (!estadoId) {
-            return;
-        }
+          option.value = m.id_municipio;
 
-        fetch(`./registro/municipios/${estadoId}`)
-            .then(r => r.json())
-            .then(data => {
+          option.textContent = m.municipio;
 
-                data.forEach(m => {
-
-                    const option =
-                        document.createElement("option");
-
-                    option.value =
-                        m.id_municipio;
-
-                    option.textContent =
-                        m.municipio;
-
-                    municipioModal.appendChild(option);
-
-                });
-
-            });
-
-    });
-
+          municipioModal.appendChild(option);
+        });
+      });
+  });
 }
 
 const estado = document.getElementById("id_estado");
@@ -825,4 +815,29 @@ if (menuToggle && cuadro && menuOverlay) {
     cuadro.classList.remove("active");
     menuOverlay.classList.remove("active");
   });
+}
+
+function limpiarFormularioExterno() {
+  const campos = ["nombre", "apellido_p", "apellido_m", "correo"];
+
+  campos.forEach((id) => {
+    const el = document.getElementById(id);
+    if (el) el.value = "";
+  });
+
+  const selects = [
+    "id_sexo",
+    "id_estado",
+    "id_municipio",
+    "id_sector",
+    "id_categoria",
+  ];
+
+  selects.forEach((id) => {
+    const el = document.getElementById(id);
+    if (el) el.selectedIndex = 0;
+  });
+
+  const otro = document.getElementById("categoria_otro");
+  if (otro) otro.value = "";
 }
