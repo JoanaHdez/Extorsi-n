@@ -1,4 +1,4 @@
- document.addEventListener("DOMContentLoaded", function () {
+document.addEventListener("DOMContentLoaded", function () {
   console.log("Intentando abrir modal");
 
   const modalElement = document.getElementById("modalComisaria");
@@ -69,7 +69,7 @@ if (btnBuscarNomina) {
 
         nominaEncontrada = empleado.nomina;
 
-console.log("Nomina guardada:", nominaEncontrada);
+        console.log("Nomina guardada:", nominaEncontrada);
 
         // Llenar formulario principal oculto
         document.getElementById("nombre").value = empleado.nombre.trim();
@@ -136,65 +136,89 @@ const btnConfirmar = document.getElementById("btnConfirmarComisaria");
 
 if (btnConfirmar) {
   btnConfirmar.addEventListener("click", function () {
-    document.getElementById("correo").value =
-      document.getElementById("modalCorreo").value;
+    const correo = document.getElementById("modalCorreo").value.trim();
+    const municipio = document.getElementById("modalMunicipio").value;
 
-    document.getElementById("id_estado").value =
-      document.getElementById("modalEstado").value;
+    if (!correo || !municipio) {
+      alert("Debe completar correo y municipio");
+      return;
+    }
 
-    document.getElementById("id_municipio").value =
-      document.getElementById("modalMunicipio").value;
+    // CSRF primero
+    const csrfName = document.querySelector(
+      'input[name="csrf_test_name"]',
+    ).name;
+    const csrfValue = document.querySelector(
+      'input[name="csrf_test_name"]',
+    ).value;
 
-    const modal = bootstrap.Modal.getInstance(
-      document.getElementById("modalDatosComisaria"),
-    );
+    // FormData solo UNA vez
+    const formData = new FormData();
 
-    modal.hide();
+    formData.append("nomina", nominaEncontrada);
+    formData.append("correo", correo);
+    formData.append("id_municipio", municipio);
+
+    // CSRF obligatorio
+    formData.append(csrfName, csrfValue);
+
+    fetch("./registro/guardar-personal", {
+      method: "POST",
+      body: formData,
+    })
+      .then((response) => response.json())
+      .then((resultado) => {
+        console.log(resultado);
+
+        if (!resultado.success) {
+          alert(resultado.message);
+          return;
+        }
+
+        const modal = bootstrap.Modal.getInstance(
+          document.getElementById("modalDatosComisaria"),
+        );
+
+        modal.hide();
+
+        alert("Registro guardado correctamente");
+      })
+      .catch((error) => {
+        console.error(error);
+        alert("Error al guardar");
+      });
   });
 }
 
-const modalEstado =
-    document.getElementById("modalEstado"); 
+const modalEstado = document.getElementById("modalEstado");
 
 if (modalEstado) {
+  modalEstado.addEventListener("change", function () {
+    const estadoId = this.value;
 
-    modalEstado.addEventListener("change", function () {
+    const municipioModal = document.getElementById("modalMunicipio");
 
-        const estadoId = this.value;
+    municipioModal.innerHTML =
+      '<option value="" selected disabled hidden>Seleccionar</option>';
 
-        const municipioModal =
-            document.getElementById("modalMunicipio");
+    if (!estadoId) {
+      return;
+    }
 
-        municipioModal.innerHTML =
-            '<option value="" selected disabled hidden>Seleccionar</option>';
+    fetch(`./registro/municipios/${estadoId}`)
+      .then((r) => r.json())
+      .then((data) => {
+        data.forEach((m) => {
+          const option = document.createElement("option");
 
-        if (!estadoId) {
-            return;
-        }
+          option.value = m.id_municipio;
 
-        fetch(`./registro/municipios/${estadoId}`)
-            .then(r => r.json())
-            .then(data => {
+          option.textContent = m.municipio;
 
-                data.forEach(m => {
-
-                    const option =
-                        document.createElement("option");
-
-                    option.value =
-                        m.id_municipio;
-
-                    option.textContent =
-                        m.municipio;
-
-                    municipioModal.appendChild(option);
-
-                });
-
-            });
-
-    });
-
+          municipioModal.appendChild(option);
+        });
+      });
+  });
 }
 
 const estado = document.getElementById("id_estado");

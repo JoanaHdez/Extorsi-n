@@ -276,6 +276,12 @@ class Registro_Controller extends BaseController
 
         $generalPersonal = new \App\Models\General_Personal_Model();
 
+        log_message('error', json_encode([
+            'nomina' => $this->request->getPost('nomina'),
+            'correo' => $this->request->getPost('correo'),
+            'id_municipio' => $this->request->getPost('id_municipio')
+        ]));
+
         $generalPersonal->insert([
             'nomina' => $this->request->getPost('nomina'),
             'correo' => strtoupper(trim($this->request->getPost('correo'))),
