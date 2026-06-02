@@ -195,10 +195,7 @@ if (btnConfirmar) {
 
         modal.hide();
 
-        mostrarToast(
-          "Registro exitoso",
-          "Datos de personal guardados correctamente",
-        );
+        window.location.href = "./registro/exito";
       })
       .catch((error) => {
         console.error(error);
@@ -361,6 +358,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
   const filtroEstado = document.getElementById("filtroEstado");
   const filtroMunicipio = document.getElementById("filtroMunicipio");
+  const filtroTipo = document.getElementById("filtroTipo");
+  const filtroArea = document.getElementById("filtroArea");
   const filtroSector = document.getElementById("filtroSector");
   const filtroCategoria = document.getElementById("filtroCategoria");
   const limpiarFiltros = document.getElementById("limpiarFiltros");
@@ -370,6 +369,10 @@ document.addEventListener("DOMContentLoaded", function () {
   const buscarRegistros = document.getElementById("buscarRegistros");
   const filasRegistro = document.querySelectorAll(".registro-tabla");
   const dashboardTotal = document.getElementById("dashboardTotal");
+  const totalRegistroGeneral = document.getElementById("totalRegistroGeneral");
+  const totalRegistroComisaria = document.getElementById(
+    "totalRegistroComisaria",
+  );
   const totalSectorComercial = document.getElementById("totalSectorComercial");
   const totalSectorServicio = document.getElementById("totalSectorServicio");
   const sectorInfoTitulo = document.getElementById("sectorInfoTitulo");
@@ -394,6 +397,9 @@ document.addEventListener("DOMContentLoaded", function () {
     sector: r.sector || "",
     categoria: r.categoria || "",
     sexo: r.sexo || "",
+    tipo_registro: r.tipo_registro || "",
+    area: r.area || "",
+    funcion: r.funcion || "",
     fecha:
       r.fecha || (r.fecha_registro ? r.fecha_registro.substring(0, 10) : ""),
   }));
@@ -453,6 +459,8 @@ document.addEventListener("DOMContentLoaded", function () {
   function filtrarRegistros() {
     const estado = filtroEstado ? filtroEstado.value : "";
     const municipio = filtroMunicipio ? filtroMunicipio.value : "";
+    const tipo = filtroTipo ? filtroTipo.value : "";
+    const area = filtroArea ? filtroArea.value : "";
     const sector = filtroSector ? filtroSector.value : "";
     const categoria = filtroCategoria ? filtroCategoria.value : "";
 
@@ -460,6 +468,8 @@ document.addEventListener("DOMContentLoaded", function () {
       return (
         (!estado || registro.estado === estado) &&
         (!municipio || registro.municipio === municipio) &&
+        (!tipo || registro.tipo_registro === tipo) &&
+        (!area || registro.area === area) &&
         (!sector || registro.sector === sector) &&
         (!categoria || registro.categoria === categoria)
       );
@@ -575,6 +585,18 @@ document.addEventListener("DOMContentLoaded", function () {
       dashboardTotal.textContent = datosFiltrados.length;
     }
 
+    if (totalRegistroGeneral) {
+      totalRegistroGeneral.textContent = datosFiltrados.filter(
+        (registro) => registro.tipo_registro === "Externo",
+      ).length;
+    }
+
+    if (totalRegistroComisaria) {
+      totalRegistroComisaria.textContent = datosFiltrados.filter(
+        (registro) => registro.tipo_registro === "Comisaria",
+      ).length;
+    }
+
     if (totalSectorComercial) {
       totalSectorComercial.textContent = totalPorSector(
         datosFiltrados,
@@ -631,6 +653,14 @@ document.addEventListener("DOMContentLoaded", function () {
     );
   }
 
+  function actualizarAreas() {
+    const tipo = filtroTipo ? filtroTipo.value : "";
+    const datos = tipo
+      ? registros.filter((registro) => registro.tipo_registro === tipo)
+      : registros;
+    llenarSelect(filtroArea, opcionesUnicas("area", datos), "Area");
+  }
+
   function filtrarTablaRegistros() {
     if (!buscarRegistros || !filasRegistro.length) {
       return;
@@ -646,6 +676,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
   llenarSelect(filtroEstado, opcionesUnicas("estado"), "Estado");
   llenarSelect(filtroMunicipio, opcionesUnicas("municipio"), "Municipio");
+  llenarSelect(filtroTipo, opcionesUnicas("tipo_registro"), "Tipo");
+  llenarSelect(filtroArea, opcionesUnicas("area"), "Area");
   llenarSelect(filtroSector, opcionesUnicas("sector"), "Sector");
   llenarSelect(filtroCategoria, opcionesUnicas("categoria"), "Categoria");
 
@@ -746,7 +778,14 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   }
 
-  [filtroMunicipio, filtroCategoria].forEach((select) => {
+  if (filtroTipo) {
+    filtroTipo.addEventListener("change", function () {
+      actualizarAreas();
+      actualizarDashboard();
+    });
+  }
+
+  [filtroMunicipio, filtroArea, filtroCategoria].forEach((select) => {
     if (select) {
       select.addEventListener("change", actualizarDashboard);
     }
@@ -757,6 +796,9 @@ document.addEventListener("DOMContentLoaded", function () {
       if (filtroEstado) filtroEstado.value = "";
       actualizarMunicipios();
       if (filtroMunicipio) filtroMunicipio.value = "";
+      if (filtroTipo) filtroTipo.value = "";
+      actualizarAreas();
+      if (filtroArea) filtroArea.value = "";
       if (filtroSector) filtroSector.value = "";
       actualizarCategorias();
       if (filtroCategoria) filtroCategoria.value = "";
@@ -795,6 +837,13 @@ document.addEventListener("DOMContentLoaded", function () {
       sectorCards.forEach((item) => item.classList.remove("active"));
       this.classList.add("active");
       actualizarDashboard();
+
+      if (sectorInfoTitulo) {
+        sectorInfoTitulo.scrollIntoView({
+          behavior: "smooth",
+          block: "center",
+        });
+      }
     });
   });
 

@@ -167,7 +167,12 @@ class Registro_Controller extends BaseController
                 )
                 : null,
         ]);
-        return redirect()->to('/registro')->with('success', 'Registro guardado correctamente.');
+        return redirect()->to('/registro/exito');
+    }
+
+    public function exito()
+    {
+        return view('Reg_Exitoso');
     }
 
     public function municipios($id_municipio)
@@ -277,11 +282,11 @@ class Registro_Controller extends BaseController
         $generalPersonal = new \App\Models\General_Personal_Model();
 
         log_message('error', json_encode([
-        'nomina' => $this->request->getPost('nomina'),
-        'correo' => $this->request->getPost('correo'),
-        'id_municipio' => $this->request->getPost('id_municipio')
-    ]));
-    
+            'nomina' => $this->request->getPost('nomina'),
+            'correo' => $this->request->getPost('correo'),
+            'id_municipio' => $this->request->getPost('id_municipio')
+        ]));
+
         $generalPersonal->insert([
             'nomina' => $this->request->getPost('nomina'),
             'correo' => strtoupper(trim($this->request->getPost('correo'))),
@@ -328,15 +333,34 @@ class Registro_Controller extends BaseController
     public function reporte()
     {
         $db = \Config\Database::connect();
+        $personalTieneFecha = $db->fieldExists('fecha_registro', 'general_personal');
+        $fechaPersonal = $personalTieneFecha ? 'DATE(gp.fecha_registro)' : 'NULL';
+        $fechaRegistroPersonal = $personalTieneFecha ? 'gp.fecha_registro' : 'NULL';
 
         $total = $db->query("
-        SELECT COUNT(*) AS total 
-        FROM general");
+        SELECT
+            (
+                SELECT COUNT(*)
+                FROM general
+            ) +
+            (
+                SELECT COUNT(*)
+                FROM general_personal
+            ) AS total");
 
         $dias = $db->query("
-        SELECT DATE(g.fecha_registro) AS fecha, COUNT(*) AS total
-        FROM general g
-        GROUP BY DATE(g.fecha_registro)
+        SELECT fecha, COUNT(*) AS total
+        FROM (
+            SELECT DATE(g.fecha_registro) AS fecha
+            FROM general g
+
+            UNION ALL
+
+            SELECT {$fechaPersonal} AS fecha
+            FROM general_personal gp
+        ) registros
+        WHERE fecha IS NOT NULL
+        GROUP BY fecha
         ORDER BY fecha
         ");
 
@@ -356,10 +380,26 @@ class Registro_Controller extends BaseController
             d.apellido_p,
             d.apellido_m,
             d.correo,
-            m.municipio
+            m.municipio,
+            'Externo' AS tipo_registro,
+            '' AS area
         FROM general g
         INNER JOIN dato d ON g.id_dato = d.id_dato
         INNER JOIN municipio m ON g.id_municipio = m.id_municipio
+
+        UNION ALL
+
+        SELECT
+            p.nombre,
+            p.apellido_p,
+            p.apellido_m,
+            gp.correo,
+            m.municipio,
+            'Comisaria' AS tipo_registro,
+            p.area
+        FROM general_personal gp
+        INNER JOIN personal p ON gp.nomina = p.nomina
+        INNER JOIN municipio m ON gp.id_municipio = m.id_municipio
         ");
 
         $dashboard = $db->query("
@@ -375,13 +415,36 @@ class Registro_Controller extends BaseController
                 ELSE c.categoria
             END AS categoria,
             DATE(g.fecha_registro) AS fecha,
-            g.fecha_registro
+            g.fecha_registro,
+            'Externo' AS tipo_registro,
+            '' AS area,
+            '' AS funcion
         FROM general g
         INNER JOIN sexo s ON g.id_sexo = s.id_sexo
         INNER JOIN municipio m ON g.id_municipio = m.id_municipio
         INNER JOIN estado e ON m.id_estado = e.id_estado
         LEFT JOIN categoria c ON g.id_categoria = c.id_categoria
         LEFT JOIN sector sec ON c.id_sector = sec.id_sector
+
+        UNION ALL
+
+        SELECT
+            gp.id_general_personal AS id_general,
+            s.sexo,
+            e.estado,
+            m.municipio,
+            '' AS sector,
+            '' AS categoria,
+            {$fechaPersonal} AS fecha,
+            {$fechaRegistroPersonal} AS fecha_registro,
+            'Comisaria' AS tipo_registro,
+            p.area,
+            p.funcion
+        FROM general_personal gp
+        INNER JOIN personal p ON gp.nomina = p.nomina
+        LEFT JOIN sexo s ON p.id_sexo = s.id_sexo
+        INNER JOIN municipio m ON gp.id_municipio = m.id_municipio
+        INNER JOIN estado e ON m.id_estado = e.id_estado
                 ");
 
         $data['total'] = $total->getRow()->total;

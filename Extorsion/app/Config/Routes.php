@@ -21,4 +21,6 @@ $routes->get('/registro/buscar-nomina/(:num)', 'Registro_Controller::buscarNomin
 $routes->post('/registro/guardar-personal', 'Registro_Controller::guardarPersonal');
 $routes->get('/reporte', 'Registro_Controller::reporte');
 
+$routes->get('registro/exito', 'Registro_Controller::exito');
+
 $routes->get('/reporte/exportar', 'Registro_Controller::exportar');

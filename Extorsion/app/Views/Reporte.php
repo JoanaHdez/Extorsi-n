@@ -4,6 +4,14 @@
             <div>
                 <div class="container-fluid p-0">
                     <div class="d-flex">
+                        <div class="mobile-topbar d-md-none"></div>
+
+                        <button class="menu-toggle d-md-none" id="menuToggle">
+                            ☰
+                        </button>
+
+                        <div class="menu-overlay" id="menuOverlay"></div>
+
                         <div
                             class="cuadro shadow rounded-end p-4 w-15 vh-100 d-flex flex-column justify-content-start align-items-center gap-2">
                             <div class="logos-container">
@@ -20,18 +28,18 @@
 
                                 <div class="menu-item">
                                     <span class="arrow">
-                                        < </span> Dashboard
+                                        </span> Dashboard
                                 </div>
 
                                 <a href="<?= base_url('index.php/reporte/exportar') ?>" class="btn-exportar mt-4">
                                     <span class="arrow">
-                                        <</span>
+                                        </span>
                                             Exportar
                                 </a>
 
                                 <div class="menu-item mt-4" id="menuFiltro">
                                     <span class="arrow">
-                                        < </span> Filtro
+                                        </span> Filtro
                                 </div>
                                 <form class="filter-panel" id="dashboardFiltros">
                                     <div class="filter-title">Filtros</div>
@@ -47,6 +55,20 @@
                                         Municipio
                                         <select id="filtroMunicipio" aria-label="Municipio">
                                             <option value="">Todos</option>
+                                        </select>
+                                    </label>
+
+                                    <label>
+                                        Tipo
+                                        <select id="filtroTipo" aria-label="Tipo">
+                                            <option value="">Todos</option>
+                                        </select>
+                                    </label>
+
+                                    <label>
+                                        Área
+                                        <select id="filtroArea" aria-label="Área">
+                                            <option value="">Todas</option>
                                         </select>
                                     </label>
 
@@ -68,7 +90,7 @@
                                 </form>
                             </div>
 
-                            <a href="/registro" class="menu-salir text-decoration-none">
+                            <a href="./registro" class="menu-salir text-decoration-none">
                                 <img src="<?= base_url('assets/img/cerrar-sesion.png') ?>" class="logo-salir"
                                     alt="Logo salir">
                                 <h4 class="mt-2" style="color: white;">Salir</h4>
@@ -96,12 +118,46 @@
                                                 <div class="card-body d-flex align-items-center">
 
                                                     <div class="flex-grow-1">
-                                                        <h6>Total de registros</h6>
+                                                        <h6>Total de Registros</h6>
                                                         <h2 class="fw-bold" id="dashboardTotal"><?= $total ?></h2>
                                                     </div>
 
                                                     <div class="card-icon-bg">
                                                         <img src="<?= base_url('assets/img/registro.png') ?>">
+                                                    </div>
+
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="col-sm-4">
+                                            <div class="card-total card-modern card-blue">
+                                                <div class="card-body d-flex align-items-center">
+
+                                                    <div class="flex-grow-1">
+                                                        <h6>Registros Externos</h6>
+                                                        <h2 class="fw-bold" id="totalRegistroGeneral">0</h2>
+                                                    </div>
+
+                                                    <div class="card-icon-bg">
+                                                        <img src="<?= base_url('assets/img/registro.png') ?>">
+                                                    </div>
+
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="col-sm-4">
+                                            <div class="card-total card-modern card-red">
+                                                <div class="card-body d-flex align-items-center">
+
+                                                    <div class="flex-grow-1">
+                                                        <h6>Registros Comisaría</h6>
+                                                        <h2 class="fw-bold" id="totalRegistroComisaria">0</h2>
+                                                    </div>
+
+                                                    <div class="card-icon-bg">
+                                                        <img src="<?= base_url('assets/img/escudo-policial.png') ?>">
                                                     </div>
 
                                                 </div>
@@ -162,19 +218,19 @@
 
                                     <div class="row g-4 dashboard-grid">
 
-                                        <div class="col-lg-8 g-4 dashboard-panel chart-panel chart-panel-large">
+                                        <div class="col-lg-8 g-4 dashboard-panel chart-panel chart-panel-large me-5">
                                             <h3>Registros por día</h3>
 
                                             <canvas class="mt-4" id="graficaDependencias"></canvas>
                                         </div>
 
-                                        <div class="col-lg-4 g-4 dashboard-panel chart-panel">
+                                        <div class="col-lg-3 g-4 dashboard-panel chart-panel me-5">
                                             <h3>Registros por sexo</h3>
 
                                             <canvas class="mt-4" id="graficaSexo"></canvas>
                                         </div>
 
-                                        <div class="col-lg-8 g-5 dashboard-panel table-panel">
+                                        <div class="col-lg-8 g-5 dashboard-panel table-panel mt-5">
                                             <nav class="navbar-simple">
                                                 <form class="search-simple" id="buscarRegistrosForm">
 
@@ -196,6 +252,8 @@
                                                                     <th>Nombre completo</th>
                                                                     <th>Correo</th>
                                                                     <th>Municipio</th>
+                                                                    <th>Tipo</th>
+                                                                    <th>Área</th>
                                                                 </tr>
                                                             </thead>
                                                             <tbody>
@@ -204,12 +262,16 @@
                                                                     <th><?= $i++ ?></th>
 
                                                                     <td>
-                                                                        <?= esc($fila['nombre']) . ' ' . esc($fila['apellido_p']) . ' ' . esc($fila['apellido_m']) ?>
+                                                                        <?= esc(mb_strtoupper($fila['nombre'] . ' ' . $fila['apellido_p'] . ' ' . $fila['apellido_m'], 'UTF-8')) ?>
                                                                     </td>
 
-                                                                    <td><?= esc($fila['correo']) ?></td>
+                                                                    <td><?= esc(mb_strtoupper($fila['correo'], 'UTF-8')) ?></td>
 
-                                                                    <td><?= esc($fila['municipio']) ?></td>
+                                                                    <td><?= esc(mb_strtoupper($fila['municipio'], 'UTF-8')) ?></td>
+
+                                                                    <td><?= esc(mb_strtoupper($fila['tipo_registro'], 'UTF-8')) ?></td>
+
+                                                                    <td><?= esc(mb_strtoupper($fila['area'] ?: 'NO APLICA', 'UTF-8')) ?></td>
                                                                 </tr>
                                                                 <?php endforeach; ?>
 

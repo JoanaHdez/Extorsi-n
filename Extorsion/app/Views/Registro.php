@@ -1,10 +1,6 @@
 ﻿<body>
 
-    <div class="modal fade"
-        id="modalComisaria"
-        data-bs-backdrop="static"
-        data-bs-keyboard="false"
-        tabindex="-1">
+    <div class="modal fade" id="modalComisaria" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1">
 
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
@@ -19,17 +15,11 @@
 
                 <div class="modal-footer justify-content-center">
 
-                    <button
-                        type="button"
-                        class="btn btn-success"
-                        id="btnComisariaSi">
+                    <button type="button" class="btn btn-success" id="btnComisariaSi">
                         Sí
                     </button>
 
-                    <button
-                        type="button"
-                        class="btn btn-secondary"
-                        id="btnComisariaNo">
+                    <button type="button" class="btn btn-secondary" id="btnComisariaNo">
                         No
                     </button>
 
@@ -39,11 +29,7 @@
         </div>
     </div>
 
-    <div class="modal fade"
-        id="modalNomina"
-        data-bs-backdrop="static"
-        data-bs-keyboard="false"
-        tabindex="-1">
+    <div class="modal fade" id="modalNomina" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1">
 
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
@@ -60,24 +46,16 @@
                         Número de nómina
                     </label>
 
-                    <input
-                        type="text"
-                        class="form-control"
-                        id="nominaBusqueda"
-                        placeholder="Ingrese su nómina">
+                    <input type="text" class="form-control" id="nominaBusqueda" placeholder="Ingrese su nómina">
 
-                    <div id="mensajeNomina"
-                        class="text-danger mt-2">
+                    <div id="mensajeNomina" class="text-danger mt-2">
                     </div>
 
                 </div>
 
                 <div class="modal-footer">
 
-                    <button
-                        type="button"
-                        class="btn btn-primary"
-                        id="btnBuscarNomina">
+                    <button type="button" class="btn btn-primary" id="btnBuscarNomina">
                         Buscar
                     </button>
 
@@ -87,11 +65,7 @@
         </div>
     </div>
 
-    <div class="modal fade"
-        id="modalDatosComisaria"
-        data-bs-backdrop="static"
-        data-bs-keyboard="false"
-        tabindex="-1">
+    <div class="modal fade" id="modalDatosComisaria" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1">
 
         <div class="modal-dialog modal-lg modal-dialog-centered">
 
@@ -109,70 +83,48 @@
 
                         <div class="col-md-4">
                             <label>Nombre</label>
-                            <input type="text"
-                                id="modalNombre"
-                                class="form-control"
-                                readonly>
+                            <input type="text" id="modalNombre" class="form-control" readonly>
                         </div>
 
                         <div class="col-md-4">
                             <label>Apellido paterno</label>
-                            <input type="text"
-                                id="modalApellidoP"
-                                class="form-control"
-                                readonly>
+                            <input type="text" id="modalApellidoP" class="form-control" readonly>
                         </div>
 
                         <div class="col-md-4">
                             <label>Apellido materno</label>
-                            <input type="text"
-                                id="modalApellidoM"
-                                class="form-control"
-                                readonly>
+                            <input type="text" id="modalApellidoM" class="form-control" readonly>
                         </div>
 
                         <div class="col-md-6">
                             <label>Área</label>
-                            <input type="text"
-                                id="modalArea"
-                                class="form-control"
-                                readonly>
+                            <input type="text" id="modalArea" class="form-control" readonly>
                         </div>
 
                         <div class="col-md-6">
                             <label>Función</label>
-                            <input type="text"
-                                id="modalFuncion"
-                                class="form-control"
-                                readonly>
+                            <input type="text" id="modalFuncion" class="form-control" readonly>
                         </div>
 
                         <div class="col-md-6">
                             <label>Sexo</label>
-                            <input type="text"
-                                id="modalSexo"
-                                class="form-control"
-                                readonly>
+                            <input type="text" id="modalSexo" class="form-control" readonly>
                         </div>
 
                         <div class="col-md-6">
                             <label>Correo</label>
-                            <input type="email"
-                                id="modalCorreo"
-                                class="form-control">
+                            <input type="email" id="modalCorreo" class="form-control">
                         </div>
 
                         <div class="col-md-6">
                             <label>Estado</label>
-                            <select id="modalEstado"
-                                class="form-select">
+                            <select id="modalEstado" class="form-select">
                             </select>
                         </div>
 
                         <div class="col-md-6">
-                            <label>Municipio</label>
-                            <select id="modalMunicipio"
-                                class="form-select">
+                            <label>Municipio y/o Localidad</label>
+                            <select id="modalMunicipio" class="form-select">
                             </select>
                         </div>
 
@@ -182,10 +134,7 @@
 
                 <div class="modal-footer">
 
-                    <button
-                        type="button"
-                        class="btn btn-primary"
-                        id="btnConfirmarComisaria">
+                    <button type="button" class="btn btn-primary" id="btnConfirmarComisaria">
                         Continuar
                     </button>
 
@@ -237,53 +186,53 @@
                             </div>
 
                             <?php if (session()->getFlashdata('success')): ?>
-                                <div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 9999;">
+                            <div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 9999;">
 
-                                    <div id="successToast"
-                                        class="toast align-items-center border-0 shadow-lg toast-institucional"
-                                        role="alert">
+                                <div id="successToast"
+                                    class="toast align-items-center border-0 shadow-lg toast-institucional"
+                                    role="alert">
 
-                                        <div class="d-flex align-items-center">
+                                    <div class="d-flex align-items-center">
 
-                                            <div class="toast-body d-flex align-items-center gap-3 py-3">
+                                        <div class="toast-body d-flex align-items-center gap-3 py-3">
 
-                                                <div class="icon-check">
-                                                    ✓
-                                                </div>
-
-                                                <div>
-                                                    <div class="fw-bold">Registro exitoso</div>
-                                                    <div class="small">
-                                                        <?= session()->getFlashdata('success') ?>
-                                                    </div>
-                                                </div>
-
+                                            <div class="icon-check">
+                                                ✓
                                             </div>
 
-                                            <button type="button" class="btn-close btn-close-white me-2 m-auto"
-                                                data-bs-dismiss="toast"></button>
+                                            <div>
+                                                <div class="fw-bold">Registro exitoso</div>
+                                                <div class="small">
+                                                    <?= session()->getFlashdata('success') ?>
+                                                </div>
+                                            </div>
 
                                         </div>
-                                    </div>
 
+                                        <button type="button" class="btn-close btn-close-white me-2 m-auto"
+                                            data-bs-dismiss="toast"></button>
+
+                                    </div>
                                 </div>
+
+                            </div>
                             <?php endif; ?>
 
                             <?php if (session()->get('errors')): ?>
-                                <div style="color: red;">
-                                    <ul>
-                                        <?php foreach (session()->get('errors') as $error): ?>
-                                            <li><?= esc($error) ?></li>
-                                        <?php endforeach; ?>
-                                    </ul>
-                                </div>
+                            <div style="color: red;">
+                                <ul>
+                                    <?php foreach (session()->get('errors') as $error): ?>
+                                    <li><?= esc($error) ?></li>
+                                    <?php endforeach; ?>
+                                </ul>
+                            </div>
                             <?php endif; ?>
 
                             <div class="container px-5 py-4 mt-5">
                                 <?php if (session('errors.limite')): ?>
-                                    <div class="alert alert-danger">
-                                        <?= session('errors.limite') ?>
-                                    </div>
+                                <div class="alert alert-danger">
+                                    <?= session('errors.limite') ?>
+                                </div>
                                 <?php endif; ?>
                                 <form action="<?= base_url('registro/guardar') ?>" method="post">
 
@@ -323,9 +272,9 @@
                                                 required>
                                                 <option value="" selected disabled hidden>Seleccionar</option>
                                                 <?php foreach ($sexos as $sexo): ?>
-                                                    <option value="<?= $sexo['id_sexo'] ?>">
-                                                        <?= esc($sexo['sexo']) ?>
-                                                    </option>
+                                                <option value="<?= $sexo['id_sexo'] ?>">
+                                                    <?= esc($sexo['sexo']) ?>
+                                                </option>
                                                 <?php endforeach; ?>
                                             </select>
                                         </div>
@@ -342,15 +291,15 @@
                                                 required>
                                                 <option value="" selected disabled hidden>Seleccionar</option>
                                                 <?php foreach ($estados as $estado): ?>
-                                                    <option value="<?= $estado['id_estado'] ?>">
-                                                        <?= esc($estado['estado']) ?>
-                                                    </option>
+                                                <option value="<?= $estado['id_estado'] ?>">
+                                                    <?= esc($estado['estado']) ?>
+                                                </option>
                                                 <?php endforeach; ?>
                                             </select>
                                         </div>
 
                                         <div class="col-md-4">
-                                            <label class="form-label">Municipio</label>
+                                            <label class="form-label">Municipio y/o Localidad</label>
                                             <select class="form-select select-estilo" name="id_municipio"
                                                 id="id_municipio" required>
                                                 <option value="" selected disabled hidden>Seleccionar</option>
@@ -358,14 +307,14 @@
                                         </div>
 
                                         <div class="col-md-4">
-                                            <label class="form-label">Sector</label>
+                                            <label class="form-label">Tipo de Servicio</label>
                                             <select class="form-select select-estilo" name="id_sector" id="id_sector"
                                                 required>
                                                 <option value="" selected disabled hidden>Seleccionar</option>
                                                 <?php foreach ($sectores as $sector): ?>
-                                                    <option value="<?= $sector['id_sector'] ?>">
-                                                        <?= esc($sector['sector']) ?>
-                                                    </option>
+                                                <option value="<?= $sector['id_sector'] ?>">
+                                                    <?= esc($sector['sector']) ?>
+                                                </option>
                                                 <?php endforeach; ?>
                                             </select>
                                         </div>
@@ -402,15 +351,13 @@
         </section>
     </main>
     <script>
-        window.mostrarModalComisaria = <?= session()->getFlashdata('success') ? 'false' : 'true' ?>;
+    window.mostrarModalComisaria = <?= session()->getFlashdata('success') ? 'false' : 'true' ?>;
     </script>
 
     <script src="<?= base_url('assets/JS/index.js') ?>"></script>
 
     <div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 9999;">
-        <div id="toastGlobal"
-            class="toast align-items-center border-0 shadow-lg toast-institucional"
-            role="alert">
+        <div id="toastGlobal" class="toast align-items-center border-0 shadow-lg toast-institucional" role="alert">
             <div class="d-flex align-items-center">
                 <div class="toast-body d-flex align-items-center gap-3 py-3">
                     <div class="icon-check">✓</div>
@@ -420,28 +367,26 @@
                     </div>
                 </div>
 
-                <button type="button"
-                    class="btn-close btn-close-white me-2 m-auto"
-                    data-bs-dismiss="toast"></button>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
             </div>
         </div>
     </div>
 </body>
 
 <?php if (session()->getFlashdata('success')): ?>
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
+<script>
+document.addEventListener('DOMContentLoaded', function() {
 
-            const toastEl = document.getElementById('successToast');
+    const toastEl = document.getElementById('successToast');
 
-            const toast = new bootstrap.Toast(toastEl, {
-                delay: 3000,
-                autohide: true
-            });
+    const toast = new bootstrap.Toast(toastEl, {
+        delay: 3000,
+        autohide: true
+    });
 
-            toast.show();
-        });
-    </script>
+    toast.show();
+});
+</script>
 <?php endif; ?>
 
 </html>
