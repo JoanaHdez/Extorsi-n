@@ -195,92 +195,37 @@ if (btnConfirmar) {
   });
 }
 
-const sector = document.getElementById("id_sector");
-const categoriaSelect = document.getElementById("id_categoria");
+const dependenciaSelect = document.getElementById("id_dependencia");
+const dependenciaOtroGrupo = document.getElementById("dependenciaOtroGrupo");
+const dependenciaOtro = document.getElementById("dependencia_otro");
 
-const categoriaOtroContenedor = document.getElementById(
-  "categoria_otro_contenedor",
-);
-const categoriaOtroInput = document.getElementById("categoria_otro");
-
-console.log(sector);
-console.log(categoriaSelect);
-
-function actualizarCampoCategoriaOtro() {
-  if (!categoriaSelect || !categoriaOtroContenedor || !categoriaOtroInput) {
+function actualizarDependenciaOtro() {
+  if (!dependenciaSelect || !dependenciaOtroGrupo || !dependenciaOtro) {
     return;
   }
 
-  const opcionSeleccionada =
-    categoriaSelect.options[categoriaSelect.selectedIndex];
-  const categoriaTexto = opcionSeleccionada
-    ? opcionSeleccionada.textContent.trim().toLowerCase()
-    : "";
-  const esOtraCategoria =
-    categoriaTexto === "otros" || categoriaTexto === "otro";
+  const opcion = dependenciaSelect.selectedOptions[0];
+  const esOtro = opcion && opcion.dataset.dependencia === "otro";
 
-  categoriaOtroContenedor.style.display = esOtraCategoria ? "" : "none";
-  categoriaOtroInput.required = esOtraCategoria;
+  dependenciaOtroGrupo.classList.toggle("d-none", !esOtro);
+  dependenciaOtro.required = Boolean(esOtro);
 
-  if (!esOtraCategoria) {
-    categoriaOtroInput.value = "";
+  if (!esOtro) {
+    dependenciaOtro.value = "";
   }
 }
 
-if (sector) {
-  sector.addEventListener("change", function () {
-    if (categoriaSelect.disabled) {
-      return;
-    }
-    const sectorId = this.value;
-
-    categoriaSelect.innerHTML = '<option value="">Cargando...</option>';
-    actualizarCampoCategoriaOtro();
-
-    if (!sectorId) {
-      categoriaSelect.innerHTML =
-        '<option value="" selected disabled hidden>Seleccionar</option>';
-
-      actualizarCampoCategoriaOtro();
-      return;
-    }
-
-    fetch(`./registro/categorias/${sectorId}`)
-      .then((r) => r.json())
-      .then((data) => {
-        categoriaSelect.innerHTML =
-          '<option value="" selected disabled hidden>Seleccionar</option>';
-
-        const ordenadas = data.sort((a, b) => {
-          const aCat = a.categoria.toLowerCase();
-          const bCat = b.categoria.toLowerCase();
-
-          if (aCat === "otros") return 1;
-          if (bCat === "otros") return -1;
-
-          return aCat.localeCompare(bCat, "es");
-        });
-
-        ordenadas.forEach((c) => {
-          const option = document.createElement("option");
-          option.value = c.id_categoria;
-          option.textContent = c.categoria;
-          categoriaSelect.appendChild(option);
-        });
-
-        actualizarCampoCategoriaOtro();
-      });
-  });
-}
-
-if (categoriaSelect) {
-  categoriaSelect.addEventListener("change", actualizarCampoCategoriaOtro);
-  actualizarCampoCategoriaOtro();
+if (dependenciaSelect) {
+  dependenciaSelect.addEventListener("change", actualizarDependenciaOtro);
+  actualizarDependenciaOtro();
 }
 
 document.addEventListener("DOMContentLoaded", function () {
   const dashboardData = Array.isArray(window.dashboardData)
     ? window.dashboardData
+    : [];
+  const dependenciasCatalogo = Array.isArray(window.dependenciasCatalogo)
+    ? window.dependenciasCatalogo
     : [];
 
   if (!dashboardData.length || typeof Chart === "undefined") {
@@ -289,8 +234,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
   const filtroTipo = document.getElementById("filtroTipo");
   const filtroArea = document.getElementById("filtroArea");
-  const filtroSector = document.getElementById("filtroSector");
-  const filtroCategoria = document.getElementById("filtroCategoria");
+  const filtroDependencia = document.getElementById("filtroDependencia");
   const limpiarFiltros = document.getElementById("limpiarFiltros");
   const menuFiltro = document.getElementById("menuFiltro");
   const dashboardFiltros = document.getElementById("dashboardFiltros");
@@ -302,13 +246,7 @@ document.addEventListener("DOMContentLoaded", function () {
   const totalRegistroComisaria = document.getElementById(
     "totalRegistroComisaria",
   );
-  const totalSectorComercial = document.getElementById("totalSectorComercial");
-  const totalSectorServicio = document.getElementById("totalSectorServicio");
-  const sectorInfoTitulo = document.getElementById("sectorInfoTitulo");
-  const sectorInfoTexto = document.getElementById("sectorInfoTexto");
-  const sectorCards = document.querySelectorAll("[data-sector-card]");
 
-  let sectorSeleccionado = "";
   let graficaDias = null;
   let graficaSexo = null;
   const colorAzul = "#00538E";
@@ -320,12 +258,11 @@ document.addEventListener("DOMContentLoaded", function () {
 
 const registros = dashboardData.map((r) => ({
   ...r,
-  sector: r.sector || "",
-  categoria: r.categoria || "",
   sexo: r.sexo || "",
   tipo_registro: r.tipo_registro || "",
   area: r.area || "",
   funcion: r.funcion || "",
+  dependencia: r.dependencia || "",
   fecha:
     r.fecha || (r.fecha_registro ? r.fecha_registro.substring(0, 10) : ""),
 }));
@@ -337,32 +274,30 @@ const registros = dashboardData.map((r) => ({
       const aLower = a.toLowerCase();
       const bLower = b.toLowerCase();
 
-      if (aLower === "otros") return 1;
-      if (bLower === "otros") return -1;
-
       return aLower.localeCompare(bLower, "es");
     });
   }
 
-  function llenarSelect(select, opciones, etiqueta) {
-    if (!select) {
-      return;
-    }
+function llenarSelect(select, opciones) {
+  if (!select) return;
 
-    const valorActual = select.value;
-    select.innerHTML = `<option value="">${etiqueta}</option>`;
+  const valorActual = select.value;
 
-    opciones.forEach((opcion) => {
-      const option = document.createElement("option");
-      option.value = opcion;
-      option.textContent = opcion;
-      select.appendChild(option);
-    });
+  // SOLO placeholder (no forma parte del catálogo)
+  select.innerHTML = '<option value="" disabled selected hidden>Seleccionar</option>';
 
-    if (opciones.includes(valorActual)) {
-      select.value = valorActual;
-    }
+  opciones.forEach((opcion) => {
+    const option = document.createElement("option");
+    option.value = opcion;
+    option.textContent = opcion;
+    select.appendChild(option);
+  });
+
+  // restaurar valor si existe
+  if (opciones.includes(valorActual)) {
+    select.value = valorActual;
   }
+}
 
   function agrupar(datos, campo) {
     return datos.reduce((acumulado, registro) => {
@@ -385,15 +320,13 @@ const registros = dashboardData.map((r) => ({
   function filtrarRegistros() {
     const tipo = filtroTipo ? filtroTipo.value : "";
     const area = filtroArea ? filtroArea.value : "";
-    const sector = filtroSector ? filtroSector.value : "";
-    const categoria = filtroCategoria ? filtroCategoria.value : "";
+    const dependencia = filtroDependencia ? filtroDependencia.value : "";
 
     return registros.filter((registro) => {
       return (
         (!tipo || registro.tipo_registro === tipo) &&
         (!area || registro.area === area) &&
-        (!sector || registro.sector === sector) &&
-        (!categoria || registro.categoria === categoria)
+        (!dependencia || registro.dependencia === dependencia)
       );
     });
   }
@@ -447,56 +380,6 @@ const registros = dashboardData.map((r) => ({
     };
   }
 
-  function totalPorSector(datos, sector) {
-    return datos.filter((registro) => registro.sector === sector).length;
-  }
-
-  function actualizarInfoSector(datos) {
-    if (!sectorInfoTitulo || !sectorInfoTexto) {
-      return;
-    }
-
-    if (!sectorSeleccionado) {
-      sectorInfoTitulo.textContent = "Informacion del Sector";
-      sectorInfoTexto.innerHTML =
-        "Seleccione una card de sector para ver su informacion.";
-      return;
-    }
-
-    const registrosSector = datos.filter(
-      (registro) => registro.sector === sectorSeleccionado,
-    );
-
-    const total = registrosSector.length;
-
-    const categorias = registrosSector.reduce((acumulado, registro) => {
-      const categoria = registro.categoria || "Sin categoria";
-
-      acumulado[categoria] = (acumulado[categoria] || 0) + 1;
-
-      return acumulado;
-    }, {});
-
-    let html = `
-        <strong>Total del sector:</strong> ${total}
-        <hr>
-    `;
-
-    Object.keys(categorias)
-      .sort((a, b) => categorias[b] - categorias[a])
-      .forEach((categoria) => {
-        html += `
-                <div class="d-flex justify-content-between mb-2">
-                    <span>${categoria}</span>
-                    <strong>${categorias[categoria]}</strong>
-                </div>
-            `;
-      });
-
-    sectorInfoTitulo.textContent = `Sector ${sectorSeleccionado}`;
-    sectorInfoTexto.innerHTML = html;
-  }
-
   function actualizarDashboard() {
     const datosFiltrados = filtrarRegistros();
     const dias = datosAgrupados(datosFiltrados, "fecha");
@@ -518,20 +401,6 @@ const registros = dashboardData.map((r) => ({
       ).length;
     }
 
-    if (totalSectorComercial) {
-      totalSectorComercial.textContent = totalPorSector(
-        datosFiltrados,
-        "Comercial",
-      );
-    }
-
-    if (totalSectorServicio) {
-      totalSectorServicio.textContent = totalPorSector(
-        datosFiltrados,
-        "Servicio",
-      );
-    }
-
     actualizarGrafica(
       graficaDias,
       dias.map((d) => d.label),
@@ -542,27 +411,16 @@ const registros = dashboardData.map((r) => ({
       sexo.map((s) => s.label),
       sexo.map((s) => s.total),
     );
-    actualizarInfoSector(datosFiltrados);
   }
 
-  function actualizarCategorias() {
-    const sector = filtroSector ? filtroSector.value : "";
-    const datos = sector
-      ? registros.filter((registro) => registro.sector === sector)
-      : registros;
-    llenarSelect(
-      filtroCategoria,
-      opcionesUnicas("categoria", datos),
-      "Categoria",
-    );
-  }
+
 
   function actualizarAreas() {
     const tipo = filtroTipo ? filtroTipo.value : "";
     const datos = tipo
       ? registros.filter((registro) => registro.tipo_registro === tipo)
       : registros;
-    llenarSelect(filtroArea, opcionesUnicas("area", datos), "Area");
+    llenarSelect(filtroArea, opcionesUnicas("area", datos));
   }
 
   function filtrarTablaRegistros() {
@@ -578,10 +436,9 @@ const registros = dashboardData.map((r) => ({
     });
   }
 
-  llenarSelect(filtroTipo, opcionesUnicas("tipo_registro"), "Tipo");
-  llenarSelect(filtroArea, opcionesUnicas("area"), "Area");
-  llenarSelect(filtroSector, opcionesUnicas("sector"), "Sector");
-  llenarSelect(filtroCategoria, opcionesUnicas("categoria"), "Categoria");
+  llenarSelect(filtroTipo, opcionesUnicas("tipo_registro"));
+  llenarSelect(filtroArea, opcionesUnicas("area"));
+  llenarSelect(filtroDependencia, dependenciasCatalogo);
 
   const canvasDias = document.getElementById("graficaDependencias");
   const canvasSexo = document.getElementById("graficaSexo");
@@ -646,13 +503,6 @@ const registros = dashboardData.map((r) => ({
     });
   }
 
-  if (filtroSector) {
-    filtroSector.addEventListener("change", function () {
-      actualizarCategorias();
-      actualizarDashboard();
-    });
-  }
-
   if (filtroTipo) {
     filtroTipo.addEventListener("change", function () {
       actualizarAreas();
@@ -660,7 +510,7 @@ const registros = dashboardData.map((r) => ({
     });
   }
 
-[filtroArea, filtroCategoria].forEach((select) => {
+[filtroArea, filtroDependencia].forEach((select) => {
   if (select) {
     select.addEventListener("change", actualizarDashboard);
   }
@@ -671,11 +521,7 @@ const registros = dashboardData.map((r) => ({
       if (filtroTipo) filtroTipo.value = "";
       actualizarAreas();
       if (filtroArea) filtroArea.value = "";
-      if (filtroSector) filtroSector.value = "";
-      actualizarCategorias();
-      if (filtroCategoria) filtroCategoria.value = "";
-      sectorSeleccionado = "";
-      sectorCards.forEach((card) => card.classList.remove("active"));
+      if (filtroDependencia) filtroDependencia.value = "";
       actualizarDashboard();
     });
   }
@@ -702,22 +548,6 @@ const registros = dashboardData.map((r) => ({
   if (buscarRegistros) {
     buscarRegistros.addEventListener("input", filtrarTablaRegistros);
   }
-
-  sectorCards.forEach((card) => {
-    card.addEventListener("click", function () {
-      sectorSeleccionado = this.dataset.sectorCard || "";
-      sectorCards.forEach((item) => item.classList.remove("active"));
-      this.classList.add("active");
-      actualizarDashboard();
-
-      if (sectorInfoTitulo) {
-        sectorInfoTitulo.scrollIntoView({
-          behavior: "smooth",
-          block: "center",
-        });
-      }
-    });
-  });
 
   actualizarDashboard();
 });
@@ -748,8 +578,7 @@ function limpiarFormularioExterno() {
 
   const selects = [
   "id_sexo",
-  "id_sector",
-  "id_categoria",
+  "id_dependencia",
 ];
 
   selects.forEach((id) => {
@@ -757,6 +586,5 @@ function limpiarFormularioExterno() {
     if (el) el.selectedIndex = 0;
   });
 
-  const otro = document.getElementById("categoria_otro");
-  if (otro) otro.value = "";
+  actualizarDependenciaOtro();
 }

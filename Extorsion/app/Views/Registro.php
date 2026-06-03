@@ -272,36 +272,28 @@
                                         <div class="col-md-4">
                                             <label class="form-label">Dependencia</label>
 
-                                            <input type="text" class="form-control linea" name="dependencia"
-                                                id="dependencia" maxlength="150" required>
-                                        </div>
-
-                                        <div class="col-md-4">
-                                            <label class="form-label">Tipo de Servicio</label>
-                                            <select class="form-select select-estilo" name="id_sector" id="id_sector"
-                                                required>
+                                            <select class="form-select select-estilo" name="id_dependencia"
+                                                id="id_dependencia" required>
                                                 <option value="" selected disabled hidden>Seleccionar</option>
-                                                <?php foreach ($sectores as $sector): ?>
-                                                <option value="<?= $sector['id_sector'] ?>">
-                                                    <?= esc($sector['sector']) ?>
+                                                <?php foreach ($dependencias as $dependencia): ?>
+                                                <option value="<?= $dependencia['id_dependencia'] ?>"
+                                                    data-dependencia="<?= esc(mb_strtolower($dependencia['dependencia'], 'UTF-8')) ?>"
+                                                    <?= old('id_dependencia') == $dependencia['id_dependencia'] ? 'selected' : '' ?>>
+                                                    <?= esc($dependencia['dependencia']) ?>
                                                 </option>
                                                 <?php endforeach; ?>
                                             </select>
                                         </div>
 
-                                        <div class="col-md-4">
-                                            <label class="form-label">Categoría</label>
-                                            <select class="form-select select-estilo" name="id_categoria"
-                                                id="id_categoria" required>
-                                                <option value="" selected disabled hidden>Seleccionar</option>
-                                            </select>
+                                        <div class="col-md-4 d-none" id="dependenciaOtroGrupo">
+                                            <label class="form-label">Especifique dependencia</label>
+
+                                            <input type="text" class="form-control linea" name="dependencia_otro"
+                                                id="dependencia_otro" maxlength="150"
+                                                value="<?= esc(old('dependencia_otro')) ?>"
+                                                oninput="this.value = this.value.toUpperCase()">
                                         </div>
 
-                                        <div class="col-md-4" id="categoria_otro_contenedor" style="display: none;">
-                                            <label class="form-label">Especifique categoría</label>
-                                            <input type="text" class="form-control linea" name="categoria_otro"
-                                                id="categoria_otro" oninput="this.value = this.value.toUpperCase()">
-                                        </div>
                                     </div>
 
                                     <div class="col-12 d-flex justify-content-end mt-5">

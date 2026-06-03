@@ -28,18 +28,18 @@
 
                                 <div class="menu-item">
                                     <span class="arrow">
-                                        </span> Dashboard
+                                    </span> Dashboard
                                 </div>
 
                                 <a href="<?= base_url('index.php/reporte/exportar') ?>" class="btn-exportar mt-4">
                                     <span class="arrow">
-                                        </span>
-                                            Exportar
+                                    </span>
+                                    Exportar
                                 </a>
 
                                 <div class="menu-item mt-4" id="menuFiltro">
                                     <span class="arrow">
-                                        </span> Filtro
+                                    </span> Filtro
                                 </div>
                                 <form class="filter-panel" id="dashboardFiltros">
                                     <div class="filter-title">Filtros</div>
@@ -47,28 +47,21 @@
                                     <label>
                                         Tipo
                                         <select id="filtroTipo" aria-label="Tipo">
-                                            <option value="">Todos</option>
+                                            <option value=""></option>
                                         </select>
                                     </label>
 
                                     <label>
                                         Área
                                         <select id="filtroArea" aria-label="Área">
-                                            <option value="">Todas</option>
+                                            <option value=""></option>
                                         </select>
                                     </label>
 
                                     <label>
-                                        Sector
-                                        <select id="filtroSector" aria-label="Sector">
-                                            <option value="">Todos</option>
-                                        </select>
-                                    </label>
-
-                                    <label>
-                                        Categoria
-                                        <select id="filtroCategoria" aria-label="Categoria">
-                                            <option value="">Todas</option>
+                                        Dependencia
+                                        <select id="filtroDependencia" aria-label="Dependencia">
+                                            <option value=""></option>
                                         </select>
                                     </label>
 
@@ -149,57 +142,6 @@
                                                 </div>
                                             </div>
                                         </div>
-
-                                        <div class="col-sm-4">
-                                            <div class="card-comercio card-modern card-green-light"
-                                                data-sector-card="Comercial">
-                                                <div class="card-body d-flex align-items-center">
-
-                                                    <div class="flex-grow-1">
-                                                        <h6>Sector Comercial</h6>
-
-                                                        <h2 class="fw-bold" id="totalSectorComercial">
-                                                            <?php foreach ($sector as $fila): ?>
-                                                            <?php if ($fila['sector'] == 'Comercial'): ?>
-                                                            <?= esc($fila['total']) ?>
-                                                            <?php endif; ?>
-                                                            <?php endforeach; ?>
-                                                        </h2>
-                                                    </div>
-
-                                                    <div class="card-icon-bg">
-                                                        <img src="<?= base_url('assets/img/mercado.png') ?>">
-                                                    </div>
-
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        <div class="col-sm-4">
-                                            <div class="card-servicio card-modern card-green-soft"
-                                                data-sector-card="Servicio">
-                                                <div class="card-body d-flex align-items-center">
-
-                                                    <div class="flex-grow-1">
-                                                        <h6>Sector Servicio</h6>
-
-                                                        <h2 class="fw-bold" id="totalSectorServicio">
-                                                            <?php foreach ($sector as $fila): ?>
-                                                            <?php if ($fila['sector'] == 'Servicio'): ?>
-                                                            <?= esc($fila['total']) ?>
-                                                            <?php endif; ?>
-                                                            <?php endforeach; ?>
-                                                        </h2>
-                                                    </div>
-
-                                                    <div class="card-icon-bg">
-                                                        <img src="<?= base_url('assets/img/bien.png') ?>">
-
-                                                    </div>
-
-                                                </div>
-                                            </div>
-                                        </div>
                                     </div>
 
                                     <div class="row g-4 dashboard-grid">
@@ -237,26 +179,33 @@
                                                                     <th>#</th>
                                                                     <th>Nombre completo</th>
                                                                     <th>Correo</th>
-                                                                    <th>Municipio</th>
                                                                     <th>Tipo</th>
                                                                     <th>Área</th>
+                                                                    <th>Dependencia</th>
                                                                 </tr>
                                                             </thead>
                                                             <tbody>
-                                                                <?php $i = 1; foreach ($registros as $fila): ?>
-                                                                <tr class="registro-tabla">
-                                                                    <th><?= $i++ ?></th>
+                                                                <?php $i = 1;
+                                                                foreach ($registros as $fila): ?>
+                                                                    <tr class="registro-tabla">
+                                                                        <th><?= $i++ ?></th>
 
-                                                                    <td>
-                                                                        <?= esc(mb_strtoupper($fila['nombre'] . ' ' . $fila['apellido_p'] . ' ' . $fila['apellido_m'], 'UTF-8')) ?>
-                                                                    </td>
+                                                                        <td>
+                                                                            <?= esc(mb_strtoupper($fila['nombre'] . ' ' . $fila['apellido_p'] . ' ' . $fila['apellido_m'], 'UTF-8')) ?>
+                                                                        </td>
 
-                                                                    <td><?= esc(mb_strtoupper($fila['correo'], 'UTF-8')) ?></td>
+                                                                        <td><?= esc(mb_strtoupper($fila['correo'], 'UTF-8')) ?>
+                                                                        </td>
 
-                                                                    <td><?= esc(mb_strtoupper($fila['tipo_registro'], 'UTF-8')) ?></td>
+                                                                        <td><?= esc(mb_strtoupper($fila['tipo_registro'], 'UTF-8')) ?>
+                                                                        </td>
 
-                                                                    <td><?= esc(mb_strtoupper($fila['area'] ?: 'NO APLICA', 'UTF-8')) ?></td>
-                                                                </tr>
+                                                                        <td><?= esc(mb_strtoupper($fila['area'] ?: 'NO APLICA', 'UTF-8')) ?>
+                                                                        </td>
+
+                                                                        <td><?= esc(mb_strtoupper($fila['dependencia'] ?: 'NO APLICA', 'UTF-8')) ?>
+                                                                        </td>
+                                                                    </tr>
                                                                 <?php endforeach; ?>
 
                                                             </tbody>
@@ -265,22 +214,8 @@
                                                 </div>
                                             </div>
                                         </div>
-                                        <div class="col-lg-4 g-4 dashboard-side-stack">
-
-                                            <div class="sector-info-card mt-4">
-                                                <div class="card-body">
-                                                    <h5 class="card-title" id="sectorInfoTitulo">Informacion del Sector
-                                                    </h5>
-                                                    <p class="card-text" id="sectorInfoTexto">
-                                                        Seleccione una card de sector para ver su informacion.
-                                                    </p>
-                                                </div>
-                                            </div>
-                                        </div>
-
                                     </div>
                                 </div>
-
                             </div>
                         </div>
                     </div>
@@ -291,7 +226,11 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 
     <script>
-    window.dashboardData = <?= json_encode($dashboard) ?>;
+        window.dashboardData = <?= json_encode($dashboard) ?>;
+        window.dependenciasCatalogo = <?= json_encode(array_map(
+            fn($dependencia) => mb_strtoupper($dependencia['dependencia'], 'UTF-8'),
+            $dependencias
+        )) ?>;
     </script>
 
     <script src="<?= base_url('assets/JS/index.js') ?>"></script>
