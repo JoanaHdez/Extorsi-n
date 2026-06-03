@@ -120,12 +120,6 @@ if (btnBuscarNomina) {
 
         modalNomina.hide();
 
-        const estadoOriginal = document.getElementById("id_estado");
-
-        const estadoModal = document.getElementById("modalEstado");
-
-        estadoModal.innerHTML = estadoOriginal.innerHTML;
-
         // Esperar a que cierre el modal actual
         setTimeout(() => {
           const modalDatos = new bootstrap.Modal(
@@ -151,12 +145,10 @@ const btnConfirmar = document.getElementById("btnConfirmarComisaria");
 if (btnConfirmar) {
   btnConfirmar.addEventListener("click", function () {
     const correo = document.getElementById("modalCorreo").value.trim();
-    const municipio = document.getElementById("modalMunicipio").value;
-
-    if (!correo || !municipio) {
-      alert("Debe completar correo y municipio");
-      return;
-    }
+    if (!correo) {
+  alert("Debe completar el correo");
+  return;
+}
 
     // CSRF primero
     const csrfName = document.querySelector(
@@ -171,7 +163,6 @@ if (btnConfirmar) {
 
     formData.append("nomina", nominaEncontrada);
     formData.append("correo", correo);
-    formData.append("id_municipio", municipio);
 
     // CSRF obligatorio
     formData.append(csrfName, csrfValue);
@@ -200,66 +191,6 @@ if (btnConfirmar) {
       .catch((error) => {
         console.error(error);
         mostrarToast("Error", "No se pudo guardar el registro");
-      });
-  });
-}
-
-const modalEstado = document.getElementById("modalEstado");
-
-if (modalEstado) {
-  modalEstado.addEventListener("change", function () {
-    const estadoId = this.value;
-
-    const municipioModal = document.getElementById("modalMunicipio");
-
-    municipioModal.innerHTML =
-      '<option value="" selected disabled hidden>Seleccionar</option>';
-
-    if (!estadoId) {
-      return;
-    }
-
-    fetch(`./registro/municipios/${estadoId}`)
-      .then((r) => r.json())
-      .then((data) => {
-        data.forEach((m) => {
-          const option = document.createElement("option");
-
-          option.value = m.id_municipio;
-
-          option.textContent = m.municipio;
-
-          municipioModal.appendChild(option);
-        });
-      });
-  });
-}
-
-const estado = document.getElementById("id_estado");
-if (estado) {
-  estado.addEventListener("change", function () {
-    const estadoId = this.value;
-    const municipioSelect = document.getElementById("id_municipio");
-
-    municipioSelect.innerHTML =
-      '<option value="" selected disabled hidden>Seleccionar</option>';
-
-    if (!estadoId) {
-      municipioSelect.innerHTML =
-        '<option value="" selected disabled hidden>Seleccionar</option>';
-
-      return;
-    }
-
-    fetch(`./registro/municipios/${estadoId}`)
-      .then((r) => r.json())
-      .then((data) => {
-        data.forEach((m) => {
-          const option = document.createElement("option");
-          option.value = m.id_municipio;
-          option.textContent = m.municipio;
-          municipioSelect.appendChild(option);
-        });
       });
   });
 }
@@ -356,8 +287,6 @@ document.addEventListener("DOMContentLoaded", function () {
     return;
   }
 
-  const filtroEstado = document.getElementById("filtroEstado");
-  const filtroMunicipio = document.getElementById("filtroMunicipio");
   const filtroTipo = document.getElementById("filtroTipo");
   const filtroArea = document.getElementById("filtroArea");
   const filtroSector = document.getElementById("filtroSector");
@@ -382,7 +311,6 @@ document.addEventListener("DOMContentLoaded", function () {
   let sectorSeleccionado = "";
   let graficaDias = null;
   let graficaSexo = null;
-  let graficaEstado = null;
   const colorAzul = "#00538E";
   const colorRojo = "#A40000";
   const colorDorado = "#B8893A";
@@ -390,19 +318,17 @@ document.addEventListener("DOMContentLoaded", function () {
   const chartGridColor = "rgba(15, 23, 42, 0.08)";
   const chartTextColor = "#334155";
 
-  const registros = dashboardData.map((r) => ({
-    ...r,
-    estado: r.estado || "",
-    municipio: r.municipio || "",
-    sector: r.sector || "",
-    categoria: r.categoria || "",
-    sexo: r.sexo || "",
-    tipo_registro: r.tipo_registro || "",
-    area: r.area || "",
-    funcion: r.funcion || "",
-    fecha:
-      r.fecha || (r.fecha_registro ? r.fecha_registro.substring(0, 10) : ""),
-  }));
+const registros = dashboardData.map((r) => ({
+  ...r,
+  sector: r.sector || "",
+  categoria: r.categoria || "",
+  sexo: r.sexo || "",
+  tipo_registro: r.tipo_registro || "",
+  area: r.area || "",
+  funcion: r.funcion || "",
+  fecha:
+    r.fecha || (r.fecha_registro ? r.fecha_registro.substring(0, 10) : ""),
+}));
 
   function opcionesUnicas(campo, datos = registros) {
     const unicas = [...new Set(datos.map((r) => r[campo]).filter(Boolean))];
@@ -457,8 +383,6 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   function filtrarRegistros() {
-    const estado = filtroEstado ? filtroEstado.value : "";
-    const municipio = filtroMunicipio ? filtroMunicipio.value : "";
     const tipo = filtroTipo ? filtroTipo.value : "";
     const area = filtroArea ? filtroArea.value : "";
     const sector = filtroSector ? filtroSector.value : "";
@@ -466,8 +390,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
     return registros.filter((registro) => {
       return (
-        (!estado || registro.estado === estado) &&
-        (!municipio || registro.municipio === municipio) &&
         (!tipo || registro.tipo_registro === tipo) &&
         (!area || registro.area === area) &&
         (!sector || registro.sector === sector) &&
@@ -579,7 +501,6 @@ document.addEventListener("DOMContentLoaded", function () {
     const datosFiltrados = filtrarRegistros();
     const dias = datosAgrupados(datosFiltrados, "fecha");
     const sexo = datosAgrupados(datosFiltrados, "sexo");
-    const estados = datosAgrupados(datosFiltrados, "estado");
 
     if (dashboardTotal) {
       dashboardTotal.textContent = datosFiltrados.length;
@@ -621,24 +542,7 @@ document.addEventListener("DOMContentLoaded", function () {
       sexo.map((s) => s.label),
       sexo.map((s) => s.total),
     );
-    actualizarGrafica(
-      graficaEstado,
-      estados.map((e) => e.label),
-      estados.map((e) => e.total),
-    );
     actualizarInfoSector(datosFiltrados);
-  }
-
-  function actualizarMunicipios() {
-    const estado = filtroEstado ? filtroEstado.value : "";
-    const datos = estado
-      ? registros.filter((registro) => registro.estado === estado)
-      : registros;
-    llenarSelect(
-      filtroMunicipio,
-      opcionesUnicas("municipio", datos),
-      "Municipio",
-    );
   }
 
   function actualizarCategorias() {
@@ -674,8 +578,6 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   }
 
-  llenarSelect(filtroEstado, opcionesUnicas("estado"), "Estado");
-  llenarSelect(filtroMunicipio, opcionesUnicas("municipio"), "Municipio");
   llenarSelect(filtroTipo, opcionesUnicas("tipo_registro"), "Tipo");
   llenarSelect(filtroArea, opcionesUnicas("area"), "Area");
   llenarSelect(filtroSector, opcionesUnicas("sector"), "Sector");
@@ -683,7 +585,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
   const canvasDias = document.getElementById("graficaDependencias");
   const canvasSexo = document.getElementById("graficaSexo");
-  const canvasEstado = document.getElementById("graficaEstado");
 
   if (canvasDias) {
     graficaDias = new Chart(canvasDias.getContext("2d"), {
@@ -745,32 +646,6 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   }
 
-  if (canvasEstado) {
-    graficaEstado = new Chart(canvasEstado.getContext("2d"), {
-      type: "bar",
-      data: {
-        labels: [],
-        datasets: [
-          {
-            label: "Registros por estado",
-            data: [],
-            backgroundColor: [colorVerde, colorRojo, colorDorado, colorAzul],
-            borderRadius: 10,
-            borderSkipped: false,
-          },
-        ],
-      },
-      options: opcionesBarras(),
-    });
-  }
-
-  if (filtroEstado) {
-    filtroEstado.addEventListener("change", function () {
-      actualizarMunicipios();
-      actualizarDashboard();
-    });
-  }
-
   if (filtroSector) {
     filtroSector.addEventListener("change", function () {
       actualizarCategorias();
@@ -785,17 +660,14 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   }
 
-  [filtroMunicipio, filtroArea, filtroCategoria].forEach((select) => {
-    if (select) {
-      select.addEventListener("change", actualizarDashboard);
-    }
-  });
+[filtroArea, filtroCategoria].forEach((select) => {
+  if (select) {
+    select.addEventListener("change", actualizarDashboard);
+  }
+});
 
   if (limpiarFiltros) {
     limpiarFiltros.addEventListener("click", function () {
-      if (filtroEstado) filtroEstado.value = "";
-      actualizarMunicipios();
-      if (filtroMunicipio) filtroMunicipio.value = "";
       if (filtroTipo) filtroTipo.value = "";
       actualizarAreas();
       if (filtroArea) filtroArea.value = "";
@@ -875,12 +747,10 @@ function limpiarFormularioExterno() {
   });
 
   const selects = [
-    "id_sexo",
-    "id_estado",
-    "id_municipio",
-    "id_sector",
-    "id_categoria",
-  ];
+  "id_sexo",
+  "id_sector",
+  "id_categoria",
+];
 
   selects.forEach((id) => {
     const el = document.getElementById(id);

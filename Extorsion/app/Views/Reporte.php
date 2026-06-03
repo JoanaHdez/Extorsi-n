@@ -45,20 +45,6 @@
                                     <div class="filter-title">Filtros</div>
 
                                     <label>
-                                        Estado
-                                        <select id="filtroEstado" aria-label="Estado">
-                                            <option value="">Todos</option>
-                                        </select>
-                                    </label>
-
-                                    <label>
-                                        Municipio
-                                        <select id="filtroMunicipio" aria-label="Municipio">
-                                            <option value="">Todos</option>
-                                        </select>
-                                    </label>
-
-                                    <label>
                                         Tipo
                                         <select id="filtroTipo" aria-label="Tipo">
                                             <option value="">Todos</option>
@@ -267,8 +253,6 @@
 
                                                                     <td><?= esc(mb_strtoupper($fila['correo'], 'UTF-8')) ?></td>
 
-                                                                    <td><?= esc(mb_strtoupper($fila['municipio'], 'UTF-8')) ?></td>
-
                                                                     <td><?= esc(mb_strtoupper($fila['tipo_registro'], 'UTF-8')) ?></td>
 
                                                                     <td><?= esc(mb_strtoupper($fila['area'] ?: 'NO APLICA', 'UTF-8')) ?></td>
@@ -282,10 +266,6 @@
                                             </div>
                                         </div>
                                         <div class="col-lg-4 g-4 dashboard-side-stack">
-                                            <div class="dashboard-panel chart-panel chart-panel-small">
-                                                <h3>Registros por Estado</h3>
-                                                <canvas class="mt-4" id="graficaEstado"></canvas>
-                                            </div>
 
                                             <div class="sector-info-card mt-4">
                                                 <div class="card-body">

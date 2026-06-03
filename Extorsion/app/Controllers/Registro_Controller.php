@@ -5,10 +5,8 @@ namespace App\Controllers;
 use App\Controllers\BaseController;
 use App\Models\Categoria_Model;
 use App\Models\Dato_Model;
-use App\Models\Estado_Model;
 use App\Models\General_Model;
 use App\Models\General_Personal_Model;
-use App\Models\Municipio_Model;
 use App\Models\Personal_Model;
 use App\Models\Sector_Model;
 use App\Models\Sexo_Model;
@@ -19,14 +17,10 @@ class Registro_Controller extends BaseController
     public function index()
     {
 
-        $estado = new Estado_Model();
-        $municipio = new Municipio_Model();
         $categoria = new Categoria_Model();
         $sector = new Sector_Model();
         $sexo = new Sexo_Model();
 
-        $data['estados'] = $estado->orderBy('estado', 'ASC')->findAll();
-        $data['municipios'] = $municipio->orderBy('municipio', 'ASC')->findAll();
         $data['categorias'] = $categoria->orderBy('categoria', 'ASC')->findAll();
         $data['sectores'] = $sector->orderBy('sector', 'ASC')->findAll();
         $data['sexos'] = $sexo->orderBy('sexo', 'ASC')->findAll();
@@ -46,8 +40,6 @@ class Registro_Controller extends BaseController
             'correo' => 'required|valid_email',
             'id_sexo' => 'required|integer',
             'dependencia' => 'required|max_length[150]',
-            'id_estado' => 'required|integer',
-            'id_municipio' => 'required|integer',
             'id_sector' => 'permit_empty|integer',
             'id_categoria' => 'permit_empty|integer',
         ];
@@ -70,12 +62,6 @@ class Registro_Controller extends BaseController
             ],
             'dependencia' => [
                 'required' => 'El campo dependencia es obligatorio.',
-            ],
-            'id_estado' => [
-                'required' => 'El campo estado es obligatorio.',
-            ],
-            'id_municipio' => [
-                'required' => 'El campo municipio es obligatorio.',
             ],
             'id_sector' => [
                 'required' => 'El campo sector es obligatorio.',
@@ -153,8 +139,6 @@ class Registro_Controller extends BaseController
                 )
             ),
 
-            'id_municipio' => $this->request->getPost('id_municipio'),
-
             'id_categoria' => !empty($categoriaId)
                 ? $categoriaId
                 : null,
@@ -173,18 +157,6 @@ class Registro_Controller extends BaseController
     public function exito()
     {
         return view('Reg_Exitoso');
-    }
-
-    public function municipios($id_municipio)
-    {
-        $municipio = new Municipio_Model();
-
-        $municipios = $municipio
-            ->where('id_estado', $id_municipio)
-            ->orderBy('municipio', 'ASC')
-            ->findAll();
-
-        return $this->response->setJSON($municipios);
     }
 
     public function categorias($id_sector)
@@ -212,8 +184,6 @@ class Registro_Controller extends BaseController
         d.correo,
         s.sexo,
         g.dependencia,
-        e.estado,
-        m.municipio,
         sec.sector,
         CASE
             WHEN LOWER(c.categoria) = 'otros' AND g.categoria_otro IS NOT NULL AND g.categoria_otro <> ''
@@ -226,9 +196,6 @@ class Registro_Controller extends BaseController
 
         inner join dato d on g.id_dato = d.id_dato
         inner join sexo s on g.id_sexo = s.id_sexo
-        inner join municipio m on g.id_municipio = m.id_municipio
-        INNER JOIN estado e 
-            ON m.id_estado = e.id_estado
         LEFT JOIN categoria c 
         ON g.id_categoria = c.id_categoria
 
@@ -253,8 +220,7 @@ class Registro_Controller extends BaseController
 
         $rules = [
             'nomina' => 'required|integer',
-            'correo' => 'required|valid_email',
-            'id_municipio' => 'required|integer'
+            'correo' => 'required|valid_email'
         ];
 
         if (!$this->validate($rules)) {
@@ -283,14 +249,12 @@ class Registro_Controller extends BaseController
 
         log_message('error', json_encode([
             'nomina' => $this->request->getPost('nomina'),
-            'correo' => $this->request->getPost('correo'),
-            'id_municipio' => $this->request->getPost('id_municipio')
+            'correo' => $this->request->getPost('correo')
         ]));
 
         $generalPersonal->insert([
             'nomina' => $this->request->getPost('nomina'),
-            'correo' => strtoupper(trim($this->request->getPost('correo'))),
-            'id_municipio' => $this->request->getPost('id_municipio')
+            'correo' => strtoupper(trim($this->request->getPost('correo')))
         ]);
 
         return $this->response->setJSON([
@@ -380,12 +344,10 @@ class Registro_Controller extends BaseController
             d.apellido_p,
             d.apellido_m,
             d.correo,
-            m.municipio,
             'Externo' AS tipo_registro,
             '' AS area
         FROM general g
         INNER JOIN dato d ON g.id_dato = d.id_dato
-        INNER JOIN municipio m ON g.id_municipio = m.id_municipio
 
         UNION ALL
 
@@ -394,20 +356,16 @@ class Registro_Controller extends BaseController
             p.apellido_p,
             p.apellido_m,
             gp.correo,
-            m.municipio,
             'Comisaria' AS tipo_registro,
             p.area
         FROM general_personal gp
         INNER JOIN personal p ON gp.nomina = p.nomina
-        INNER JOIN municipio m ON gp.id_municipio = m.id_municipio
         ");
 
         $dashboard = $db->query("
         SELECT
             g.id_general,
             s.sexo,
-            e.estado,
-            m.municipio,
             sec.sector,
             CASE
                 WHEN LOWER(c.categoria) = 'otros' AND g.categoria_otro IS NOT NULL AND g.categoria_otro <> ''
@@ -421,8 +379,6 @@ class Registro_Controller extends BaseController
             '' AS funcion
         FROM general g
         INNER JOIN sexo s ON g.id_sexo = s.id_sexo
-        INNER JOIN municipio m ON g.id_municipio = m.id_municipio
-        INNER JOIN estado e ON m.id_estado = e.id_estado
         LEFT JOIN categoria c ON g.id_categoria = c.id_categoria
         LEFT JOIN sector sec ON c.id_sector = sec.id_sector
 
@@ -431,8 +387,6 @@ class Registro_Controller extends BaseController
         SELECT
             gp.id_general_personal AS id_general,
             s.sexo,
-            e.estado,
-            m.municipio,
             '' AS sector,
             '' AS categoria,
             {$fechaPersonal} AS fecha,
@@ -443,8 +397,6 @@ class Registro_Controller extends BaseController
         FROM general_personal gp
         INNER JOIN personal p ON gp.nomina = p.nomina
         LEFT JOIN sexo s ON p.id_sexo = s.id_sexo
-        INNER JOIN municipio m ON gp.id_municipio = m.id_municipio
-        INNER JOIN estado e ON m.id_estado = e.id_estado
                 ");
 
         $data['total'] = $total->getRow()->total;
@@ -471,8 +423,6 @@ class Registro_Controller extends BaseController
         d.correo,
         s.sexo,
         g.dependencia,
-        e.estado,
-        m.municipio,
         IFNULL(sec.sector, 'NO APLICA') AS sector,
                 CASE
             WHEN c.categoria IS NULL
@@ -491,8 +441,6 @@ class Registro_Controller extends BaseController
 
         INNER JOIN dato d ON g.id_dato = d.id_dato
         INNER JOIN sexo s ON g.id_sexo = s.id_sexo
-        INNER JOIN municipio m ON g.id_municipio = m.id_municipio
-        INNER JOIN estado e ON m.id_estado = e.id_estado
         LEFT JOIN categoria c ON g.id_categoria = c.id_categoria
         LEFT JOIN sector sec ON c.id_sector = sec.id_sector");
 
@@ -511,8 +459,6 @@ class Registro_Controller extends BaseController
             'Correo',
             'Sexo',
             'Dependencia',
-            'Estado',
-            'Municipio',
             'Sector',
             'Categoria',
             'Fecha de Registro'
@@ -526,8 +472,6 @@ class Registro_Controller extends BaseController
                 $fila['correo'],
                 $fila['sexo'],
                 $fila['dependencia'],
-                $fila['estado'],
-                $fila['municipio'],
                 $fila['sector'],
                 $fila['categoria'],
                 $fila['fecha_registro']

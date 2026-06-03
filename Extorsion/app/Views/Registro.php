@@ -116,17 +116,7 @@
                             <input type="email" id="modalCorreo" class="form-control">
                         </div>
 
-                        <div class="col-md-6">
-                            <label>Estado</label>
-                            <select id="modalEstado" class="form-select">
-                            </select>
-                        </div>
 
-                        <div class="col-md-6">
-                            <label>Municipio y/o Localidad</label>
-                            <select id="modalMunicipio" class="form-select">
-                            </select>
-                        </div>
 
                     </div>
 
@@ -284,26 +274,6 @@
 
                                             <input type="text" class="form-control linea" name="dependencia"
                                                 id="dependencia" maxlength="150" required>
-                                        </div>
-                                        <div class="col-md-4">
-                                            <label class="form-label">Estado</label>
-                                            <select class="form-select select-estilo" name="id_estado" id="id_estado"
-                                                required>
-                                                <option value="" selected disabled hidden>Seleccionar</option>
-                                                <?php foreach ($estados as $estado): ?>
-                                                <option value="<?= $estado['id_estado'] ?>">
-                                                    <?= esc($estado['estado']) ?>
-                                                </option>
-                                                <?php endforeach; ?>
-                                            </select>
-                                        </div>
-
-                                        <div class="col-md-4">
-                                            <label class="form-label">Municipio y/o Localidad</label>
-                                            <select class="form-select select-estilo" name="id_municipio"
-                                                id="id_municipio" required>
-                                                <option value="" selected disabled hidden>Seleccionar</option>
-                                            </select>
                                         </div>
 
                                         <div class="col-md-4">
