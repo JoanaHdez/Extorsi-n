@@ -22,5 +22,7 @@ $routes->get('/reporte', 'Registro_Controller::reporte');
 
 $routes->get('registro/exito', 'Registro_Controller::exito');
 $routes->get('/constancia/(:segment)', 'Registro_Controller::constancia/$1');
+$routes->get('/constancias/control', 'Registro_Controller::controlConstancias');
+$routes->post('/constancias/control', 'Registro_Controller::actualizarControlConstancias');
 
 $routes->get('/reporte/exportar', 'Registro_Controller::exportar');

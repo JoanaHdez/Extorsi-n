@@ -39,7 +39,7 @@ p {
 
 <div class="card">
     <h1>✔ Registro enviado correctamente</h1>
-    <p>Sus datos han sido registrados con éxito.</p>
+    <p>Recuerda que al finalizar el evento podrás descargar tu constancia de asistencia en el correo que registraste.</p>
 </div>
 
 </body>

@@ -426,6 +426,19 @@ class Registro_Controller extends BaseController
             throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound('Registro no encontrado.');
         }
 
+        if (! $this->constanciasHabilitadas()) {
+            return $this->response
+                ->setStatusCode(200)
+                ->setHeader('Content-Type', 'text/html; charset=UTF-8')
+                ->setBody($this->mensajeConstanciaNoDisponible());
+        }
+
+        $plantillaPath = $this->plantillaConstanciaPath($registro);
+
+        if ($plantillaPath === null) {
+            throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound('Plantilla de constancia no encontrada.');
+        }
+
         $options = new Options();
         $options->set('isRemoteEnabled', true);
         $options->set('isHtml5ParserEnabled', true);
@@ -434,10 +447,7 @@ class Registro_Controller extends BaseController
         $dompdf = new Dompdf($options);
         $dompdf->loadHtml(view('ConstanciaPdf', [
             'registro' => $registro,
-            'coyote' => $this->imageDataUri(FCPATH . 'assets/img/coyote-watermark.png', 'image/png'),
-            'logoAyuntamiento' => $this->imageDataUri(FCPATH . 'assets/img/ayun-pdf.png', 'image/png'),
-            'logoComisaria' => $this->imageDataUri(FCPATH . 'assets/img/comisaria-pdf.png', 'image/png'),
-            'escudo' => $this->imageDataUri(FCPATH . 'assets/img/sc-pdf.png', 'image/png'),
+            'plantilla' => $this->imageDataUri($plantillaPath, 'image/png'),
         ]));
         $dompdf->setPaper('letter', 'landscape');
         $dompdf->render();
@@ -450,9 +460,40 @@ class Registro_Controller extends BaseController
             ->setBody($dompdf->output());
     }
 
+    public function controlConstancias()
+    {
+        $token = (string) $this->request->getGet('token');
+
+        if (! $this->tokenControlValido($token)) {
+            throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound('Panel no encontrado.');
+        }
+
+        return $this->response
+            ->setHeader('Content-Type', 'text/html; charset=UTF-8')
+            ->setBody($this->vistaControlConstancias($token));
+    }
+
+    public function actualizarControlConstancias()
+    {
+        $token = (string) $this->request->getPost('token');
+
+        if (! $this->tokenControlValido($token)) {
+            throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound('Panel no encontrado.');
+        }
+
+        $habilitar = $this->request->getPost('estado') === '1';
+        $this->guardarEstadoConstancias($habilitar);
+
+        return redirect()->to(base_url('constancias/control?token=' . rawurlencode($token)));
+    }
+
     private function enviarCorreoRegistro(string $correo, string $tipoRegistro, int $idRegistro): void
     {
         $ligaConstancia = base_url('constancia/' . $this->generarTokenConstancia($tipoRegistro, $idRegistro));
+        $registroCorreo = $this->obtenerRegistroConstancia($tipoRegistro, $idRegistro);
+        $nombreCompleto = $registroCorreo === null
+            ? ''
+            : trim(($registroCorreo['nombre'] ?? '') . ' ' . ($registroCorreo['apellido_p'] ?? '') . ' ' . ($registroCorreo['apellido_m'] ?? ''));
 
         $logoAyuntamientoPath = FCPATH . 'assets/img/ayun.png';
         $logoComisariaPath = FCPATH . 'assets/img/comisaria.png';
@@ -533,7 +574,13 @@ class Registro_Controller extends BaseController
                                 </tr>
 
                                 <tr>
-                                    <td style="background:#243b6b; padding:38px 36px 34px; text-align:center;">
+                                    <td style="background:#243b6b; padding:34px 36px 34px; text-align:center;">
+                                        <p style="margin:0; color:#ffffff; font-size:22px; line-height:1.35; font-weight:700;">
+                                            Pl&aacute;tica de Medidas Preventivas en Casos de Extorsi&oacute;n
+                                        </p>
+                                        <p style="margin:8px 0 22px; color:#dbe7ff; font-size:16px; line-height:1.45; font-weight:700;">
+                                            Comisar&iacute;a General de Seguridad Ciudadana
+                                        </p>
                                         <table role="presentation" cellspacing="0" cellpadding="0" border="0" align="center" style="margin:0 auto 18px;">
                                             <tr>
                                                 <td style="background:#ffffff; border-radius:50%; padding:12px;">
@@ -547,13 +594,16 @@ class Registro_Controller extends BaseController
                                         <p style="margin:12px 0 0; color:#dbe7ff; font-size:17px; line-height:1.5;">
                                             Su asistencia quedó registrada correctamente.
                                         </p>
+                                        <p style="margin:18px 0 0; color:#ffffff; font-size:20px; line-height:1.35; font-weight:700; text-transform:uppercase;">
+                                            ' . esc($nombreCompleto) . '
+                                        </p>
                                     </td>
                                 </tr>
 
                                 <tr>
                                     <td style="padding:34px 38px 8px;">
-                                        <p style="margin:0 0 18px; color:#344054; font-size:17px; line-height:1.65;">
-                                            Gracias por registrarse a las pláticas de medidas preventivas en casos de extorsión.
+                                        <p style="margin:0 0 22px; color:#344054; font-size:22px; line-height:1.4; font-weight:700; text-align:center;">
+                                            Gracias por registrarse
                                         </p>
                                         <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background:#f8fafc; border:1px solid #e6ebf2; border-radius:10px;">
                                             <tr>
@@ -562,7 +612,7 @@ class Registro_Controller extends BaseController
                                                         Próximo paso
                                                     </p>
                                                     <p style="margin:6px 0 0; color:#344054; font-size:16px; line-height:1.6;">
-                                                        Conserve este correo y descargue su constancia cuando lo requiera.
+                                                        Conserve este correo para poder descargar su constancia al concluir el evento.
                                                     </p>
                                                 </td>
                                             </tr>
@@ -789,6 +839,196 @@ class Registro_Controller extends BaseController
         return env('encryption.key')
             ?: env('email.SMTPPassB64')
             ?: 'ExtorsionF-constancia';
+    }
+
+    private function constanciasHabilitadas(): bool
+    {
+        $estadoPath = $this->estadoConstanciasPath();
+
+        if (is_file($estadoPath)) {
+            $estado = json_decode((string) file_get_contents($estadoPath), true);
+
+            if (is_array($estado) && array_key_exists('habilitadas', $estado)) {
+                return (bool) $estado['habilitadas'];
+            }
+        }
+
+        return filter_var(env('registro.constanciasHabilitadas', false), FILTER_VALIDATE_BOOLEAN);
+    }
+
+    private function guardarEstadoConstancias(bool $habilitadas): void
+    {
+        file_put_contents(
+            $this->estadoConstanciasPath(),
+            json_encode(['habilitadas' => $habilitadas], JSON_PRETTY_PRINT)
+        );
+    }
+
+    private function estadoConstanciasPath(): string
+    {
+        return WRITEPATH . 'constancias_estado.json';
+    }
+
+    private function tokenControlValido(string $token): bool
+    {
+        $tokenConfigurado = (string) env('registro.constanciasControlToken', '');
+
+        return $tokenConfigurado !== '' && hash_equals($tokenConfigurado, $token);
+    }
+
+    private function vistaControlConstancias(string $token): string
+    {
+        $habilitadas = $this->constanciasHabilitadas();
+        $estadoTexto = $habilitadas ? 'Habilitadas' : 'Deshabilitadas';
+        $accionTexto = $habilitadas ? 'Deshabilitar constancias' : 'Habilitar constancias';
+        $accionValor = $habilitadas ? '0' : '1';
+        $color = $habilitadas ? '#15803d' : '#8a1538';
+        $csrf = function_exists('csrf_field') ? csrf_field() : '';
+
+        return '<!doctype html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Control de constancias</title>
+    <style>
+        body {
+            margin: 0;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 22px;
+            background: #eef2f7;
+            color: #1f2933;
+            font-family: Arial, Helvetica, sans-serif;
+        }
+        .panel {
+            width: min(420px, 100%);
+            padding: 28px 24px;
+            border-top: 8px solid ' . $color . ';
+            background: #ffffff;
+            box-shadow: 0 14px 34px rgba(20, 36, 64, 0.14);
+            text-align: center;
+        }
+        h1 {
+            margin: 0 0 12px;
+            color: #243b6b;
+            font-size: 26px;
+            line-height: 1.25;
+        }
+        .status {
+            margin: 0 0 24px;
+            color: ' . $color . ';
+            font-size: 22px;
+            font-weight: 700;
+        }
+        button {
+            width: 100%;
+            border: 0;
+            border-radius: 8px;
+            padding: 16px 18px;
+            background: ' . $color . ';
+            color: #ffffff;
+            font-size: 17px;
+            font-weight: 700;
+        }
+        .note {
+            margin: 18px 0 0;
+            color: #667085;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+    </style>
+</head>
+<body>
+    <main class="panel">
+        <h1>Control de constancias</h1>
+        <p class="status">' . esc($estadoTexto) . '</p>
+        <form method="post" action="' . esc(base_url('constancias/control'), 'attr') . '">
+            ' . $csrf . '
+            <input type="hidden" name="token" value="' . esc($token, 'attr') . '">
+            <input type="hidden" name="estado" value="' . esc($accionValor, 'attr') . '">
+            <button type="submit">' . esc($accionTexto) . '</button>
+        </form>
+        <p class="note">Use este panel solo cuando deba abrir o cerrar la descarga de constancias.</p>
+    </main>
+</body>
+</html>';
+    }
+
+    private function mensajeConstanciaNoDisponible(): string
+    {
+        return '<!doctype html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Constancia no disponible</title>
+    <style>
+        body {
+            margin: 0;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+            background: #eef2f7;
+            color: #1f2933;
+            font-family: Arial, Helvetica, sans-serif;
+        }
+        .message {
+            width: min(560px, 100%);
+            padding: 34px 30px;
+            border-top: 8px solid #8a1538;
+            background: #ffffff;
+            box-shadow: 0 14px 34px rgba(20, 36, 64, 0.14);
+            text-align: center;
+        }
+        h1 {
+            margin: 0 0 12px;
+            color: #243b6b;
+            font-size: 28px;
+            line-height: 1.25;
+        }
+        p {
+            margin: 0;
+            color: #344054;
+            font-size: 18px;
+            line-height: 1.6;
+        }
+    </style>
+</head>
+<body>
+    <main class="message">
+        <h1>Constancia no disponible</h1>
+        <p>La descarga de su constancia se habilitar&aacute; una vez que termine la pl&aacute;tica.</p>
+    </main>
+</body>
+</html>';
+    }
+
+    private function plantillaConstanciaPath(array $registro): ?string
+    {
+        $plantillaPorFecha = [
+            '2026-06-09' => 'junio_09.png',
+            '2026-06-10' => 'junio_10.png',
+            '2026-06-11' => 'junio_11.png',
+            '2026-06-12' => 'junio_12.png',
+        ];
+
+        if (empty($registro['fecha_registro'])) {
+            return null;
+        }
+
+        $fecha = date('Y-m-d', strtotime($registro['fecha_registro']));
+
+        $archivo = $plantillaPorFecha[$fecha] ?? env('registro.constanciaPlantilla', 'junio_09.png');
+
+        $archivo = basename((string) $archivo);
+        $plantillaPath = FCPATH . 'assets/img/' . $archivo;
+
+        return is_file($plantillaPath) ? $plantillaPath : null;
     }
 
     private function base64UrlEncode(string $valor): string
