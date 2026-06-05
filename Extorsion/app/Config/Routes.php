@@ -21,5 +21,6 @@ $routes->post('/registro/guardar-personal', 'Registro_Controller::guardarPersona
 $routes->get('/reporte', 'Registro_Controller::reporte');
 
 $routes->get('registro/exito', 'Registro_Controller::exito');
+$routes->get('/constancia/(:segment)', 'Registro_Controller::constancia/$1');
 
 $routes->get('/reporte/exportar', 'Registro_Controller::exportar');

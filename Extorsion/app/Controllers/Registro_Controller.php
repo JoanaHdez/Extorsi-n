@@ -9,6 +9,8 @@ use App\Models\General_Model;
 use App\Models\General_Personal_Model;
 use App\Models\Personal_Model;
 use App\Models\Sexo_Model;
+use Dompdf\Dompdf;
+use Dompdf\Options;
 
 
 class Registro_Controller extends BaseController
@@ -119,7 +121,7 @@ class Registro_Controller extends BaseController
             'correo' => mb_strtoupper($correo),
         ]);
 
-        $general->insert([
+        $idGeneral = $general->insert([
             'id_dato' => $idDato,
             'id_sexo' => $this->request->getPost('id_sexo'),
 
@@ -130,7 +132,7 @@ class Registro_Controller extends BaseController
             ),
 
         ]);
-        $this->enviarCorreoRegistro($correo);
+        $this->enviarCorreoRegistro($correo, 'externo', (int) $idGeneral);
 
         return redirect()->to('/registro/exito');
     }
@@ -211,12 +213,12 @@ class Registro_Controller extends BaseController
             'correo' => $this->request->getPost('correo')
         ]));
 
-        $generalPersonal->insert([
+        $idGeneralPersonal = $generalPersonal->insert([
             'nomina' => $this->request->getPost('nomina'),
             'correo' => strtoupper(trim($this->request->getPost('correo')))
         ]);
 
-        $this->enviarCorreoRegistro($this->request->getPost('correo'));
+        $this->enviarCorreoRegistro($this->request->getPost('correo'), 'personal', (int) $idGeneralPersonal);
 
         return $this->response->setJSON([
             'success' => true,
@@ -410,30 +412,402 @@ class Registro_Controller extends BaseController
         exit;
     }
 
-    private function enviarCorreoRegistro(string $correo): void
+    public function constancia(string $token)
     {
-        $config = config('Email');
+        $datosToken = $this->validarTokenConstancia($token);
 
-        if ($config->SMTPHost === '' || $config->fromEmail === '') {
-            log_message('info', 'Correo de registro no enviado: SMTP no configurado.');
-            return;
+        if ($datosToken === null) {
+            throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound('Constancia no valida.');
         }
 
-        $ligaConstancia = env('registro.constanciaUrl') ?: base_url('registro/exito');
+        $registro = $this->obtenerRegistroConstancia($datosToken['tipo'], (int) $datosToken['id']);
+
+        if ($registro === null) {
+            throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound('Registro no encontrado.');
+        }
+
+        $options = new Options();
+        $options->set('isRemoteEnabled', true);
+        $options->set('isHtml5ParserEnabled', true);
+        $options->set('defaultFont', 'DejaVu Sans');
+
+        $dompdf = new Dompdf($options);
+        $dompdf->loadHtml(view('ConstanciaPdf', [
+            'registro' => $registro,
+            'coyote' => $this->imageDataUri(FCPATH . 'assets/img/coyote-watermark.png', 'image/png'),
+            'logoAyuntamiento' => $this->imageDataUri(FCPATH . 'assets/img/ayun-pdf.png', 'image/png'),
+            'logoComisaria' => $this->imageDataUri(FCPATH . 'assets/img/comisaria-pdf.png', 'image/png'),
+            'escudo' => $this->imageDataUri(FCPATH . 'assets/img/sc-pdf.png', 'image/png'),
+        ]));
+        $dompdf->setPaper('letter', 'landscape');
+        $dompdf->render();
+
+        $nombreArchivo = 'constancia-' . strtolower($registro['folio']) . '.pdf';
+
+        return $this->response
+            ->setHeader('Content-Type', 'application/pdf')
+            ->setHeader('Content-Disposition', 'attachment; filename="' . $nombreArchivo . '"')
+            ->setBody($dompdf->output());
+    }
+
+    private function enviarCorreoRegistro(string $correo, string $tipoRegistro, int $idRegistro): void
+    {
+        $ligaConstancia = base_url('constancia/' . $this->generarTokenConstancia($tipoRegistro, $idRegistro));
+
+        $logoAyuntamientoPath = FCPATH . 'assets/img/ayun.png';
+        $logoComisariaPath = FCPATH . 'assets/img/comisaria.png';
+        $iconoExitoPath = FCPATH . 'assets/img/bien.png';
 
         $email = \Config\Services::email();
-        $email->setFrom($config->fromEmail, $config->fromName ?: $config->fromEmail);
-        $email->setTo($correo);
-        $email->setSubject('Registro exitoso');
-        $email->setMessage(
-            "Su registro fue exitoso.\n\n" .
-            "Podra descargar su constancia en la siguiente liga:\n" .
-            $ligaConstancia . "\n"
+        $smtpPassB64 = env('email.SMTPPassB64');
+        $smtpPass = $smtpPassB64 !== null && $smtpPassB64 !== ''
+            ? (base64_decode($smtpPassB64) ?: '')
+            : env('email.SMTPPass', '');
+
+        $emailConfig = [
+            'protocol'    => env('email.protocol', 'smtp'),
+            'SMTPHost'    => env('email.SMTPHost'),
+            'SMTPUser'    => env('email.SMTPUser'),
+            'SMTPPass'    => $smtpPass,
+            'SMTPPort'    => (int) env('email.SMTPPort'),
+            'SMTPTimeout' => (int) env('email.SMTPTimeout', 10),
+            'SMTPCrypto'  => env('email.SMTPCrypto', ''),
+            'mailType'    => env('email.mailType', 'html'),
+            'charset'     => env('email.charset', 'UTF-8'),
+            'newline'     => "\r\n",
+            'CRLF'        => "\r\n",
+        ];
+
+        $email->initialize($emailConfig);
+
+        $email->setFrom(
+            env('email.fromEmail'),
+            env('email.fromName')
         );
 
-        if (!$email->send(false)) {
-            log_message('error', 'No se pudo enviar correo de registro: ' . print_r($email->printDebugger(['headers']), true));
+        $email->setTo($correo);
+        $email->setSubject('Registro exitoso');
+
+        $email->attach($logoAyuntamientoPath, 'inline');
+        $email->attach($logoComisariaPath, 'inline');
+        $email->attach($iconoExitoPath, 'inline');
+
+        $logoAyuntamiento = $email->setAttachmentCID($logoAyuntamientoPath);
+        $logoComisaria = $email->setAttachmentCID($logoComisariaPath);
+        $iconoExito = $email->setAttachmentCID($iconoExitoPath);
+
+        $logoAyuntamientoSrc = $logoAyuntamiento ? 'cid:' . $logoAyuntamiento : base_url('assets/img/ayun.png');
+        $logoComisariaSrc = $logoComisaria ? 'cid:' . $logoComisaria : base_url('assets/img/comisaria.png');
+        $iconoExitoSrc = $iconoExito ? 'cid:' . $iconoExito : base_url('assets/img/bien.png');
+
+        $mensaje = '
+            <!doctype html>
+            <html lang="es">
+            <head>
+                <meta charset="UTF-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <title>Registro exitoso</title>
+            </head>
+            <body style="margin:0; padding:0; background:#eef2f7; font-family:Arial, Helvetica, sans-serif; color:#1f2933;">
+                <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background:#eef2f7; padding:28px 12px;">
+                    <tr>
+                        <td align="center">
+                            <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="max-width:660px; background:#ffffff; border-radius:14px; overflow:hidden; box-shadow:0 14px 34px rgba(20, 36, 64, 0.14);">
+                                <tr>
+                                    <td style="height:8px; background:#8a1538; line-height:8px; font-size:1px;">&nbsp;</td>
+                                </tr>
+
+                                <tr>
+                                    <td style="background:#ffffff; padding:18px 30px; border-bottom:1px solid #e6ebf2;">
+                                        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
+                                            <tr>
+                                                <td align="left" width="50%" style="vertical-align:middle;">
+                                                    <img src="' . esc($logoAyuntamientoSrc, 'attr') . '" alt="Ayuntamiento" width="132" style="display:block; width:132px; max-width:132px; height:auto; border:0;">
+                                                </td>
+                                                <td align="right" width="50%" style="vertical-align:middle;">
+                                                    <img src="' . esc($logoComisariaSrc, 'attr') . '" alt="Comisaría" width="128" style="display:block; width:128px; max-width:128px; height:auto; border:0;">
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td style="background:#243b6b; padding:38px 36px 34px; text-align:center;">
+                                        <table role="presentation" cellspacing="0" cellpadding="0" border="0" align="center" style="margin:0 auto 18px;">
+                                            <tr>
+                                                <td style="background:#ffffff; border-radius:50%; padding:12px;">
+                                                    <img src="' . esc($iconoExitoSrc, 'attr') . '" alt="" width="54" style="display:block; width:54px; height:auto; border:0;">
+                                                </td>
+                                            </tr>
+                                        </table>
+                                        <h1 style="margin:0; color:#ffffff; font-size:30px; line-height:1.25; font-weight:700;">
+                                            Registro exitoso
+                                        </h1>
+                                        <p style="margin:12px 0 0; color:#dbe7ff; font-size:17px; line-height:1.5;">
+                                            Su asistencia quedó registrada correctamente.
+                                        </p>
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td style="padding:34px 38px 8px;">
+                                        <p style="margin:0 0 18px; color:#344054; font-size:17px; line-height:1.65;">
+                                            Gracias por registrarse a las pláticas de medidas preventivas en casos de extorsión.
+                                        </p>
+                                        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background:#f8fafc; border:1px solid #e6ebf2; border-radius:10px;">
+                                            <tr>
+                                                <td style="padding:18px 20px;">
+                                                    <p style="margin:0; color:#243b6b; font-size:14px; line-height:1.5; font-weight:700; text-transform:uppercase;">
+                                                        Próximo paso
+                                                    </p>
+                                                    <p style="margin:6px 0 0; color:#344054; font-size:16px; line-height:1.6;">
+                                                        Conserve este correo y descargue su constancia cuando lo requiera.
+                                                    </p>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                        <p style="margin:22px 0 0; color:#344054; font-size:16px; line-height:1.65;">
+                                            Puede descargar su constancia desde el siguiente enlace:
+                                        </p>
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td align="center" style="padding:24px 38px 34px;">
+                                        <a href="' . esc($ligaConstancia, 'attr') . '" style="display:inline-block; background:#8a1538; color:#ffffff; font-size:16px; font-weight:700; text-decoration:none; padding:15px 30px; border-radius:8px;">
+                                            Descargar constancia
+                                        </a>
+                                        <p style="margin:18px 0 0; color:#667085; font-size:13px; line-height:1.5;">
+                                            Si el botón no funciona, copie y pegue esta liga en su navegador:
+                                        </p>
+                                        <p style="margin:8px 0 0; color:#243b6b; font-size:13px; line-height:1.5; word-break:break-all;">
+                                            <a href="' . esc($ligaConstancia, 'attr') . '" style="color:#243b6b; text-decoration:underline;">' . esc($ligaConstancia) . '</a>
+                                        </p>
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td style="background:#f8fafc; padding:22px 34px; border-top:1px solid #e5e9ef; text-align:center;">
+                                        <p style="margin:0; color:#667085; font-size:12px; line-height:1.5;">
+                                            Secretaría de Seguridad y Protección Ciudadana
+                                        </p>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                </table>
+            </body>
+            </html>
+        ';
+
+        $email->setMessage($mensaje);
+
+        try {
+            if (! $email->send()) {
+                log_message(
+                    'error',
+                    'ERROR ENVIO CORREO: protocol=' . $emailConfig['protocol']
+                    . ' host=' . ($emailConfig['SMTPHost'] ?: 'N/A')
+                    . ' port=' . ($emailConfig['SMTPPort'] ?: 'N/A')
+                    . ' crypto=' . ($emailConfig['SMTPCrypto'] ?: 'N/A')
+                    . ' detalle=' . $email->printDebugger(['headers', 'subject'])
+                );
+            }
+        } catch (\Throwable $exception) {
+            log_message(
+                'error',
+                'ERROR ENVIO CORREO EXCEPTION: protocol=' . $emailConfig['protocol']
+                . ' host=' . ($emailConfig['SMTPHost'] ?: 'N/A')
+                . ' port=' . ($emailConfig['SMTPPort'] ?: 'N/A')
+                . ' crypto=' . ($emailConfig['SMTPCrypto'] ?: 'N/A')
+                . ' detalle=' . $exception->getMessage()
+            );
         }
+    }
+
+    // A ver pruebalo 
+
+    // private function enviarCorreoRegistro(string $correo): void
+    // {
+    //     $config = config('Email');
+
+    //     // validar SMTP
+    //     if (empty($config->SMTPHost) || empty($config->fromEmail)) {
+    //         log_message('info', 'Correo no enviado: SMTP no configurado');
+    //         return;
+    //     }
+
+    //     $ligaConstancia = env('registro.constanciaUrl')
+    //         ?: base_url('registro/exito');
+
+    //     $email = \Config\Services::email();
+
+    //     // 🔥 CONFIG CLAVE SMTP
+    //     $email->setFrom(
+    //         $config->fromEmail,
+    //         $config->fromName ?: $config->fromEmail
+    //     );
+
+    //     $email->setTo($correo);
+    //     $email->setSubject('Registro exitoso');
+
+    //     // 🔥 IMPORTANTE PARA SMTP
+    //     $email->setMailType('text');
+    //     $email->setNewLine("\r\n");
+
+    //     $mensaje = "Su registro fue exitoso.\n\n";
+    //     $mensaje .= "Podra descargar su constancia en la siguiente liga:\n";
+    //     $mensaje .= $ligaConstancia . "\n";
+
+    //     $email->setMessage($mensaje);
+
+    //     // 🔥 ENVÍO REAL
+    //     if (! $email->send()) {
+
+    //         $debug = $email->printDebugger(['headers', 'subject', 'body']);
+
+    //         log_message('error', 'ERROR ENVIO CORREO: ' . $debug);
+    //     }
+    // }
+
+    private function obtenerRegistroConstancia(string $tipo, int $id): ?array
+    {
+        $db = \Config\Database::connect();
+
+        if ($tipo === 'externo') {
+            $registro = $db->table('general g')
+                ->select("
+                    g.id_general,
+                    d.nombre,
+                    d.apellido_p,
+                    d.apellido_m,
+                    d.correo,
+                    s.sexo,
+                    g.dependencia,
+                    g.fecha_registro,
+                    'Externo' AS tipo_registro,
+                    '' AS nomina,
+                    '' AS area,
+                    '' AS funcion
+                ")
+                ->join('dato d', 'd.id_dato = g.id_dato')
+                ->join('sexo s', 's.id_sexo = g.id_sexo', 'left')
+                ->where('g.id_general', $id)
+                ->get()
+                ->getRowArray();
+
+            if (! $registro) {
+                return null;
+            }
+
+            $registro['folio'] = 'EXT-' . str_pad((string) $registro['id_general'], 5, '0', STR_PAD_LEFT);
+
+            return $registro;
+        }
+
+        if ($tipo === 'personal') {
+            $personalTieneFecha = $db->fieldExists('fecha_registro', 'general_personal');
+            $fechaSelect = $personalTieneFecha ? 'gp.fecha_registro' : 'NULL AS fecha_registro';
+
+            $registro = $db->table('general_personal gp')
+                ->select("
+                    gp.id_general_personal AS id_general,
+                    p.nomina,
+                    p.nombre,
+                    p.apellido_p,
+                    p.apellido_m,
+                    gp.correo,
+                    s.sexo,
+                    p.area,
+                    p.funcion,
+                    {$fechaSelect},
+                    'Comisaría' AS tipo_registro,
+                    '' AS dependencia
+                ")
+                ->join('personal p', 'p.nomina = gp.nomina')
+                ->join('sexo s', 's.id_sexo = p.id_sexo', 'left')
+                ->where('gp.id_general_personal', $id)
+                ->get()
+                ->getRowArray();
+
+            if (! $registro) {
+                return null;
+            }
+
+            $registro['folio'] = 'COM-' . str_pad((string) $registro['id_general'], 5, '0', STR_PAD_LEFT);
+
+            return $registro;
+        }
+
+        return null;
+    }
+
+    private function generarTokenConstancia(string $tipo, int $id): string
+    {
+        $payload = $this->base64UrlEncode(json_encode([
+            'tipo' => $tipo,
+            'id' => $id,
+        ]));
+
+        $firma = $this->base64UrlEncode(hash_hmac('sha256', $payload, $this->claveConstancia(), true));
+
+        return $payload . '.' . $firma;
+    }
+
+    private function validarTokenConstancia(string $token): ?array
+    {
+        $partes = explode('.', $token, 2);
+
+        if (count($partes) !== 2) {
+            return null;
+        }
+
+        [$payload, $firma] = $partes;
+        $firmaEsperada = $this->base64UrlEncode(hash_hmac('sha256', $payload, $this->claveConstancia(), true));
+
+        if (! hash_equals($firmaEsperada, $firma)) {
+            return null;
+        }
+
+        $datos = json_decode($this->base64UrlDecode($payload), true);
+
+        if (! is_array($datos) || empty($datos['tipo']) || empty($datos['id'])) {
+            return null;
+        }
+
+        if (! in_array($datos['tipo'], ['externo', 'personal'], true)) {
+            return null;
+        }
+
+        return $datos;
+    }
+
+    private function claveConstancia(): string
+    {
+        return env('encryption.key')
+            ?: env('email.SMTPPassB64')
+            ?: 'ExtorsionF-constancia';
+    }
+
+    private function base64UrlEncode(string $valor): string
+    {
+        return rtrim(strtr(base64_encode($valor), '+/', '-_'), '=');
+    }
+
+    private function base64UrlDecode(string $valor): string
+    {
+        return base64_decode(strtr($valor, '-_', '+/')) ?: '';
+    }
+
+    private function imageDataUri(string $path, string $mime): string
+    {
+        if (! is_file($path)) {
+            return '';
+        }
+
+        return 'data:' . $mime . ';base64,' . base64_encode(file_get_contents($path));
     }
 
     private function sinAcentos($cadena)

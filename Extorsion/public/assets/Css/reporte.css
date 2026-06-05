@@ -213,6 +213,14 @@ body {
   background: linear-gradient(135deg, #0b2e4a, #123e63);
 }
 
+.card-blue {
+  background: linear-gradient(135deg, #00538e, #0b6fb8);
+}
+
+.card-red {
+  background: linear-gradient(135deg, #7f1d1d, #a40000);
+}
+
 .card-comercio {
   background: linear-gradient(135deg, #16a34a, #22c55e);
   color: #ffffff;
@@ -336,7 +344,7 @@ canvas {
 }
 
 .table {
-  min-width: 700px;
+  min-width: 850px;
 }
 
 .tabla-scroll-wrapper {
