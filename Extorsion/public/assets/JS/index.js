@@ -65,7 +65,9 @@ if (btnBuscarNomina) {
 
     const mensaje = document.getElementById("mensajeNomina");
 
-    fetch(`./registro/buscar-nomina/${nomina}`)
+    const buscarNominaUrl = window.registroBuscarNominaUrl || "./registro/buscar-nomina";
+
+    fetch(`${buscarNominaUrl}/${nomina}`)
       .then((response) => response.json())
       .then((resultado) => {
         console.log(resultado);
@@ -167,7 +169,7 @@ if (btnConfirmar) {
     // CSRF obligatorio
     formData.append(csrfName, csrfValue);
 
-    fetch("./registro/guardar-personal", {
+    fetch(window.registroGuardarPersonalUrl || "./registro/guardar-personal", {
       method: "POST",
       body: formData,
     })
@@ -186,7 +188,7 @@ if (btnConfirmar) {
 
         modal.hide();
 
-        window.location.href = "./registro/exito";
+        window.location.href = window.registroExitoUrl || "./registro/exito";
       })
       .catch((error) => {
         console.error(error);

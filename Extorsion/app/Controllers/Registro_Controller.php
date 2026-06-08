@@ -15,8 +15,14 @@ use Dompdf\Options;
 
 class Registro_Controller extends BaseController
 {
-    public function index()
+    public function index(?string $jornada = null)
     {
+        if (! $this->jornadaRegistroDisponible($jornada)) {
+            return $this->response
+                ->setStatusCode(200)
+                ->setHeader('Content-Type', 'text/html; charset=UTF-8')
+                ->setBody($this->mensajeJornadaNoDisponible());
+        }
 
         $sexo = new Sexo_Model();
         $dependencia = new Dependencia_Model();
@@ -25,13 +31,30 @@ class Registro_Controller extends BaseController
         $data['dependencias'] = $dependencia->orderBy('id_dependencia', 'ASC')->findAll();
 
         $data['style'] = 'assets/Css/registro.css';
+        $data['jornada'] = $jornada;
+        $data['guardarUrl'] = $jornada === null
+            ? base_url('registro/guardar')
+            : base_url('registro/' . $jornada . '/guardar');
+        $data['guardarPersonalUrl'] = $jornada === null
+            ? base_url('registro/guardar-personal')
+            : base_url('registro/' . $jornada . '/guardar-personal');
+        $data['buscarNominaUrl'] = base_url('registro/buscar-nomina');
+        $data['exitoUrl'] = base_url('registro/exito');
 
         return view('head', $data)
             .   view('Registro', $data);
     }
 
-    public function guardar()
+    public function guardar(?string $jornada = null)
     {
+        if (! $this->jornadaRegistroDisponible($jornada)) {
+            return redirect()->to($jornada === null ? '/registro' : '/registro/' . $jornada)
+                ->withInput()
+                ->with('errors', [
+                    'jornada' => 'El registro para esta plática no se encuentra disponible.'
+                ]);
+        }
+
         $rules = [
             'nombre' => 'required|max_length[100]',
             'apellido_p' => 'required|max_length[100]',
@@ -176,8 +199,14 @@ class Registro_Controller extends BaseController
         return view('Listado', $data);
     }
 
-    public function guardarPersonal()
+    public function guardarPersonal(?string $jornada = null)
     {
+        if (! $this->jornadaRegistroDisponible($jornada)) {
+            return $this->response->setJSON([
+                'success' => false,
+                'message' => 'El registro para esta plática no se encuentra disponible.'
+            ]);
+        }
 
         $rules = [
             'nomina' => 'required|integer',
@@ -436,7 +465,10 @@ class Registro_Controller extends BaseController
         $plantillaPath = $this->plantillaConstanciaPath($registro);
 
         if ($plantillaPath === null) {
-            throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound('Plantilla de constancia no encontrada.');
+            return $this->response
+                ->setStatusCode(200)
+                ->setHeader('Content-Type', 'text/html; charset=UTF-8')
+                ->setBody($this->mensajeConstanciaFueraDeFecha());
         }
 
         $options = new Options();
@@ -481,8 +513,13 @@ class Registro_Controller extends BaseController
             throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound('Panel no encontrado.');
         }
 
-        $habilitar = $this->request->getPost('estado') === '1';
-        $this->guardarEstadoConstancias($habilitar);
+        if ($this->request->getPost('tipo') === 'jornada') {
+            $jornada = (string) $this->request->getPost('jornada');
+            $this->guardarJornadaActiva($jornada);
+        } else {
+            $habilitar = $this->request->getPost('estado') === '1';
+            $this->guardarEstadoConstancias($habilitar);
+        }
 
         return redirect()->to(base_url('constancias/control?token=' . rawurlencode($token)));
     }
@@ -659,68 +696,23 @@ class Registro_Controller extends BaseController
                 log_message(
                     'error',
                     'ERROR ENVIO CORREO: protocol=' . $emailConfig['protocol']
-                    . ' host=' . ($emailConfig['SMTPHost'] ?: 'N/A')
-                    . ' port=' . ($emailConfig['SMTPPort'] ?: 'N/A')
-                    . ' crypto=' . ($emailConfig['SMTPCrypto'] ?: 'N/A')
-                    . ' detalle=' . $email->printDebugger(['headers', 'subject'])
+                        . ' host=' . ($emailConfig['SMTPHost'] ?: 'N/A')
+                        . ' port=' . ($emailConfig['SMTPPort'] ?: 'N/A')
+                        . ' crypto=' . ($emailConfig['SMTPCrypto'] ?: 'N/A')
+                        . ' detalle=' . $email->printDebugger(['headers', 'subject'])
                 );
             }
         } catch (\Throwable $exception) {
             log_message(
                 'error',
                 'ERROR ENVIO CORREO EXCEPTION: protocol=' . $emailConfig['protocol']
-                . ' host=' . ($emailConfig['SMTPHost'] ?: 'N/A')
-                . ' port=' . ($emailConfig['SMTPPort'] ?: 'N/A')
-                . ' crypto=' . ($emailConfig['SMTPCrypto'] ?: 'N/A')
-                . ' detalle=' . $exception->getMessage()
+                    . ' host=' . ($emailConfig['SMTPHost'] ?: 'N/A')
+                    . ' port=' . ($emailConfig['SMTPPort'] ?: 'N/A')
+                    . ' crypto=' . ($emailConfig['SMTPCrypto'] ?: 'N/A')
+                    . ' detalle=' . $exception->getMessage()
             );
         }
     }
-
-    // A ver pruebalo 
-
-    // private function enviarCorreoRegistro(string $correo): void
-    // {
-    //     $config = config('Email');
-
-    //     // validar SMTP
-    //     if (empty($config->SMTPHost) || empty($config->fromEmail)) {
-    //         log_message('info', 'Correo no enviado: SMTP no configurado');
-    //         return;
-    //     }
-
-    //     $ligaConstancia = env('registro.constanciaUrl')
-    //         ?: base_url('registro/exito');
-
-    //     $email = \Config\Services::email();
-
-    //     // 🔥 CONFIG CLAVE SMTP
-    //     $email->setFrom(
-    //         $config->fromEmail,
-    //         $config->fromName ?: $config->fromEmail
-    //     );
-
-    //     $email->setTo($correo);
-    //     $email->setSubject('Registro exitoso');
-
-    //     // 🔥 IMPORTANTE PARA SMTP
-    //     $email->setMailType('text');
-    //     $email->setNewLine("\r\n");
-
-    //     $mensaje = "Su registro fue exitoso.\n\n";
-    //     $mensaje .= "Podra descargar su constancia en la siguiente liga:\n";
-    //     $mensaje .= $ligaConstancia . "\n";
-
-    //     $email->setMessage($mensaje);
-
-    //     // 🔥 ENVÍO REAL
-    //     if (! $email->send()) {
-
-    //         $debug = $email->printDebugger(['headers', 'subject', 'body']);
-
-    //         log_message('error', 'ERROR ENVIO CORREO: ' . $debug);
-    //     }
-    // }
 
     private function obtenerRegistroConstancia(string $tipo, int $id): ?array
     {
@@ -841,6 +833,114 @@ class Registro_Controller extends BaseController
             ?: 'ExtorsionF-constancia';
     }
 
+    private function jornadaRegistroDisponible(?string $jornada): bool
+    {
+        $jornadaActiva = $this->jornadaActiva();
+
+        if ($jornadaActiva === '') {
+            return false;
+        }
+
+        if ($jornada === null || $jornada === '') {
+            return false;
+        }
+
+        return isset($this->jornadasRegistro()[$jornada]) && hash_equals($jornadaActiva, $jornada);
+    }
+
+    private function jornadasRegistro(): array
+    {
+        return [
+            '09-junio' => '2026-06-09',
+            '10-junio' => '2026-06-10',
+            '11-junio' => '2026-06-11',
+            '12-junio' => '2026-06-12',
+        ];
+    }
+
+    private function jornadaActiva(): string
+    {
+        $estadoPath = $this->estadoJornadaPath();
+
+        if (is_file($estadoPath)) {
+            $estado = json_decode((string) file_get_contents($estadoPath), true);
+
+            if (is_array($estado) && array_key_exists('jornada', $estado)) {
+                return (string) $estado['jornada'];
+            }
+        }
+
+        return trim((string) env('registro.jornadaActiva', ''));
+    }
+
+    private function guardarJornadaActiva(string $jornada): void
+    {
+        if ($jornada !== '' && ! isset($this->jornadasRegistro()[$jornada])) {
+            return;
+        }
+
+        file_put_contents(
+            $this->estadoJornadaPath(),
+            json_encode(['jornada' => $jornada], JSON_PRETTY_PRINT)
+        );
+    }
+
+    private function estadoJornadaPath(): string
+    {
+        return WRITEPATH . 'registro_jornada.json';
+    }
+
+    private function mensajeJornadaNoDisponible(): string
+    {
+        return '<!doctype html>
+        <html lang="es">
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Registro no disponible</title>
+            <style>
+                body {
+                    margin: 0;
+                    min-height: 100vh;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    padding: 24px;
+                    background: #eef2f7;
+                    color: #1f2933;
+                    font-family: Arial, Helvetica, sans-serif;
+                }
+                .message {
+                    width: min(560px, 100%);
+                    padding: 34px 30px;
+                    border-top: 8px solid #8a1538;
+                    background: #ffffff;
+                    box-shadow: 0 14px 34px rgba(20, 36, 64, 0.14);
+                    text-align: center;
+                }
+                h1 {
+                    margin: 0 0 12px;
+                    color: #243b6b;
+                    font-size: 28px;
+                    line-height: 1.25;
+                }
+                p {
+                    margin: 0;
+                    color: #344054;
+                    font-size: 18px;
+                    line-height: 1.6;
+                }
+            </style>
+        </head>
+        <body>
+            <main class="message">
+                <h1>Registro no disponible</h1>
+                <p>El registro para esta pl&aacute;tica no se encuentra disponible. Verifique el enlace correspondiente al d&iacute;a de su asistencia.</p>
+            </main>
+        </body>
+        </html>';
+    }
+
     private function constanciasHabilitadas(): bool
     {
         $estadoPath = $this->estadoConstanciasPath();
@@ -884,128 +984,237 @@ class Registro_Controller extends BaseController
         $accionValor = $habilitadas ? '0' : '1';
         $color = $habilitadas ? '#15803d' : '#8a1538';
         $csrf = function_exists('csrf_field') ? csrf_field() : '';
+        $jornadaActiva = $this->jornadaActiva();
+        $jornadasBotones = '';
+
+        foreach ($this->jornadasRegistro() as $slug => $fecha) {
+            $activa = $slug === $jornadaActiva;
+            $jornadasBotones .= '<form method="post" action="' . esc(base_url('constancias/control'), 'attr') . '" class="mini-form">
+                    ' . $csrf . '
+                    <input type="hidden" name="token" value="' . esc($token, 'attr') . '">
+                    <input type="hidden" name="tipo" value="jornada">
+                    <input type="hidden" name="jornada" value="' . esc($slug, 'attr') . '">
+                    <button type="submit" class="' . ($activa ? 'secondary active' : 'secondary') . '">' . esc($slug) . '</button>
+                </form>';
+        }
+
+        $jornadasBotones .= '<form method="post" action="' . esc(base_url('constancias/control'), 'attr') . '" class="mini-form">
+                ' . $csrf . '
+                <input type="hidden" name="token" value="' . esc($token, 'attr') . '">
+                <input type="hidden" name="tipo" value="jornada">
+                <input type="hidden" name="jornada" value="">
+                <button type="submit" class="secondary danger">Cerrar registro</button>
+            </form>';
 
         return '<!doctype html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Control de constancias</title>
-    <style>
-        body {
-            margin: 0;
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 22px;
-            background: #eef2f7;
-            color: #1f2933;
-            font-family: Arial, Helvetica, sans-serif;
-        }
-        .panel {
-            width: min(420px, 100%);
-            padding: 28px 24px;
-            border-top: 8px solid ' . $color . ';
-            background: #ffffff;
-            box-shadow: 0 14px 34px rgba(20, 36, 64, 0.14);
-            text-align: center;
-        }
-        h1 {
-            margin: 0 0 12px;
-            color: #243b6b;
-            font-size: 26px;
-            line-height: 1.25;
-        }
-        .status {
-            margin: 0 0 24px;
-            color: ' . $color . ';
-            font-size: 22px;
-            font-weight: 700;
-        }
-        button {
-            width: 100%;
-            border: 0;
-            border-radius: 8px;
-            padding: 16px 18px;
-            background: ' . $color . ';
-            color: #ffffff;
-            font-size: 17px;
-            font-weight: 700;
-        }
-        .note {
-            margin: 18px 0 0;
-            color: #667085;
-            font-size: 14px;
-            line-height: 1.5;
-        }
-    </style>
-</head>
-<body>
-    <main class="panel">
-        <h1>Control de constancias</h1>
-        <p class="status">' . esc($estadoTexto) . '</p>
-        <form method="post" action="' . esc(base_url('constancias/control'), 'attr') . '">
-            ' . $csrf . '
-            <input type="hidden" name="token" value="' . esc($token, 'attr') . '">
-            <input type="hidden" name="estado" value="' . esc($accionValor, 'attr') . '">
-            <button type="submit">' . esc($accionTexto) . '</button>
-        </form>
-        <p class="note">Use este panel solo cuando deba abrir o cerrar la descarga de constancias.</p>
-    </main>
-</body>
-</html>';
+        <html lang="es">
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Control de constancias</title>
+            <style>
+                body {
+                    margin: 0;
+                    min-height: 100vh;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    padding: 22px;
+                    background: #eef2f7;
+                    color: #1f2933;
+                    font-family: Arial, Helvetica, sans-serif;
+                }
+                .panel {
+                    width: min(420px, 100%);
+                    padding: 28px 24px;
+                    border-top: 8px solid ' . $color . ';
+                    background: #ffffff;
+                    box-shadow: 0 14px 34px rgba(20, 36, 64, 0.14);
+                    text-align: center;
+                }
+                h1 {
+                    margin: 0 0 12px;
+                    color: #243b6b;
+                    font-size: 26px;
+                    line-height: 1.25;
+                }
+                .status {
+                    margin: 0 0 24px;
+                    color: ' . $color . ';
+                    font-size: 22px;
+                    font-weight: 700;
+                }
+                button {
+                    width: 100%;
+                    border: 0;
+                    border-radius: 8px;
+                    padding: 16px 18px;
+                    background: ' . $color . ';
+                    color: #ffffff;
+                    font-size: 17px;
+                    font-weight: 700;
+                }
+                .section {
+                    margin-top: 28px;
+                    padding-top: 22px;
+                    border-top: 1px solid #e5e9ef;
+                }
+                .section-title {
+                    margin: 0 0 12px;
+                    color: #243b6b;
+                    font-size: 18px;
+                    font-weight: 700;
+                }
+                .mini-form {
+                    margin-top: 10px;
+                }
+                .secondary {
+                    background: #243b6b;
+                    padding: 13px 16px;
+                    font-size: 15px;
+                }
+                .secondary.active {
+                    background: #15803d;
+                }
+                .secondary.danger {
+                    background: #8a1538;
+                }
+                .note {
+                    margin: 18px 0 0;
+                    color: #667085;
+                    font-size: 14px;
+                    line-height: 1.5;
+                }
+            </style>
+        </head>
+        <body>
+            <main class="panel">
+                <h1>Control de constancias</h1>
+                <p class="status">' . esc($estadoTexto) . '</p>
+                <form method="post" action="' . esc(base_url('constancias/control'), 'attr') . '">
+                    ' . $csrf . '
+                    <input type="hidden" name="token" value="' . esc($token, 'attr') . '">
+                    <input type="hidden" name="tipo" value="constancias">
+                    <input type="hidden" name="estado" value="' . esc($accionValor, 'attr') . '">
+                    <button type="submit">' . esc($accionTexto) . '</button>
+                </form>
+                <section class="section">
+                    <p class="section-title">Jornada activa</p>
+                    <p class="note">' . ($jornadaActiva === '' ? 'Registro cerrado' : 'Activa: ' . esc($jornadaActiva)) . '</p>
+                    ' . $jornadasBotones . '
+                </section>
+                <p class="note">Use este panel para abrir o cerrar descargas y cambiar la URL de registro activa.</p>
+            </main>
+        </body>
+        </html>';
     }
 
     private function mensajeConstanciaNoDisponible(): string
     {
         return '<!doctype html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Constancia no disponible</title>
-    <style>
-        body {
-            margin: 0;
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 24px;
-            background: #eef2f7;
-            color: #1f2933;
-            font-family: Arial, Helvetica, sans-serif;
-        }
-        .message {
-            width: min(560px, 100%);
-            padding: 34px 30px;
-            border-top: 8px solid #8a1538;
-            background: #ffffff;
-            box-shadow: 0 14px 34px rgba(20, 36, 64, 0.14);
-            text-align: center;
-        }
-        h1 {
-            margin: 0 0 12px;
-            color: #243b6b;
-            font-size: 28px;
-            line-height: 1.25;
-        }
-        p {
-            margin: 0;
-            color: #344054;
-            font-size: 18px;
-            line-height: 1.6;
-        }
-    </style>
-</head>
-<body>
-    <main class="message">
-        <h1>Constancia no disponible</h1>
-        <p>La descarga de su constancia se habilitar&aacute; una vez que termine la pl&aacute;tica.</p>
-    </main>
-</body>
-</html>';
+        <html lang="es">
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Constancia no disponible</title>
+            <style>
+                body {
+                    margin: 0;
+                    min-height: 100vh;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    padding: 24px;
+                    background: #eef2f7;
+                    color: #1f2933;
+                    font-family: Arial, Helvetica, sans-serif;
+                }
+                .message {
+                    width: min(560px, 100%);
+                    padding: 34px 30px;
+                    border-top: 8px solid #8a1538;
+                    background: #ffffff;
+                    box-shadow: 0 14px 34px rgba(20, 36, 64, 0.14);
+                    text-align: center;
+                }
+                h1 {
+                    margin: 0 0 12px;
+                    color: #243b6b;
+                    font-size: 28px;
+                    line-height: 1.25;
+                }
+                p {
+                    margin: 0;
+                    color: #344054;
+                    font-size: 18px;
+                    line-height: 1.6;
+                }
+            </style>
+        </head>
+        <body>
+            <main class="message">
+                <h1>Constancia no disponible</h1>
+                <p>La descarga de su constancia se habilitar&aacute; una vez que termine la pl&aacute;tica.</p>
+            </main>
+        </body>
+        </html>';
+    }
+
+    private function mensajeConstanciaFueraDeFecha(): string
+    {
+        return '<!doctype html>
+        <html lang="es">
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Constancia no disponible</title>
+            <style>
+                body {
+                    margin: 0;
+                    min-height: 100vh;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    padding: 24px;
+                    background: #eef2f7;
+                    color: #1f2933;
+                    font-family: Arial, Helvetica, sans-serif;
+                }
+                .message {
+                    width: min(580px, 100%);
+                    padding: 34px 30px;
+                    border-top: 8px solid #8a1538;
+                    background: #ffffff;
+                    box-shadow: 0 14px 34px rgba(20, 36, 64, 0.14);
+                    text-align: center;
+                }
+                h1 {
+                    margin: 0 0 12px;
+                    color: #243b6b;
+                    font-size: 28px;
+                    line-height: 1.25;
+                }
+                p {
+                    margin: 0;
+                    color: #344054;
+                    font-size: 18px;
+                    line-height: 1.6;
+                }
+                .small {
+                    margin-top: 14px;
+                    color: #667085;
+                    font-size: 14px;
+                }
+            </style>
+        </head>
+        <body>
+            <main class="message">
+                <h1>Constancia no disponible</h1>
+                <p>La constancia de este registro solo podr&aacute; generarse cuando corresponda a una de las fechas oficiales de la pl&aacute;tica.</p>
+                <p class="small">Si considera que esto es un error, verifique el d&iacute;a de registro o comun&iacute;quese con el personal organizador.</p>
+            </main>
+        </body>
+        </html>';
     }
 
     private function plantillaConstanciaPath(array $registro): ?string
@@ -1023,7 +1232,11 @@ class Registro_Controller extends BaseController
 
         $fecha = date('Y-m-d', strtotime($registro['fecha_registro']));
 
-        $archivo = $plantillaPorFecha[$fecha] ?? env('registro.constanciaPlantilla', 'junio_09.png');
+        if (! isset($plantillaPorFecha[$fecha])) {
+            return null;
+        }
+
+        $archivo = $plantillaPorFecha[$fecha];
 
         $archivo = basename((string) $archivo);
         $plantillaPath = FCPATH . 'assets/img/' . $archivo;
