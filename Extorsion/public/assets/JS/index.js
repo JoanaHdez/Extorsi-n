@@ -235,6 +235,7 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   const filtroTipo = document.getElementById("filtroTipo");
+  const filtroDia = document.getElementById("filtroDia");
   const filtroArea = document.getElementById("filtroArea");
   const filtroDependencia = document.getElementById("filtroDependencia");
   const limpiarFiltros = document.getElementById("limpiarFiltros");
@@ -257,6 +258,82 @@ document.addEventListener("DOMContentLoaded", function () {
   const colorVerde = "#16A34A";
   const chartGridColor = "rgba(15, 23, 42, 0.08)";
   const chartTextColor = "#334155";
+
+  const chartValueLabels = {
+    id: "chartValueLabels",
+    afterDatasetsDraw(chart) {
+      const opts = chart.options.plugins.valueLabels || {};
+
+      if (!opts.display) {
+        return;
+      }
+
+      const { ctx } = chart;
+      ctx.save();
+      ctx.fillStyle = opts.color || chartTextColor;
+      ctx.font = opts.font || "800 18px Arial";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+
+      chart.data.datasets.forEach((dataset, datasetIndex) => {
+        const meta = chart.getDatasetMeta(datasetIndex);
+
+        meta.data.forEach((element, index) => {
+          const value = dataset.data[index];
+
+          if (!value) {
+            return;
+          }
+
+          const position = element.tooltipPosition();
+
+          if (chart.config.type === "bar") {
+            ctx.fillText(String(value), position.x, position.y - 24);
+            ctx.font = "800 11px Arial";
+            ctx.fillStyle = "#667085";
+            ctx.fillText("Total", position.x, position.y - 8);
+            ctx.fillStyle = opts.color || chartTextColor;
+            ctx.font = opts.font || "800 18px Arial";
+            return;
+          }
+
+          ctx.fillStyle = "#ffffff";
+          ctx.font = "800 16px Arial";
+          ctx.fillText(String(value), position.x, position.y);
+          ctx.fillStyle = opts.color || chartTextColor;
+          ctx.font = opts.font || "800 18px Arial";
+        });
+      });
+
+      ctx.restore();
+    },
+    afterDraw(chart) {
+      const opts = chart.options.plugins.centerTotal || {};
+
+      if (!opts.display) {
+        return;
+      }
+
+      const dataset = chart.data.datasets[0];
+      const total = dataset.data.reduce((sum, value) => sum + Number(value || 0), 0);
+      const { ctx, chartArea } = chart;
+      const x = (chartArea.left + chartArea.right) / 2;
+      const y = (chartArea.top + chartArea.bottom) / 2;
+
+      ctx.save();
+      ctx.fillStyle = chartTextColor;
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.font = "800 34px Arial";
+      ctx.fillText(String(total), x, y - 6);
+      ctx.font = "800 14px Arial";
+      ctx.fillStyle = "#667085";
+      ctx.fillText("Total", x, y + 18);
+      ctx.restore();
+    },
+  };
+
+  Chart.register(chartValueLabels);
 
 const registros = dashboardData.map((r) => ({
   ...r,
@@ -320,12 +397,14 @@ function llenarSelect(select, opciones) {
   }
 
   function filtrarRegistros() {
+    const dia = filtroDia ? filtroDia.value : "";
     const tipo = filtroTipo ? filtroTipo.value : "";
     const area = filtroArea ? filtroArea.value : "";
     const dependencia = filtroDependencia ? filtroDependencia.value : "";
 
     return registros.filter((registro) => {
       return (
+        (!dia || registro.fecha === dia) &&
         (!tipo || registro.tipo_registro === tipo) &&
         (!area || registro.area === area) &&
         (!dependencia || registro.dependencia === dependencia)
@@ -357,6 +436,9 @@ function llenarSelect(select, opciones) {
           bodyColor: "#ffffff",
           padding: 12,
           cornerRadius: 10,
+        },
+        valueLabels: {
+          display: true,
         },
       },
       scales: {
@@ -426,18 +508,37 @@ function llenarSelect(select, opciones) {
   }
 
   function filtrarTablaRegistros() {
-    if (!buscarRegistros || !filasRegistro.length) {
+    if (!filasRegistro.length) {
       return;
     }
 
-    const busqueda = buscarRegistros.value.trim().toLowerCase();
+    const busqueda = buscarRegistros ? buscarRegistros.value.trim().toLowerCase() : "";
+    const dia = filtroDia ? filtroDia.value : "";
+    const tipo = filtroTipo ? filtroTipo.value : "";
+    const area = filtroArea ? filtroArea.value : "";
+    const dependencia = filtroDependencia ? filtroDependencia.value : "";
 
     filasRegistro.forEach((fila) => {
       const texto = fila.textContent.toLowerCase();
-      fila.style.display = !busqueda || texto.includes(busqueda) ? "" : "none";
+      const coincideBusqueda = !busqueda || texto.includes(busqueda);
+      const coincideDia = !dia || fila.dataset.fecha === dia;
+      const coincideTipo = !tipo || fila.dataset.tipo === tipo;
+      const coincideArea = !area || fila.dataset.area === area;
+      const coincideDependencia =
+        !dependencia || fila.dataset.dependencia === dependencia;
+
+      fila.style.display =
+        coincideBusqueda &&
+        coincideDia &&
+        coincideTipo &&
+        coincideArea &&
+        coincideDependencia
+          ? ""
+          : "none";
     });
   }
 
+  llenarSelect(filtroDia, opcionesUnicas("fecha"));
   llenarSelect(filtroTipo, opcionesUnicas("tipo_registro"));
   llenarSelect(filtroArea, opcionesUnicas("area"));
   llenarSelect(filtroDependencia, dependenciasCatalogo);
@@ -485,7 +586,7 @@ function llenarSelect(select, opciones) {
         responsive: true,
         cutout: "65%",
         plugins: {
-          legend: {
+        legend: {
             position: "bottom",
             labels: {
               color: chartTextColor,
@@ -500,31 +601,45 @@ function llenarSelect(select, opciones) {
             padding: 12,
             cornerRadius: 10,
           },
+          valueLabels: {
+            display: true,
+          },
+          centerTotal: {
+            display: true,
+          },
         },
       },
     });
   }
 
-  if (filtroTipo) {
-    filtroTipo.addEventListener("change", function () {
+[filtroDia, filtroTipo].forEach((select) => {
+  if (select) {
+    select.addEventListener("change", function () {
       actualizarAreas();
       actualizarDashboard();
+      filtrarTablaRegistros();
     });
   }
+});
 
 [filtroArea, filtroDependencia].forEach((select) => {
   if (select) {
-    select.addEventListener("change", actualizarDashboard);
+    select.addEventListener("change", function () {
+      actualizarDashboard();
+      filtrarTablaRegistros();
+    });
   }
 });
 
   if (limpiarFiltros) {
     limpiarFiltros.addEventListener("click", function () {
+      if (filtroDia) filtroDia.value = "";
       if (filtroTipo) filtroTipo.value = "";
       actualizarAreas();
       if (filtroArea) filtroArea.value = "";
       if (filtroDependencia) filtroDependencia.value = "";
       actualizarDashboard();
+      filtrarTablaRegistros();
     });
   }
 
@@ -552,6 +667,7 @@ function llenarSelect(select, opciones) {
   }
 
   actualizarDashboard();
+  filtrarTablaRegistros();
 });
 
 const menuToggle = document.getElementById("menuToggle");
@@ -567,6 +683,17 @@ if (menuToggle && cuadro && menuOverlay) {
   menuOverlay.addEventListener("click", function () {
     cuadro.classList.remove("active");
     menuOverlay.classList.remove("active");
+  });
+}
+
+const filtroMenuToggle = document.getElementById("menuFiltro");
+const filtroPanel = document.getElementById("dashboardFiltros");
+const dashboardTieneDatos = Array.isArray(window.dashboardData) && window.dashboardData.length > 0;
+
+if (filtroMenuToggle && filtroPanel && !dashboardTieneDatos) {
+  filtroMenuToggle.addEventListener("click", function () {
+    filtroPanel.classList.toggle("active");
+    filtroMenuToggle.classList.toggle("active", filtroPanel.classList.contains("active"));
   });
 }
 
@@ -590,3 +717,51 @@ function limpiarFormularioExterno() {
 
   actualizarDependenciaOtro();
 }
+
+function limpiarFormularioRegistroCompleto() {
+  limpiarFormularioExterno();
+
+  const camposModal = [
+    "nominaBusqueda",
+    "mensajeNomina",
+    "modalNombre",
+    "modalApellidoP",
+    "modalApellidoM",
+    "modalArea",
+    "modalFuncion",
+    "modalSexo",
+    "modalCorreo",
+  ];
+
+  camposModal.forEach((id) => {
+    const el = document.getElementById(id);
+
+    if (!el) {
+      return;
+    }
+
+    if ("value" in el) {
+      el.value = "";
+      return;
+    }
+
+    el.textContent = "";
+  });
+
+  nominaEncontrada = null;
+}
+
+document.addEventListener("DOMContentLoaded", function () {
+  if (window.registroLimpiarFormulario) {
+    limpiarFormularioRegistroCompleto();
+  }
+});
+
+window.addEventListener("pageshow", function (event) {
+  const navegacion = performance.getEntriesByType("navigation")[0];
+  const vieneDelHistorial = event.persisted || navegacion?.type === "back_forward";
+
+  if (window.registroLimpiarFormulario && vieneDelHistorial) {
+    limpiarFormularioRegistroCompleto();
+  }
+});

@@ -39,7 +39,7 @@ class Registro_Controller extends BaseController
             ? base_url('registro/guardar-personal')
             : base_url('registro/' . $jornada . '/guardar-personal');
         $data['buscarNominaUrl'] = base_url('registro/buscar-nomina');
-        $data['exitoUrl'] = base_url('registro/exito');
+        $data['exitoUrl'] = base_url('registro/exito' . ($jornada === null ? '' : '?jornada=' . rawurlencode($jornada)));
 
         return view('head', $data)
             .   view('Registro', $data);
@@ -157,12 +157,21 @@ class Registro_Controller extends BaseController
         ]);
         $this->enviarCorreoRegistro($correo, 'externo', (int) $idGeneral);
 
-        return redirect()->to('/registro/exito');
+        return redirect()->to('/registro/exito' . ($jornada === null ? '' : '?jornada=' . rawurlencode($jornada)));
     }
 
     public function exito()
     {
-        return view('Reg_Exitoso');
+        $jornada = trim((string) $this->request->getGet('jornada'));
+        if ($jornada === '' || ! isset($this->jornadasRegistro()[$jornada])) {
+            $jornada = null;
+        }
+
+        return view('Reg_Exitoso', [
+            'formularioUrl' => $jornada === null
+                ? base_url('registro')
+                : base_url('registro/' . $jornada),
+        ]);
     }
 
     public function listado()
@@ -329,7 +338,8 @@ class Registro_Controller extends BaseController
             d.correo,
             'Externo' AS tipo_registro,
             '' AS area,
-            g.dependencia
+            g.dependencia,
+            g.fecha_registro
         FROM general g
         INNER JOIN dato d ON g.id_dato = d.id_dato
 
@@ -342,9 +352,11 @@ class Registro_Controller extends BaseController
             gp.correo,
             'Comisaria' AS tipo_registro,
             p.area,
-            '' AS dependencia
+            '' AS dependencia,
+            {$fechaRegistroPersonal} AS fecha_registro
         FROM general_personal gp
         INNER JOIN personal p ON gp.nomina = p.nomina
+        ORDER BY fecha_registro ASC
         ");
 
         $dashboard = $db->query("
@@ -374,6 +386,7 @@ class Registro_Controller extends BaseController
         FROM general_personal gp
         INNER JOIN personal p ON gp.nomina = p.nomina
         LEFT JOIN sexo s ON p.id_sexo = s.id_sexo
+        ORDER BY fecha_registro ASC
                 ");
 
         $data['total'] = $total->getRow()->total;
@@ -381,6 +394,10 @@ class Registro_Controller extends BaseController
         $data['registros'] = $registros->getResultArray();
         $data['dashboard'] = $dashboard->getResultArray();
         $data['dependencias'] = $dependenciaModel->orderBy('id_dependencia', 'ASC')->findAll();
+        $data['cuestionarioResumen'] = $this->resumenCuestionarioConstancia();
+        $totalesCuestionario = array_column($data['cuestionarioResumen'], 'total_respuestas');
+        $data['cuestionarioTotal'] = empty($totalesCuestionario) ? 0 : max($totalesCuestionario);
+        $data['mostrarCuestionarioDashboard'] = filter_var(env('registro.mostrarCuestionarioDashboard', false), FILTER_VALIDATE_BOOLEAN);
 
         $data['style'] = 'assets/Css/reporte.css';
 
@@ -388,32 +405,72 @@ class Registro_Controller extends BaseController
             . view('Reporte', $data);
     }
 
+    public function reporteCuestionario()
+    {
+        $fechaFiltro = trim((string) $this->request->getGet('dia'));
+        if ($fechaFiltro !== '' && ! preg_match('/^\d{4}-\d{2}-\d{2}$/', $fechaFiltro)) {
+            $fechaFiltro = '';
+        }
+
+        $data['cuestionarioResumen'] = $this->resumenCuestionarioConstancia($fechaFiltro ?: null);
+        $totalesCuestionario = array_column($data['cuestionarioResumen'], 'total_respuestas');
+        $data['cuestionarioTotal'] = empty($totalesCuestionario) ? 0 : max($totalesCuestionario);
+        $data['cuestionarioDias'] = $this->diasCuestionarioConstancia();
+        $data['cuestionarioFechaFiltro'] = $fechaFiltro;
+        $data['style'] = 'assets/Css/reporte.css';
+
+        return view('head', $data)
+            . view('ReporteCuestionario', $data);
+    }
+
     public function exportar()
     {
         $db = \Config\Database::connect();
+        $personalTieneFecha = $db->fieldExists('fecha_registro', 'general_personal');
+        $fechaRegistroPersonal = $personalTieneFecha ? 'gp.fecha_registro' : 'NULL';
 
         $query = $db->query("
-        SELECT 
-        d.nombre, 
-        d.apellido_p, 
-        d.apellido_m,
-        d.correo,
-        s.sexo,
-        g.dependencia,
+            SELECT
+                d.nombre,
+                d.apellido_p,
+                d.apellido_m,
+                d.correo,
+                s.sexo,
+                'Externo' AS tipo_registro,
+                '' AS area,
+                g.dependencia,
                 g.fecha_registro
+            FROM general g
+            INNER JOIN dato d ON g.id_dato = d.id_dato
+            LEFT JOIN sexo s ON g.id_sexo = s.id_sexo
 
-        FROM general g
+            UNION ALL
 
-        INNER JOIN dato d ON g.id_dato = d.id_dato
-        INNER JOIN sexo s ON g.id_sexo = s.id_sexo");
+            SELECT
+                p.nombre,
+                p.apellido_p,
+                p.apellido_m,
+                gp.correo,
+                s.sexo,
+                'Comisaria' AS tipo_registro,
+                p.area,
+                '' AS dependencia,
+                {$fechaRegistroPersonal} AS fecha_registro
+            FROM general_personal gp
+            INNER JOIN personal p ON gp.nomina = p.nomina
+            LEFT JOIN sexo s ON p.id_sexo = s.id_sexo
 
+            ORDER BY fecha_registro ASC
+        ");
 
         $registros = $query->getResultArray();
 
-        header('Content-Type: text/csv; charset=utf-8');
-        header('Content-Disposition: attachment; filename=registro.csv');
+        header('Content-Type: text/csv; charset=UTF-8');
+        header('Content-Disposition: attachment; filename=registros.csv');
 
         $output = fopen('php://output', 'w');
+
+        fwrite($output, "\xEF\xBB\xBF");
 
         fputcsv($output, [
             'Nombre',
@@ -421,9 +478,11 @@ class Registro_Controller extends BaseController
             'Apellido Materno',
             'Correo',
             'Sexo',
+            'Tipo',
+            'Area',
             'Dependencia',
             'Fecha de Registro'
-        ]);
+        ], ';');
 
         foreach ($registros as $fila) {
             fputcsv($output, [
@@ -432,9 +491,11 @@ class Registro_Controller extends BaseController
                 $fila['apellido_m'],
                 $fila['correo'],
                 $fila['sexo'],
+                $fila['tipo_registro'],
+                $fila['area'],
                 $fila['dependencia'],
                 $fila['fecha_registro']
-            ]);
+            ], ';');
         }
 
         fclose($output);
@@ -471,6 +532,65 @@ class Registro_Controller extends BaseController
                 ->setBody($this->mensajeConstanciaFueraDeFecha());
         }
 
+        if ($this->cuestionarioConstanciaHabilitado() && ! $this->cuestionarioConstanciaRespondido($datosToken['tipo'], (int) $datosToken['id'])) {
+            return view('CuestionarioConstancia', [
+                'registro' => $registro,
+                'token' => $token,
+                'preguntas' => $this->preguntasCuestionarioConstancia(),
+            ]);
+        }
+
+        return $this->descargarConstanciaPdf($registro, $plantillaPath);
+    }
+
+    public function guardarCuestionarioConstancia(string $token)
+    {
+        $datosToken = $this->validarTokenConstancia($token);
+
+        if ($datosToken === null) {
+            throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound('Constancia no valida.');
+        }
+
+        $registro = $this->obtenerRegistroConstancia($datosToken['tipo'], (int) $datosToken['id']);
+
+        if ($registro === null) {
+            throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound('Registro no encontrado.');
+        }
+
+        if (! $this->constanciasHabilitadas()) {
+            return $this->response
+                ->setStatusCode(200)
+                ->setHeader('Content-Type', 'text/html; charset=UTF-8')
+                ->setBody($this->mensajeConstanciaNoDisponible());
+        }
+
+        $plantillaPath = $this->plantillaConstanciaPath($registro);
+
+        if ($plantillaPath === null) {
+            return $this->response
+                ->setStatusCode(200)
+                ->setHeader('Content-Type', 'text/html; charset=UTF-8')
+                ->setBody($this->mensajeConstanciaFueraDeFecha());
+        }
+
+        $respuestas = $this->request->getPost('respuestas');
+
+        if (! is_array($respuestas)) {
+            return redirect()->to(base_url('constancia/' . $token))
+                ->with('errors', [
+                    'cuestionario' => 'Responda el cuestionario para descargar su constancia.'
+                ]);
+        }
+
+        $this->guardarRespuestasCuestionario($datosToken['tipo'], (int) $datosToken['id'], $respuestas);
+
+        return view('CuestionarioExito', [
+            'downloadUrl' => base_url('constancia/' . $token),
+        ]);
+    }
+
+    private function descargarConstanciaPdf(array $registro, string $plantillaPath)
+    {
         $options = new Options();
         $options->set('isRemoteEnabled', true);
         $options->set('isHtml5ParserEnabled', true);
@@ -490,6 +610,202 @@ class Registro_Controller extends BaseController
             ->setHeader('Content-Type', 'application/pdf')
             ->setHeader('Content-Disposition', 'attachment; filename="' . $nombreArchivo . '"')
             ->setBody($dompdf->output());
+    }
+
+    private function preguntasCuestionarioConstancia(): array
+    {
+        $escala = ['1', '2', '3', '4', '5'];
+
+        return [
+            [
+                'id' => 'pregunta_1',
+                'texto' => '¿Qué te pareció la Plática de Medidas Preventivas en Caso de Extorsión?',
+                'tipo' => 'radio',
+                'opciones' => $escala,
+                'required' => true,
+            ],
+            [
+                'id' => 'pregunta_2',
+                'texto' => '¿El tema de la conferencia fue interesante para ti?',
+                'tipo' => 'radio',
+                'opciones' => $escala,
+                'required' => true,
+            ],
+            [
+                'id' => 'pregunta_3',
+                'texto' => '¿La información presentada fue clara y fácil de entender?',
+                'tipo' => 'radio',
+                'opciones' => $escala,
+                'required' => true,
+            ],
+            [
+                'id' => 'pregunta_4',
+                'texto' => '¿El ponente explicó el tema de manera adecuada?',
+                'tipo' => 'radio',
+                'opciones' => $escala,
+                'required' => true,
+            ],
+            [
+                'id' => 'pregunta_5',
+                'texto' => '¿La conferencia mantuvo tu atención durante la mayor parte del tiempo?',
+                'tipo' => 'radio',
+                'opciones' => $escala,
+                'required' => true,
+            ],
+            [
+                'id' => 'comentarios',
+                'texto' => 'Comentarios adicionales',
+                'tipo' => 'textarea',
+                'required' => false,
+            ],
+        ];
+    }
+
+    private function cuestionarioConstanciaHabilitado(): bool
+    {
+        return filter_var(env('registro.cuestionarioConstanciaHabilitado', false), FILTER_VALIDATE_BOOLEAN);
+    }
+
+    private function cuestionarioConstanciaRespondido(string $tipoRegistro, int $idRegistro): bool
+    {
+        $db = \Config\Database::connect();
+        $this->asegurarTablaCuestionario($db);
+
+        return $db->table('cuestionario_constancia')
+            ->where('tipo_registro', $tipoRegistro)
+            ->where('id_registro', $idRegistro)
+            ->countAllResults() > 0;
+    }
+
+    private function guardarRespuestasCuestionario(string $tipoRegistro, int $idRegistro, array $respuestas): void
+    {
+        $db = \Config\Database::connect();
+        $this->asegurarTablaCuestionario($db);
+
+        $limpias = [];
+
+        foreach ($this->preguntasCuestionarioConstancia() as $pregunta) {
+            $id = $pregunta['id'];
+            $valor = $respuestas[$id] ?? '';
+            $limpias[$id] = is_array($valor) ? implode(', ', $valor) : trim((string) $valor);
+        }
+
+        $existente = $db->table('cuestionario_constancia')
+            ->select('id_cuestionario')
+            ->where('tipo_registro', $tipoRegistro)
+            ->where('id_registro', $idRegistro)
+            ->get()
+            ->getRowArray();
+
+        $datos = [
+            'tipo_registro' => $tipoRegistro,
+            'id_registro' => $idRegistro,
+            'respuestas' => json_encode($limpias, JSON_UNESCAPED_UNICODE),
+        ];
+
+        if ($existente) {
+            $db->table('cuestionario_constancia')
+                ->where('id_cuestionario', $existente['id_cuestionario'])
+                ->update($datos);
+            return;
+        }
+
+        $db->table('cuestionario_constancia')->insert($datos);
+    }
+
+    private function asegurarTablaCuestionario($db): void
+    {
+        $db->query("
+            CREATE TABLE IF NOT EXISTS cuestionario_constancia (
+                id_cuestionario INT AUTO_INCREMENT PRIMARY KEY,
+                tipo_registro VARCHAR(20) NOT NULL,
+                id_registro INT NOT NULL,
+                respuestas LONGTEXT NOT NULL,
+                fecha_respuesta DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                UNIQUE KEY uq_cuestionario_registro (tipo_registro, id_registro)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+        ");
+    }
+
+    private function resumenCuestionarioConstancia(?string $fecha = null): array
+    {
+        $db = \Config\Database::connect();
+        $this->asegurarTablaCuestionario($db);
+
+        $builder = $db->table('cuestionario_constancia')
+            ->select('respuestas, fecha_respuesta')
+            ->orderBy('fecha_respuesta', 'ASC');
+
+        $filas = $builder->get()->getResultArray();
+
+        if ($fecha !== null && $fecha !== '') {
+            $filas = array_values(array_filter($filas, static function (array $fila) use ($fecha): bool {
+                return substr((string) ($fila['fecha_respuesta'] ?? ''), 0, 10) === $fecha;
+            }));
+        }
+
+        $resumen = [];
+
+        foreach ($this->preguntasCuestionarioConstancia() as $pregunta) {
+            $id = $pregunta['id'];
+            $resumen[$id] = [
+                'id' => $id,
+                'texto' => $pregunta['texto'],
+                'tipo' => $pregunta['tipo'] ?? 'text',
+                'conteos' => [],
+                'respuestas_abiertas' => [],
+                'total_respuestas' => 0,
+            ];
+
+            foreach (($pregunta['opciones'] ?? []) as $opcion) {
+                $resumen[$id]['conteos'][$opcion] = 0;
+            }
+        }
+
+        foreach ($filas as $fila) {
+            $respuestas = json_decode((string) $fila['respuestas'], true);
+
+            if (! is_array($respuestas)) {
+                continue;
+            }
+
+            foreach ($resumen as $id => &$preguntaResumen) {
+                $valor = trim((string) ($respuestas[$id] ?? ''));
+
+                if ($valor === '') {
+                    continue;
+                }
+
+                $preguntaResumen['total_respuestas']++;
+
+                if ($preguntaResumen['tipo'] === 'textarea') {
+                    $preguntaResumen['respuestas_abiertas'][] = $valor;
+                    continue;
+                }
+
+                if (! array_key_exists($valor, $preguntaResumen['conteos'])) {
+                    $preguntaResumen['conteos'][$valor] = 0;
+                }
+
+                $preguntaResumen['conteos'][$valor]++;
+            }
+            unset($preguntaResumen);
+        }
+
+        return array_values($resumen);
+    }
+
+    private function diasCuestionarioConstancia(): array
+    {
+        $db = \Config\Database::connect();
+        $this->asegurarTablaCuestionario($db);
+
+        return $db->table('cuestionario_constancia')
+            ->select('DATE(fecha_respuesta) AS fecha, COUNT(*) AS total', false)
+            ->groupBy('DATE(fecha_respuesta)')
+            ->orderBy('fecha', 'ASC')
+            ->get()
+            ->getResultArray();
     }
 
     public function controlConstancias()
@@ -853,7 +1169,7 @@ class Registro_Controller extends BaseController
         return [
             '09-junio' => '2026-06-09',
             '10-junio' => '2026-06-10',
-            '11-junio' => '2026-06-11',
+            '17-junio' => '2026-06-17',
             '12-junio' => '2026-06-12',
         ];
     }
@@ -1222,7 +1538,7 @@ class Registro_Controller extends BaseController
         $plantillaPorFecha = [
             '2026-06-09' => 'junio_09.png',
             '2026-06-10' => 'junio_10.png',
-            '2026-06-11' => 'junio_11.png',
+            '2026-06-17' => 'junio_17.png',
             '2026-06-12' => 'junio_12.png',
         ];
 

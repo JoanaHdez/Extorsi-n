@@ -34,6 +34,16 @@ p {
 }
 </style>
 
+<script>
+    (function () {
+        const navegacion = performance.getEntriesByType("navigation")[0];
+
+        if (navegacion && navegacion.type === "reload") {
+            window.location.replace(<?= json_encode($formularioUrl ?? base_url('registro')) ?>);
+        }
+    })();
+</script>
+
 </head>
 <body>
 

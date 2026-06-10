@@ -239,6 +239,54 @@ body {
   color: white;
 }
 
+.scale-card.card-modern {
+  min-height: 78px;
+  padding: 6px;
+}
+
+.scale-card h2 {
+  font-size: 22px;
+}
+
+.scale-card p {
+  font-size: 11px;
+}
+
+.questionnaire-card.card-modern {
+  height: 104px;
+  min-height: 104px;
+  padding: 6px;
+}
+
+.questionnaire-card .card-body {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 10px;
+}
+
+.questionnaire-card h6 {
+  font-size: 11px;
+  line-height: 1.15;
+  margin-bottom: 4px;
+}
+
+.questionnaire-card h2 {
+  font-size: 24px;
+  margin-bottom: 2px;
+}
+
+.questionnaire-card p {
+  font-size: 11px;
+}
+
+.questionnaire-card-active {
+  box-shadow:
+    0 0 0 3px rgba(184, 137, 58, 0.45),
+    0 15px 30px rgba(31, 90, 138, 0.2);
+}
+
 .card-icon-bg {
   position: absolute;
   right: 10px;
@@ -348,7 +396,7 @@ canvas {
 }
 
 .tabla-scroll-wrapper {
-  max-height: 360px;
+  max-height: 460px;
   overflow-y: auto;
   overflow-x: hidden;
 }
@@ -404,8 +452,8 @@ canvas {
 }
 
 .tabla-scroll-wrapper {
-  height: 360px;
-  max-height: 360px;
+  height: 460px;
+  max-height: 460px;
   overflow: hidden;
   display: flex;
   flex-direction: column;
@@ -417,6 +465,13 @@ canvas {
   height: 100%;
   overflow-y: auto;
   overflow-x: hidden;
+}
+
+.cuestionario-tabla-scroll {
+  max-height: 650px;
+  overflow: auto;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  border-radius: 12px;
 }
 
 .table thead th {

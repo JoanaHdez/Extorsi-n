@@ -5,174 +5,144 @@
                 <div class="container-fluid p-0">
                     <div class="d-flex">
                         <div class="mobile-topbar d-md-none"></div>
-
                         <button class="menu-toggle d-md-none" id="menuToggle">
                             ☰
                         </button>
-
                         <div class="menu-overlay" id="menuOverlay"></div>
-
                         <div
                             class="cuadro shadow rounded-end p-4 w-15 vh-100 d-flex flex-column justify-content-start align-items-center gap-2">
                             <div class="logos-container">
-
                                 <img src="<?= base_url('assets/img/ayun.png') ?>" class="logo-principal"
                                     alt="Logo principal">
 
                                 <img src="<?= base_url('assets/img/comisaria.png') ?>" class="logo-secundario mt-5"
                                     alt="Logo secundario">
-
                             </div>
-
                             <div class="menu-wrapper d-flex flex-column gap-3 menu-opciones mt-5">
-
                                 <div class="menu-item">
                                     <span class="arrow">
                                     </span> Dashboard
                                 </div>
-
                                 <a href="<?= base_url('index.php/reporte/exportar') ?>" class="btn-exportar mt-4">
                                     <span class="arrow">
                                     </span>
                                     Exportar
                                 </a>
-
+                                <a href="<?= base_url('reporte/cuestionario') ?>" class="btn-exportar mt-4">
+                                    <span class="arrow">
+                                    </span>
+                                    Cuestionario
+                                </a>
                                 <div class="menu-item mt-4" id="menuFiltro">
                                     <span class="arrow">
                                     </span> Filtro
                                 </div>
                                 <form class="filter-panel" id="dashboardFiltros">
                                     <div class="filter-title">Filtros</div>
-
+                                    <label>
+                                        Día
+                                        <select id="filtroDia" aria-label="Día">
+                                            <option value=""></option>
+                                        </select>
+                                    </label>
                                     <label>
                                         Tipo
                                         <select id="filtroTipo" aria-label="Tipo">
                                             <option value=""></option>
                                         </select>
                                     </label>
-
                                     <label>
                                         Área
                                         <select id="filtroArea" aria-label="Área">
                                             <option value=""></option>
                                         </select>
                                     </label>
-
                                     <label>
                                         Dependencia
                                         <select id="filtroDependencia" aria-label="Dependencia">
                                             <option value=""></option>
                                         </select>
                                     </label>
-
                                     <button type="button" id="limpiarFiltros">Limpiar filtros</button>
                                 </form>
                             </div>
-
                             <a href="./registro" class="menu-salir text-decoration-none">
                                 <img src="<?= base_url('assets/img/cerrar-sesion.png') ?>" class="logo-salir"
                                     alt="Logo salir">
                                 <h4 class="mt-2" style="color: white;">Salir</h4>
                             </a>
                         </div>
-
                         <div class="contenido flex-grow-1">
-
                             <div class="d-flex flex-column align-items-center">
-
                                 <h1 class="titulo fw-bold mt-3">
                                     Pláticas de Medidas Preventivas en Casos de Extorsión
                                 </h1>
-
                             </div>
-
                             <div class="container px-0 py-4 mt-3">
                                 <div class="row g-5">
                                     <h3 class="titulo fw-bold mt-4">Dashboard</h3>
-
                                     <div class="row g-3">
-
                                         <div class="col-sm-4">
                                             <div class="card-total card-modern card-green">
                                                 <div class="card-body d-flex align-items-center">
-
                                                     <div class="flex-grow-1">
                                                         <h6>Total de Registros</h6>
                                                         <h2 class="fw-bold" id="dashboardTotal"><?= $total ?></h2>
                                                     </div>
-
                                                     <div class="card-icon-bg">
                                                         <img src="<?= base_url('assets/img/registro.png') ?>">
                                                     </div>
-
                                                 </div>
                                             </div>
                                         </div>
-
                                         <div class="col-sm-4">
                                             <div class="card-total card-modern card-blue">
                                                 <div class="card-body d-flex align-items-center">
-
                                                     <div class="flex-grow-1">
                                                         <h6>Registros Externos</h6>
                                                         <h2 class="fw-bold" id="totalRegistroGeneral">0</h2>
                                                     </div>
-
                                                     <div class="card-icon-bg">
                                                         <img src="<?= base_url('assets/img/registro.png') ?>">
                                                     </div>
-
                                                 </div>
                                             </div>
                                         </div>
-
                                         <div class="col-sm-4">
                                             <div class="card-total card-modern card-red">
                                                 <div class="card-body d-flex align-items-center">
-
                                                     <div class="flex-grow-1">
                                                         <h6>Registros Comisaría</h6>
                                                         <h2 class="fw-bold" id="totalRegistroComisaria">0</h2>
                                                     </div>
-
                                                     <div class="card-icon-bg">
                                                         <img src="<?= base_url('assets/img/escudo-policial.png') ?>">
                                                     </div>
-
                                                 </div>
                                             </div>
                                         </div>
                                     </div>
-
                                     <div class="row g-4 dashboard-grid">
-
                                         <div class="col-lg-8 g-4 dashboard-panel chart-panel chart-panel-large me-5">
                                             <h3>Registros por día</h3>
-
                                             <canvas class="mt-4" id="graficaDependencias"></canvas>
                                         </div>
-
                                         <div class="col-lg-3 g-4 dashboard-panel chart-panel me-5">
                                             <h3>Registros por sexo</h3>
-
                                             <canvas class="mt-4" id="graficaSexo"></canvas>
                                         </div>
 
-                                        <div class="col-lg-8 g-5 dashboard-panel table-panel mt-5">
+                                        <div class="col-lg-12 g-5 dashboard-panel table-panel mt-5">
                                             <nav class="navbar-simple">
                                                 <form class="search-simple" id="buscarRegistrosForm">
-
                                                     <input type="search" id="buscarRegistros" placeholder="Buscar..."
                                                         aria-label="Search">
-
                                                     <button type="submit">Buscar</button>
-
                                                 </form>
                                             </nav>
                                             <div class="col-sm-12 g-5">
                                                 <div class="tabla-scroll-wrapper">
                                                     <div class="tabla-scroll">
-
                                                         <table class="table table-striped table-hover">
                                                             <thead>
                                                                 <tr>
@@ -187,25 +157,24 @@
                                                             <tbody>
                                                                 <?php $i = 1;
                                                                 foreach ($registros as $fila): ?>
-                                                                    <tr class="registro-tabla">
-                                                                        <th><?= $i++ ?></th>
-
-                                                                        <td>
-                                                                            <?= esc(mb_strtoupper($fila['nombre'] . ' ' . $fila['apellido_p'] . ' ' . $fila['apellido_m'], 'UTF-8')) ?>
-                                                                        </td>
-
-                                                                        <td><?= esc(mb_strtoupper($fila['correo'], 'UTF-8')) ?>
-                                                                        </td>
-
-                                                                        <td><?= esc(mb_strtoupper($fila['tipo_registro'], 'UTF-8')) ?>
-                                                                        </td>
-
-                                                                        <td><?= esc(mb_strtoupper($fila['area'] ?: 'NO APLICA', 'UTF-8')) ?>
-                                                                        </td>
-
-                                                                        <td><?= esc(mb_strtoupper($fila['dependencia'] ?: 'NO APLICA', 'UTF-8')) ?>
-                                                                        </td>
-                                                                    </tr>
+                                                                <tr class="registro-tabla"
+                                                                    data-tipo="<?= esc($fila['tipo_registro']) ?>"
+                                                                    data-area="<?= esc($fila['area'] ?? '') ?>"
+                                                                    data-dependencia="<?= esc($fila['dependencia'] ?? '') ?>"
+                                                                    data-fecha="<?= esc(! empty($fila['fecha_registro']) ? substr((string) $fila['fecha_registro'], 0, 10) : '') ?>">
+                                                                    <th><?= $i++ ?></th>
+                                                                    <td>
+                                                                        <?= esc(mb_strtoupper($fila['nombre'] . ' ' . $fila['apellido_p'] . ' ' . $fila['apellido_m'], 'UTF-8')) ?>
+                                                                    </td>
+                                                                    <td><?= esc(mb_strtoupper($fila['correo'], 'UTF-8')) ?>
+                                                                    </td>
+                                                                    <td><?= esc(mb_strtoupper($fila['tipo_registro'], 'UTF-8')) ?>
+                                                                    </td>
+                                                                    <td><?= esc(mb_strtoupper($fila['area'] ?: 'NO APLICA', 'UTF-8')) ?>
+                                                                    </td>
+                                                                    <td><?= esc(mb_strtoupper($fila['dependencia'] ?: 'NO APLICA', 'UTF-8')) ?>
+                                                                    </td>
+                                                                </tr>
                                                                 <?php endforeach; ?>
 
                                                             </tbody>
@@ -214,6 +183,52 @@
                                                 </div>
                                             </div>
                                         </div>
+                                        <?php if (! empty($mostrarCuestionarioDashboard)): ?>
+                                        <div class="col-lg-3 g-5 dashboard-panel mt-5">
+                                            <h3>Cuestionario</h3>
+                                            <p style="margin: 8px 0 18px; color: #667085; font-size: 14px;">
+                                                Total de respuestas: <strong><?= esc((string) ($cuestionarioTotal ?? 0)) ?></strong>
+                                            </p>
+
+                                            <?php if (empty($cuestionarioResumen)): ?>
+                                                <p style="color: #667085; font-size: 14px;">Aún no hay respuestas registradas.</p>
+                                            <?php else: ?>
+                                                <div style="display: grid; gap: 16px;">
+                                                    <?php foreach ($cuestionarioResumen as $pregunta): ?>
+                                                        <div style="border-bottom: 1px solid #e5e9ef; padding-bottom: 14px;">
+                                                            <h6 style="margin: 0 0 8px; color: #243b6b; font-weight: 700;">
+                                                                <?= esc($pregunta['texto']) ?>
+                                                            </h6>
+                                                            <p style="margin: 0 0 8px; color: #667085; font-size: 13px;">
+                                                                Respuestas: <?= esc((string) $pregunta['total_respuestas']) ?>
+                                                            </p>
+
+                                                            <?php if (($pregunta['tipo'] ?? '') === 'textarea'): ?>
+                                                                <?php if (empty($pregunta['respuestas_abiertas'])): ?>
+                                                                    <p style="margin: 0; color: #667085; font-size: 13px;">Sin comentarios.</p>
+                                                                <?php else: ?>
+                                                                    <ul style="margin: 0; padding-left: 18px; color: #344054; font-size: 13px;">
+                                                                        <?php foreach ($pregunta['respuestas_abiertas'] as $respuesta): ?>
+                                                                            <li><?= esc($respuesta) ?></li>
+                                                                        <?php endforeach; ?>
+                                                                    </ul>
+                                                                <?php endif; ?>
+                                                            <?php else: ?>
+                                                                <div style="display: grid; gap: 6px;">
+                                                                    <?php foreach (($pregunta['conteos'] ?? []) as $opcion => $totalOpcion): ?>
+                                                                        <div style="display: flex; justify-content: space-between; gap: 10px; color: #344054; font-size: 13px;">
+                                                                            <span><?= esc($opcion) ?></span>
+                                                                            <strong><?= esc((string) $totalOpcion) ?></strong>
+                                                                        </div>
+                                                                    <?php endforeach; ?>
+                                                                </div>
+                                                            <?php endif; ?>
+                                                        </div>
+                                                    <?php endforeach; ?>
+                                                </div>
+                                            <?php endif; ?>
+                                        </div>
+                                        <?php endif; ?>
                                     </div>
                                 </div>
                             </div>
@@ -226,8 +241,8 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 
     <script>
-        window.dashboardData = <?= json_encode($dashboard) ?>;
-        window.dependenciasCatalogo = <?= json_encode(array_map(
+    window.dashboardData = <?= json_encode($dashboard) ?>;
+    window.dependenciasCatalogo = <?= json_encode(array_map(
             fn($dependencia) => mb_strtoupper($dependencia['dependencia'], 'UTF-8'),
             $dependencias
         )) ?>;

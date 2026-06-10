@@ -115,7 +115,7 @@
                                     Ciudadana
                                 </h3>
                                 <h3 class="subtitulo mt-4">
-                                    Del 09 al 12 de junio de 2026
+                                    09, 10, 12 y 17 de junio de 2026
                                 </h3>
                                 <h2 class="mt-4">
                                     Registro de Asistencia
@@ -162,7 +162,7 @@
                                         <?= session('errors.limite') ?>
                                     </div>
                                 <?php endif; ?>
-                                <form action="<?= esc($guardarUrl ?? base_url('registro/guardar'), 'attr') ?>" method="post">
+                                <form action="<?= esc($guardarUrl ?? base_url('registro/guardar'), 'attr') ?>" method="post" id="registroForm" autocomplete="off">
                                     <?= csrf_field() ?>
                                     <div class="row g-5">
                                         <div class="col-md-4">
@@ -239,6 +239,7 @@
         window.registroBuscarNominaUrl = <?= json_encode($buscarNominaUrl ?? base_url('registro/buscar-nomina')) ?>;
         window.registroGuardarPersonalUrl = <?= json_encode($guardarPersonalUrl ?? base_url('registro/guardar-personal')) ?>;
         window.registroExitoUrl = <?= json_encode($exitoUrl ?? base_url('registro/exito')) ?>;
+        window.registroLimpiarFormulario = <?= session()->get('errors') ? 'false' : 'true' ?>;
     </script>
 
     <script src="<?= base_url('assets/JS/index.js') ?>"></script>
