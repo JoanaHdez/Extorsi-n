@@ -335,16 +335,64 @@ document.addEventListener("DOMContentLoaded", function () {
 
   Chart.register(chartValueLabels);
 
-const registros = dashboardData.map((r) => ({
-  ...r,
-  sexo: r.sexo || "",
-  tipo_registro: r.tipo_registro || "",
-  area: r.area || "",
-  funcion: r.funcion || "",
-  dependencia: r.dependencia || "",
-  fecha:
-    r.fecha || (r.fecha_registro ? r.fecha_registro.substring(0, 10) : ""),
-}));
+  function normalizarFiltro(valor) {
+    return String(valor || "")
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/\s+/g, " ")
+      .trim()
+      .toUpperCase();
+  }
+
+  function opcionesPorClave(opciones) {
+    const mapa = new Map();
+
+    opciones.forEach((opcion) => {
+      const texto = String(opcion || "").replace(/\s+/g, " ").trim();
+      const clave = normalizarFiltro(texto);
+
+      if (clave && !mapa.has(clave)) {
+        mapa.set(clave, texto);
+      }
+    });
+
+    return [...mapa.values()];
+  }
+
+  const dependenciasCatalogoOpciones = opcionesPorClave(dependenciasCatalogo);
+  const dependenciasCatalogoClaves = new Set(
+    dependenciasCatalogoOpciones.map((dependencia) => normalizarFiltro(dependencia)),
+  );
+
+  function coincideDependenciaFiltro(dependenciaRegistro, dependenciaFiltro) {
+    if (!dependenciaFiltro) {
+      return true;
+    }
+
+    const dependenciaClave = normalizarFiltro(dependenciaRegistro);
+
+    if (dependenciaFiltro === "OTRO") {
+      return Boolean(dependenciaClave) && !dependenciasCatalogoClaves.has(dependenciaClave);
+    }
+
+    return dependenciaClave === dependenciaFiltro;
+  }
+
+const registros = dashboardData.map((r) => {
+  const dependencia = r.dependencia || "";
+
+  return {
+    ...r,
+    sexo: r.sexo || "",
+    tipo_registro: r.tipo_registro || "",
+    area: r.area || "",
+    funcion: r.funcion || "",
+    dependencia,
+    dependenciaClave: normalizarFiltro(dependencia),
+    fecha:
+      r.fecha || (r.fecha_registro ? r.fecha_registro.substring(0, 10) : ""),
+  };
+});
 
   function opcionesUnicas(campo, datos = registros) {
     const unicas = [...new Set(datos.map((r) => r[campo]).filter(Boolean))];
@@ -400,14 +448,16 @@ function llenarSelect(select, opciones) {
     const dia = filtroDia ? filtroDia.value : "";
     const tipo = filtroTipo ? filtroTipo.value : "";
     const area = filtroArea ? filtroArea.value : "";
-    const dependencia = filtroDependencia ? filtroDependencia.value : "";
+    const dependencia = filtroDependencia
+      ? normalizarFiltro(filtroDependencia.value)
+      : "";
 
     return registros.filter((registro) => {
       return (
         (!dia || registro.fecha === dia) &&
         (!tipo || registro.tipo_registro === tipo) &&
         (!area || registro.area === area) &&
-        (!dependencia || registro.dependencia === dependencia)
+        coincideDependenciaFiltro(registro.dependencia, dependencia)
       );
     });
   }
@@ -516,7 +566,9 @@ function llenarSelect(select, opciones) {
     const dia = filtroDia ? filtroDia.value : "";
     const tipo = filtroTipo ? filtroTipo.value : "";
     const area = filtroArea ? filtroArea.value : "";
-    const dependencia = filtroDependencia ? filtroDependencia.value : "";
+    const dependencia = filtroDependencia
+      ? normalizarFiltro(filtroDependencia.value)
+      : "";
 
     filasRegistro.forEach((fila) => {
       const texto = fila.textContent.toLowerCase();
@@ -525,7 +577,7 @@ function llenarSelect(select, opciones) {
       const coincideTipo = !tipo || fila.dataset.tipo === tipo;
       const coincideArea = !area || fila.dataset.area === area;
       const coincideDependencia =
-        !dependencia || fila.dataset.dependencia === dependencia;
+        coincideDependenciaFiltro(fila.dataset.dependencia, dependencia);
 
       fila.style.display =
         coincideBusqueda &&
@@ -541,7 +593,7 @@ function llenarSelect(select, opciones) {
   llenarSelect(filtroDia, opcionesUnicas("fecha"));
   llenarSelect(filtroTipo, opcionesUnicas("tipo_registro"));
   llenarSelect(filtroArea, opcionesUnicas("area"));
-  llenarSelect(filtroDependencia, dependenciasCatalogo);
+  llenarSelect(filtroDependencia, dependenciasCatalogoOpciones);
 
   const canvasDias = document.getElementById("graficaDependencias");
   const canvasSexo = document.getElementById("graficaSexo");

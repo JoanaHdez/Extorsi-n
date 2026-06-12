@@ -22,6 +22,7 @@ $routes->post('/registro/guardar-personal', 'Registro_Controller::guardarPersona
 $routes->post('/registro/(:segment)/guardar-personal', 'Registro_Controller::guardarPersonal/$1');
 $routes->get('/reporte', 'Registro_Controller::reporte');
 $routes->get('/reporte/cuestionario', 'Registro_Controller::reporteCuestionario');
+$routes->get('/reporte/cuestionario/exportar-comentarios', 'Registro_Controller::exportarComentariosCuestionario');
 
 $routes->get('/constancia/(:segment)', 'Registro_Controller::constancia/$1');
 $routes->post('/constancia/(:segment)/cuestionario', 'Registro_Controller::guardarCuestionarioConstancia/$1');

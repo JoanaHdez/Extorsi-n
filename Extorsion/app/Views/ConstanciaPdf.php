@@ -48,7 +48,25 @@
 
 <body>
     <?php
-    $nombreCompleto = trim(($registro['nombre'] ?? '') . ' ' . ($registro['apellido_p'] ?? '') . ' ' . ($registro['apellido_m'] ?? ''));
+    $limpiarTextoPdf = static function ($valor): string {
+        $texto = trim((string) $valor);
+
+        if ($texto === '') {
+            return '';
+        }
+
+        if (! mb_check_encoding($texto, 'UTF-8')) {
+            $texto = mb_convert_encoding($texto, 'UTF-8', 'Windows-1252');
+        }
+
+        return str_replace('�', 'Ñ', $texto);
+    };
+
+    $nombreCompleto = trim(
+        $limpiarTextoPdf($registro['nombre'] ?? '') . ' ' .
+        $limpiarTextoPdf($registro['apellido_p'] ?? '') . ' ' .
+        $limpiarTextoPdf($registro['apellido_m'] ?? '')
+    );
     ?>
 
     <div class="page">

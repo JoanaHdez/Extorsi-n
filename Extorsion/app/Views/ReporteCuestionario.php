@@ -29,6 +29,11 @@
                                     </span>
                                     Exportar
                                 </a>
+                                <a href="<?= base_url('reporte/cuestionario/exportar-comentarios' . (! empty($cuestionarioFechaFiltro) ? '?dia=' . rawurlencode($cuestionarioFechaFiltro) : '')) ?>" class="btn-exportar mt-4">
+                                    <span class="arrow">
+                                    </span>
+                                    Exportar comentarios
+                                </a>
                                 <div class="menu-item mt-4">
                                     <span class="arrow">
                                     </span> Cuestionario
@@ -37,21 +42,25 @@
                                     <span class="arrow">
                                     </span> Filtro
                                 </div>
-                                <form class="filter-panel" id="dashboardFiltros" method="get" action="<?= base_url('reporte/cuestionario') ?>">
+                                <form class="filter-panel" id="dashboardFiltros" method="get"
+                                    action="<?= base_url('reporte/cuestionario') ?>">
                                     <div class="filter-title">Filtro</div>
                                     <label>
                                         Dia
                                         <select name="dia" aria-label="Dia" onchange="this.form.submit()">
                                             <option value="">Todos los dias</option>
                                             <?php foreach (($cuestionarioDias ?? []) as $dia): ?>
-                                                <option value="<?= esc($dia['fecha']) ?>" <?= ($cuestionarioFechaFiltro ?? '') === $dia['fecha'] ? 'selected' : '' ?>>
-                                                    <?= esc($dia['fecha']) ?>
-                                                </option>
+                                            <option value="<?= esc($dia['fecha']) ?>"
+                                                <?= ($cuestionarioFechaFiltro ?? '') === $dia['fecha'] ? 'selected' : '' ?>>
+                                                <?= esc($dia['fecha']) ?>
+                                            </option>
                                             <?php endforeach; ?>
                                         </select>
                                     </label>
                                     <button type="submit">Aplicar filtro</button>
-                                    <button type="button" onclick="window.location.href='<?= base_url('reporte/cuestionario') ?>'">Limpiar filtro</button>
+                                    <button type="button"
+                                        onclick="window.location.href='<?= base_url('reporte/cuestionario') ?>'">Limpiar
+                                        filtro</button>
                                 </form>
                             </div>
                             <a href="<?= base_url('registro') ?>" class="menu-salir text-decoration-none">
@@ -79,36 +88,39 @@
                                             <div class="card-total card-modern questionnaire-card">
                                                 <div class="card-body">
                                                     <h6>Total de cuestionarios contestados</h6>
-                                                    <h2 class="fw-bold"><?= esc((string) ($cuestionarioTotal ?? 0)) ?></h2>
+                                                    <h2 class="fw-bold"><?= esc((string) ($cuestionarioTotal ?? 0)) ?>
+                                                    </h2>
                                                     <?php if (! empty($cuestionarioFechaFiltro)): ?>
-                                                        <p class="mb-0" style="font-weight:700;">Dia <?= esc($cuestionarioFechaFiltro) ?></p>
+                                                    <p class="mb-0" style="font-weight:700;">Dia
+                                                        <?= esc($cuestionarioFechaFiltro) ?></p>
                                                     <?php endif; ?>
                                                 </div>
                                             </div>
                                         </div>
 
                                         <?php if (empty($cuestionarioDias ?? [])): ?>
-                                            <div class="col">
-                                                <div class="card-total card-modern questionnaire-card card-blue">
-                                                    <div class="card-body">
-                                                        <h6>Total por dia</h6>
-                                                        <h2 class="fw-bold">0</h2>
-                                                        <p class="mb-0" style="font-weight:700;">Cuestionarios</p>
-                                                    </div>
+                                        <div class="col">
+                                            <div class="card-total card-modern questionnaire-card card-blue">
+                                                <div class="card-body">
+                                                    <h6>Total por dia</h6>
+                                                    <h2 class="fw-bold">0</h2>
+                                                    <p class="mb-0" style="font-weight:700;">Cuestionarios</p>
                                                 </div>
                                             </div>
+                                        </div>
                                         <?php else: ?>
-                                            <?php foreach (($cuestionarioDias ?? []) as $index => $dia): ?>
-                                                <div class="col">
-                                                    <div class="card-total card-modern questionnaire-card <?= $index % 2 === 0 ? 'card-blue' : 'card-red' ?> <?= ($cuestionarioFechaFiltro ?? '') === $dia['fecha'] ? 'questionnaire-card-active' : '' ?>">
-                                                        <div class="card-body">
-                                                            <h6><?= esc($dia['fecha']) ?></h6>
-                                                            <h2 class="fw-bold"><?= esc((string) $dia['total']) ?></h2>
-                                                            <p class="mb-0" style="font-weight:700;">Cuestionarios</p>
-                                                        </div>
-                                                    </div>
+                                        <?php foreach (($cuestionarioDias ?? []) as $index => $dia): ?>
+                                        <div class="col">
+                                            <div
+                                                class="card-total card-modern questionnaire-card <?= $index % 2 === 0 ? 'card-blue' : 'card-red' ?> <?= ($cuestionarioFechaFiltro ?? '') === $dia['fecha'] ? 'questionnaire-card-active' : '' ?>">
+                                                <div class="card-body">
+                                                    <h6><?= esc($dia['fecha']) ?></h6>
+                                                    <h2 class="fw-bold"><?= esc((string) $dia['total']) ?></h2>
+                                                    <p class="mb-0" style="font-weight:700;">Cuestionarios</p>
                                                 </div>
-                                            <?php endforeach; ?>
+                                            </div>
+                                        </div>
+                                        <?php endforeach; ?>
                                         <?php endif; ?>
                                     </div>
 
@@ -125,16 +137,16 @@
                                             ];
                                             ?>
                                             <?php foreach ($escala as $item): ?>
-                                                <div class="col">
-                                                    <div class="card-modern scale-card <?= esc($item['clase']) ?>">
-                                                        <div class="card-body">
-                                                            <h2 class="fw-bold mb-1"><?= esc($item['numero']) ?></h2>
-                                                            <p class="mb-0" style="font-weight:700; line-height:1.25;">
-                                                                <?= esc($item['texto']) ?>
-                                                            </p>
-                                                        </div>
+                                            <div class="col">
+                                                <div class="card-modern scale-card <?= esc($item['clase']) ?>">
+                                                    <div class="card-body">
+                                                        <h2 class="fw-bold mb-1"><?= esc($item['numero']) ?></h2>
+                                                        <p class="mb-0" style="font-weight:700; line-height:1.25;">
+                                                            <?= esc($item['texto']) ?>
+                                                        </p>
                                                     </div>
                                                 </div>
+                                            </div>
                                             <?php endforeach; ?>
                                         </div>
                                     </div>
@@ -151,21 +163,21 @@
                                                         <th class="text-center">3</th>
                                                         <th class="text-center">4</th>
                                                         <th class="text-center">5</th>
-                                                        <th class="text-center">Total</th>
                                                     </tr>
                                                 </thead>
                                                 <tbody>
                                                     <?php foreach (($cuestionarioResumen ?? []) as $pregunta): ?>
-                                                        <?php if (($pregunta['tipo'] ?? '') === 'textarea') {
+                                                    <?php if (($pregunta['tipo'] ?? '') === 'textarea') {
                                                             continue;
                                                         } ?>
-                                                        <tr>
-                                                            <td><?= esc($pregunta['texto']) ?></td>
-                                                            <?php for ($opcion = 1; $opcion <= 5; $opcion++): ?>
-                                                                <td class="text-center fw-bold"><?= esc((string) ($pregunta['conteos'][(string) $opcion] ?? 0)) ?></td>
-                                                            <?php endfor; ?>
-                                                            <td class="text-center fw-bold"><?= esc((string) ($pregunta['total_respuestas'] ?? 0)) ?></td>
-                                                        </tr>
+                                                    <tr>
+                                                        <td><?= esc($pregunta['texto']) ?></td>
+                                                        <?php for ($opcion = 1; $opcion <= 5; $opcion++): ?>
+                                                        <td class="text-center fw-bold">
+                                                            <?= esc((string) ($pregunta['conteos'][(string) $opcion] ?? 0)) ?>
+                                                        </td>
+                                                        <?php endfor; ?>
+                                                    </tr>
                                                     <?php endforeach; ?>
                                                 </tbody>
                                             </table>
@@ -194,16 +206,16 @@
                                                     ?>
 
                                                     <?php if (empty($comentarios)): ?>
-                                                        <tr>
-                                                            <td colspan="2">Sin comentarios registrados.</td>
-                                                        </tr>
+                                                    <tr>
+                                                        <td colspan="2">Sin comentarios registrados.</td>
+                                                    </tr>
                                                     <?php else: ?>
-                                                        <?php foreach ($comentarios as $index => $comentario): ?>
-                                                            <tr>
-                                                                <td><?= $index + 1 ?></td>
-                                                                <td><?= esc($comentario) ?></td>
-                                                            </tr>
-                                                        <?php endforeach; ?>
+                                                    <?php foreach ($comentarios as $index => $comentario): ?>
+                                                    <tr>
+                                                        <td><?= $index + 1 ?></td>
+                                                        <td><?= esc($comentario) ?></td>
+                                                    </tr>
+                                                    <?php endforeach; ?>
                                                     <?php endif; ?>
                                                 </tbody>
                                             </table>

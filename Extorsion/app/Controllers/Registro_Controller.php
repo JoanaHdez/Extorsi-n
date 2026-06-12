@@ -133,15 +133,39 @@ class Registro_Controller extends BaseController
             $dependenciaTexto = $dependenciaOtro;
         }
 
+        $nombreNormalizado = mb_strtoupper($this->sinAcentos(trim($this->request->getPost('nombre'))));
+        $apellidoPNormalizado = mb_strtoupper($this->sinAcentos(trim($this->request->getPost('apellido_p'))));
+        $apellidoMNormalizado = mb_strtoupper($this->sinAcentos(trim($this->request->getPost('apellido_m'))));
         $correo = trim($this->request->getPost('correo'));
+        $correoNormalizado = mb_strtoupper($correo);
+
+        $registroDuplicado = $db->table('general g')
+            ->join('dato d', 'g.id_dato = d.id_dato')
+            ->groupStart()
+                ->where('d.correo', $correoNormalizado)
+                ->orGroupStart()
+                    ->where('d.nombre', $nombreNormalizado)
+                    ->where('d.apellido_p', $apellidoPNormalizado)
+                    ->where('d.apellido_m', $apellidoMNormalizado)
+                ->groupEnd()
+            ->groupEnd()
+            ->countAllResults() > 0;
+
+        if ($registroDuplicado) {
+            return redirect()->back()
+                ->withInput()
+                ->with('errors', [
+                    'duplicado' => 'Ya existe un registro con esos datos. Si ya se registró previamente, no es necesario volver a enviar el formulario.'
+                ]);
+        }
 
         $dato = new Dato_Model();
         $general = new General_Model();
         $idDato = $dato->insert([
-            'nombre' => mb_strtoupper($this->sinAcentos(trim($this->request->getPost('nombre')))),
-            'apellido_p' => mb_strtoupper($this->sinAcentos(trim($this->request->getPost('apellido_p')))),
-            'apellido_m' => mb_strtoupper($this->sinAcentos(trim($this->request->getPost('apellido_m')))),
-            'correo' => mb_strtoupper($correo),
+            'nombre' => $nombreNormalizado,
+            'apellido_p' => $apellidoPNormalizado,
+            'apellido_m' => $apellidoMNormalizado,
+            'correo' => $correoNormalizado,
         ]);
 
         $idGeneral = $general->insert([
@@ -244,6 +268,23 @@ class Registro_Controller extends BaseController
             ]);
         }
 
+        $db = \Config\Database::connect();
+        $nomina = (string) $this->request->getPost('nomina');
+        $correoNormalizado = strtoupper(trim((string) $this->request->getPost('correo')));
+        $registroDuplicado = $db->table('general_personal')
+            ->groupStart()
+                ->where('nomina', $nomina)
+                ->orWhere('correo', $correoNormalizado)
+            ->groupEnd()
+            ->countAllResults() > 0;
+
+        if ($registroDuplicado) {
+            return $this->response->setJSON([
+                'success' => false,
+                'message' => 'Ya existe un registro con esos datos. Si ya se registró previamente, no es necesario volver a enviar el formulario.'
+            ]);
+        }
+
         $generalPersonal = new \App\Models\General_Personal_Model();
 
         log_message('error', json_encode([
@@ -252,8 +293,8 @@ class Registro_Controller extends BaseController
         ]));
 
         $idGeneralPersonal = $generalPersonal->insert([
-            'nomina' => $this->request->getPost('nomina'),
-            'correo' => strtoupper(trim($this->request->getPost('correo')))
+            'nomina' => $nomina,
+            'correo' => $correoNormalizado
         ]);
 
         $this->enviarCorreoRegistro($this->request->getPost('correo'), 'personal', (int) $idGeneralPersonal);
@@ -502,6 +543,77 @@ class Registro_Controller extends BaseController
         exit;
     }
 
+    public function exportarComentariosCuestionario()
+    {
+        $fechaFiltro = trim((string) $this->request->getGet('dia'));
+        if ($fechaFiltro !== '' && ! preg_match('/^\d{4}-\d{2}-\d{2}$/', $fechaFiltro)) {
+            $fechaFiltro = '';
+        }
+
+        $db = \Config\Database::connect();
+        $this->asegurarTablaCuestionario($db);
+
+        $filas = $db->table('cuestionario_constancia')
+            ->select('tipo_registro, id_registro, respuestas, fecha_respuesta')
+            ->orderBy('fecha_respuesta', 'ASC')
+            ->get()
+            ->getResultArray();
+
+        if ($fechaFiltro !== '') {
+            $filas = array_values(array_filter($filas, static function (array $fila) use ($fechaFiltro): bool {
+                return substr((string) ($fila['fecha_respuesta'] ?? ''), 0, 10) === $fechaFiltro;
+            }));
+        }
+
+        header('Content-Type: text/csv; charset=UTF-8');
+        header('Content-Disposition: attachment; filename=comentarios-cuestionario.csv');
+
+        $output = fopen('php://output', 'w');
+        fwrite($output, "\xEF\xBB\xBF");
+
+        fputcsv($output, [
+            'Fecha de respuesta',
+            'Nombre',
+            'Apellido Paterno',
+            'Apellido Materno',
+            'Correo',
+            'Tipo de registro',
+            'Comentario',
+        ], ';');
+
+        foreach ($filas as $fila) {
+            $respuestas = json_decode((string) ($fila['respuestas'] ?? ''), true);
+
+            if (! is_array($respuestas)) {
+                continue;
+            }
+
+            $comentario = trim((string) ($respuestas['comentarios'] ?? ''));
+
+            if ($comentario === '') {
+                continue;
+            }
+
+            $registro = $this->obtenerRegistroConstancia(
+                (string) ($fila['tipo_registro'] ?? ''),
+                (int) ($fila['id_registro'] ?? 0)
+            ) ?? [];
+
+            fputcsv($output, [
+                $fila['fecha_respuesta'] ?? '',
+                $registro['nombre'] ?? '',
+                $registro['apellido_p'] ?? '',
+                $registro['apellido_m'] ?? '',
+                $registro['correo'] ?? '',
+                $registro['tipo_registro'] ?? ($fila['tipo_registro'] ?? ''),
+                $comentario,
+            ], ';');
+        }
+
+        fclose($output);
+        exit;
+    }
+
     public function constancia(string $token)
     {
         $datosToken = $this->validarTokenConstancia($token);
@@ -597,10 +709,11 @@ class Registro_Controller extends BaseController
         $options->set('defaultFont', 'DejaVu Sans');
 
         $dompdf = new Dompdf($options);
-        $dompdf->loadHtml(view('ConstanciaPdf', [
+        $html = view('ConstanciaPdf', [
             'registro' => $registro,
             'plantilla' => $this->imageDataUri($plantillaPath, 'image/png'),
-        ]));
+        ]);
+        $dompdf->loadHtml($html, 'UTF-8');
         $dompdf->setPaper('letter', 'landscape');
         $dompdf->render();
 
@@ -1581,8 +1694,13 @@ class Registro_Controller extends BaseController
 
     private function sinAcentos($cadena)
     {
+        $cadena = str_replace(['ñ', 'Ñ'], ['__ENE_MINUS__', '__ENE_MAYUS__'], $cadena);
         $buscar = ['á', 'é', 'í', 'ó', 'ú', 'Á', 'É', 'Í', 'Ó', 'Ú', 'ñ', 'Ñ'];
         $reemplazar = ['a', 'e', 'i', 'o', 'u', 'A', 'E', 'I', 'O', 'U', 'n', 'N'];
-        return str_replace($buscar, $reemplazar, $cadena);
+        return str_replace(
+            ['__ENE_MINUS__', '__ENE_MAYUS__'],
+            ['ñ', 'Ñ'],
+            str_replace($buscar, $reemplazar, $cadena)
+        );
     }
 }
