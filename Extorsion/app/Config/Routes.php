@@ -30,3 +30,12 @@ $routes->get('/constancias/control', 'Registro_Controller::controlConstancias');
 $routes->post('/constancias/control', 'Registro_Controller::actualizarControlConstancias');
 
 $routes->get('/reporte/exportar', 'Registro_Controller::exportar');
+
+
+// API para enviar una invitación individual al Octavo Congreso Internacional de Seguridad y Proximidad Social.
+$routes->options('/api/correos/invitacion', 'CorreoInvitacion_Controller::preflight');
+$routes->post('/api/correos/invitacion', 'CorreoInvitacion_Controller::enviarCorreo');
+
+// API para enviar la misma invitación a diferentes personas.
+$routes->options('/api/correos/invitacion/masivo', 'CorreoInvitacion_Controller::preflight');
+$routes->post('/api/correos/invitacion/masivo', 'CorreoInvitacion_Controller::enviarMasivo');
