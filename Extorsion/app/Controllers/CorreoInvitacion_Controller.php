@@ -24,7 +24,7 @@ class CorreoInvitacion_Controller extends BaseController
      * - cc: correo o lista de correos en copia visible, opcional.
      * - bcc: correo o lista de correos en copia oculta, opcional.
      * - adjunto o adjuntos[]: archivos opcionales enviados por multipart/form-data.
-     * - fecha, hora, sede, liga_registro y mensaje_adicional: datos opcionales.
+     * - body, cuerpo, mensaje, html, contenido o mensaje_adicional: cuerpo del correo.
      */
     public function enviarCorreo(): ResponseInterface
     {
@@ -54,7 +54,7 @@ class CorreoInvitacion_Controller extends BaseController
             ], 422);
         }
 
-        // Se envia usando la misma plantilla que se ocupa para envios masivos.
+        // Se envia usando el cuerpo recibido por parametro.
         $resultado = $this->enviarInvitacion($correo, $datos, $adjuntos['archivos']);
 
         if (! $resultado['ok']) {
@@ -78,7 +78,7 @@ class CorreoInvitacion_Controller extends BaseController
      * - cc: correo o lista de correos en copia visible, opcional.
      * - bcc: correo o lista de correos en copia oculta, opcional.
      * - adjunto o adjuntos[]: archivos opcionales enviados por multipart/form-data.
-     * - fecha, hora, sede, liga_registro y mensaje_adicional: datos opcionales.
+     * - body, cuerpo, mensaje, html, contenido o mensaje_adicional: cuerpo del correo.
      */
     public function enviarMasivo(): ResponseInterface
     {
@@ -173,7 +173,7 @@ class CorreoInvitacion_Controller extends BaseController
     }
 
     /**
-     * Envia la invitacion a un correo usando la misma vista HTML.
+     * Envia la invitacion con el cuerpo recibido por parametro.
      */
     private function enviarInvitacion(string $correo, array $datos, array $adjuntos = []): array
     {
@@ -207,10 +207,7 @@ class CorreoInvitacion_Controller extends BaseController
                 $email->attach($adjunto['ruta'], 'attachment', $adjunto['nombre']);
             }
 
-            $logoAyuntamiento = $this->imagenInline($email, FCPATH . 'assets/img/ayun.png', 'assets/img/ayun.png');
-            $logoComisaria = $this->imagenInline($email, FCPATH . 'assets/img/comisaria.png', 'assets/img/comisaria.png');
-
-            $email->setMessage($this->vistaInvitacion($datos, $logoAyuntamiento, $logoComisaria));
+            $email->setMessage($this->cuerpoCorreo($datos));
 
             try {
                 if ($email->send()) {
@@ -591,23 +588,29 @@ class CorreoInvitacion_Controller extends BaseController
     }
 
     /**
-     * Adjunta una imagen en linea y regresa el cid o una URL publica.
+     * Obtiene el cuerpo del correo enviado por quien consume el API.
+     * El equipo que entregue el diseno final debe modificar este metodo o enviar body/html.
      */
-    private function imagenInline(Email $email, string $archivo, string $publico): string
+    private function cuerpoCorreo(array $datos): string
     {
-        // El cid permite que el logo viaje embebido en el correo.
-        if (is_file($archivo)) {
-            $email->attach($archivo, 'inline');
+        $cuerpo = $datos['body']
+            ?? $datos['cuerpo']
+            ?? $datos['mensaje']
+            ?? $datos['html']
+            ?? $datos['contenido']
+            ?? $datos['mensaje_adicional']
+            ?? '';
 
-            $cid = $email->setAttachmentCID($archivo);
+        $cuerpo = trim((string) $cuerpo);
 
-            if ($cid) {
-                return 'cid:' . $cid;
-            }
+        if ($cuerpo !== '') {
+            return $cuerpo;
         }
 
-        // Si el archivo no existe, el correo usa la imagen publica del sitio.
-        return base_url($publico);
+        return '
+            <p>Se extiende una cordial invitacion al Octavo Congreso Internacional de Seguridad y Proximidad Social.</p>
+            <p>Este es un cuerpo provisional. Sustituir en CorreoInvitacion_Controller::cuerpoCorreo() o enviar el parametro body/html desde el sistema consumidor.</p>
+        ';
     }
 
     /**
@@ -617,157 +620,6 @@ class CorreoInvitacion_Controller extends BaseController
     {
         // Se permite personalizar el asunto, pero se deja uno institucional por defecto.
         return trim((string) ($datos['asunto'] ?? 'Invitacion al Octavo Congreso Internacional de Seguridad y Proximidad Social'));
-    }
-
-    /**
-     * Construye la vista HTML compartida por el envio individual y masivo.
-     */
-    private function vistaInvitacion(array $datos, string $logoAyuntamiento, string $logoComisaria): string
-    {
-        // Se limpian los campos opcionales antes de colocarlos en la plantilla.
-        $fecha = trim((string) ($datos['fecha'] ?? ''));
-        $hora = trim((string) ($datos['hora'] ?? ''));
-        $sede = trim((string) ($datos['sede'] ?? ''));
-        $ligaRegistro = trim((string) ($datos['liga_registro'] ?? base_url('registro')));
-        $mensajeAdicional = trim((string) ($datos['mensaje_adicional'] ?? ''));
-
-        // Se preparan los detalles del evento solo si fueron enviados.
-        $detalles = '';
-        $detalles .= $fecha !== '' ? $this->filaDetalle('Fecha', $fecha) : '';
-        $detalles .= $hora !== '' ? $this->filaDetalle('Hora', $hora) : '';
-        $detalles .= $sede !== '' ? $this->filaDetalle('Sede', $sede) : '';
-
-        if ($detalles === '') {
-            $detalles = '
-                <tr>
-                    <td style="padding:14px 18px; color:#344054; font-size:15px; line-height:1.55;">
-                        Los detalles logisticos del evento seran compartidos por los canales oficiales.
-                    </td>
-                </tr>
-            ';
-        }
-
-        // Se agrega un mensaje extra solo cuando el consumidor del API lo envia.
-        $bloqueAdicional = $mensajeAdicional === ''
-            ? ''
-            : '<p style="margin:18px 0 0; color:#344054; font-size:16px; line-height:1.65;">' . esc($mensajeAdicional) . '</p>';
-
-        // HTML compatible con clientes de correo, usando tablas e estilos en linea.
-        return '
-            <!doctype html>
-            <html lang="es">
-            <head>
-                <meta charset="UTF-8">
-                <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                <title>Invitacion al Octavo Congreso Internacional</title>
-            </head>
-            <body style="margin:0; padding:0; background:#eef2f7; font-family:Arial, Helvetica, sans-serif; color:#1f2933;">
-                <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background:#eef2f7; padding:28px 12px;">
-                    <tr>
-                        <td align="center">
-                            <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="max-width:680px; background:#ffffff; border-radius:14px; overflow:hidden; box-shadow:0 14px 34px rgba(20, 36, 64, 0.14);">
-                                <tr>
-                                    <td style="height:8px; background:#8a1538; line-height:8px; font-size:1px;">&nbsp;</td>
-                                </tr>
-                                <tr>
-                                    <td style="background:#ffffff; padding:18px 30px; border-bottom:1px solid #e6ebf2;">
-                                        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
-                                            <tr>
-                                                <td align="left" width="50%" style="vertical-align:middle;">
-                                                    <img src="' . esc($logoAyuntamiento, 'attr') . '" alt="Ayuntamiento" width="132" style="display:block; width:132px; max-width:132px; height:auto; border:0;">
-                                                </td>
-                                                <td align="right" width="50%" style="vertical-align:middle;">
-                                                    <img src="' . esc($logoComisaria, 'attr') . '" alt="Comisaria" width="128" style="display:block; width:128px; max-width:128px; height:auto; border:0;">
-                                                </td>
-                                            </tr>
-                                        </table>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td style="background:#243b6b; padding:38px 36px 34px; text-align:center;">
-                                        <p style="margin:0 0 10px; color:#dbe7ff; font-size:14px; line-height:1.4; font-weight:700; text-transform:uppercase; letter-spacing:0.5px;">
-                                            Invitacion institucional
-                                        </p>
-                                        <h1 style="margin:0; color:#ffffff; font-size:29px; line-height:1.25; font-weight:700;">
-                                            Octavo Congreso Internacional de Seguridad y Proximidad Social
-                                        </h1>
-                                        <p style="margin:14px 0 0; color:#dbe7ff; font-size:17px; line-height:1.5;">
-                                            Un espacio para fortalecer la colaboracion y el intercambio de experiencias en seguridad ciudadana.
-                                        </p>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td style="padding:34px 38px 8px;">
-                                        <p style="margin:0 0 18px; color:#344054; font-size:17px; line-height:1.65;">
-                                            Por este medio se extiende una cordial invitacion para participar en el Octavo Congreso Internacional de Seguridad y Proximidad Social.
-                                        </p>
-                                        <p style="margin:0; color:#344054; font-size:16px; line-height:1.65;">
-                                            Su participacion es importante para continuar impulsando acciones de prevencion, proximidad social y fortalecimiento institucional.
-                                        </p>
-                                        ' . $bloqueAdicional . '
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td style="padding:22px 38px 8px;">
-                                        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background:#f8fafc; border:1px solid #e6ebf2; border-radius:10px;">
-                                            <tr>
-                                                <td style="padding:16px 18px; border-bottom:1px solid #e6ebf2;">
-                                                    <p style="margin:0; color:#243b6b; font-size:14px; line-height:1.5; font-weight:700; text-transform:uppercase;">
-                                                        Datos del evento
-                                                    </p>
-                                                </td>
-                                            </tr>
-                                            ' . $detalles . '
-                                        </table>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td align="center" style="padding:28px 38px 34px;">
-                                        <a href="' . esc($ligaRegistro, 'attr') . '" style="display:inline-block; background:#8a1538; color:#ffffff; font-size:16px; font-weight:700; text-decoration:none; padding:15px 30px; border-radius:8px;">
-                                            Confirmar asistencia
-                                        </a>
-                                        <p style="margin:18px 0 0; color:#667085; font-size:13px; line-height:1.5;">
-                                            Si el boton no funciona, copie y pegue esta liga en su navegador:
-                                        </p>
-                                        <p style="margin:8px 0 0; color:#243b6b; font-size:13px; line-height:1.5; word-break:break-all;">
-                                            <a href="' . esc($ligaRegistro, 'attr') . '" style="color:#243b6b; text-decoration:underline;">' . esc($ligaRegistro) . '</a>
-                                        </p>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td style="background:#f8fafc; padding:22px 34px; border-top:1px solid #e5e9ef; text-align:center;">
-                                        <p style="margin:0; color:#667085; font-size:12px; line-height:1.5;">
-                                            Secretaria de Seguridad y Proteccion Ciudadana
-                                        </p>
-                                    </td>
-                                </tr>
-                            </table>
-                        </td>
-                    </tr>
-                </table>
-            </body>
-            </html>
-        ';
-    }
-
-    /**
-     * Genera una fila de detalle para la vista HTML.
-     */
-    private function filaDetalle(string $etiqueta, string $valor): string
-    {
-        // Se escapan textos para que no entren etiquetas HTML no esperadas.
-        return '
-            <tr>
-                <td style="padding:14px 18px; border-top:1px solid #e6ebf2;">
-                    <p style="margin:0; color:#243b6b; font-size:13px; line-height:1.4; font-weight:700; text-transform:uppercase;">
-                        ' . esc($etiqueta) . '
-                    </p>
-                    <p style="margin:5px 0 0; color:#344054; font-size:16px; line-height:1.5;">
-                        ' . esc($valor) . '
-                    </p>
-                </td>
-            </tr>
-        ';
     }
 
     /**
