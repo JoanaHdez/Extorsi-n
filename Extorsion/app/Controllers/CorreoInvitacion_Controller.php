@@ -204,7 +204,7 @@ class CorreoInvitacion_Controller extends BaseController
             }
 
             foreach ($adjuntos as $adjunto) {
-                $email->attach($adjunto['ruta'], 'attachment', $adjunto['nombre'], $adjunto['mime']);
+                $email->attach($adjunto['ruta'], 'attachment', $adjunto['nombre']);
             }
 
             $logoAyuntamiento = $this->imagenInline($email, FCPATH . 'assets/img/ayun.png', 'assets/img/ayun.png');
