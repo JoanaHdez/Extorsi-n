@@ -20,9 +20,7 @@ class CorreoInvitacion_Controller extends BaseController
      * Envia una invitacion a un solo correo.
      *
      * Espera JSON o form-data:
-     * - correo: correo principal que recibira la invitacion.
-     * - cc: correo o lista de correos en copia visible, opcional.
-     * - bcc: correo o lista de correos en copia oculta, opcional.
+     * - cc: correo o lista de correos que recibira la invitacion.
      * - adjunto o adjuntos[]: archivos opcionales enviados por multipart/form-data.
      * - body, cuerpo, mensaje, html, contenido o mensaje_adicional: cuerpo del correo.
      */
@@ -36,11 +34,21 @@ class CorreoInvitacion_Controller extends BaseController
         // Se toma la informacion enviada por JSON o por form-data.
         $datos = $this->obtenerDatos();
 
-        // Se valida el correo principal del envio individual.
-        $correo = trim((string) ($datos['correo'] ?? $datos['destinatario'] ?? ''));
+        // Se toma la lista de destinatarios desde cc.
+        $correos = $this->destinatariosCc($datos);
 
-        if (! filter_var($correo, FILTER_VALIDATE_EMAIL)) {
-            return $this->respuestaError('Debe enviar un correo valido.', 422);
+        if ($correos === []) {
+            return $this->respuestaError('Debe enviar al menos un correo en cc.', 422);
+        }
+
+        $invalidos = $this->correosInvalidos($correos);
+
+        if ($invalidos !== []) {
+            return $this->respuesta([
+                'ok' => false,
+                'mensaje' => 'Uno o mas correos en cc no tienen formato valido.',
+                'correos_invalidos' => $invalidos,
+            ], 422);
         }
 
         // Se leen y validan archivos adjuntos enviados por multipart/form-data.
@@ -55,28 +63,34 @@ class CorreoInvitacion_Controller extends BaseController
         }
 
         // Se envia usando el cuerpo recibido por parametro.
-        $resultado = $this->enviarInvitacion($correo, $datos, $adjuntos['archivos']);
+        $resultado = $this->enviarInvitacion($correos, $datos, $adjuntos['archivos']);
 
-        if (! $resultado['ok']) {
-            return $this->respuestaError('No se pudo enviar la invitacion. Revise los logs del servidor.', 500);
+        if ($resultado['enviados'] === []) {
+            return $this->respuesta([
+                'ok' => false,
+                'mensaje' => 'No se pudo enviar la invitacion. Revise los logs del servidor.',
+                'fallidos' => $resultado['fallidos'],
+            ], 500);
         }
 
         // Se responde JSON para que cualquier cliente del API pueda interpretar el resultado.
         return $this->respuesta([
-            'ok' => true,
-            'mensaje' => 'Invitacion enviada correctamente.',
-            'correo' => mb_strtolower($correo, 'UTF-8'),
+            'ok' => $resultado['fallidos'] === [],
+            'mensaje' => $resultado['fallidos'] === []
+                ? 'Invitacion enviada correctamente.'
+                : 'Algunas invitaciones no pudieron enviarse.',
+            'cc' => $correos,
+            'enviados' => count($resultado['enviados']),
+            'fallidos' => $resultado['fallidos'],
             'adjuntos' => count($adjuntos['archivos']),
-        ]);
+        ], $resultado['fallidos'] === [] ? 200 : 207);
     }
 
     /**
      * Envia la misma invitacion a diferentes correos.
      *
      * Espera JSON o form-data:
-     * - correos: lista de correos o texto separado por comas, punto y coma o saltos de linea.
-     * - cc: correo o lista de correos en copia visible, opcional.
-     * - bcc: correo o lista de correos en copia oculta, opcional.
+     * - cc: correo o lista de correos que recibira la invitacion.
      * - adjunto o adjuntos[]: archivos opcionales enviados por multipart/form-data.
      * - body, cuerpo, mensaje, html, contenido o mensaje_adicional: cuerpo del correo.
      */
@@ -90,17 +104,12 @@ class CorreoInvitacion_Controller extends BaseController
         // Se toma la informacion enviada por JSON o por form-data.
         $datos = $this->obtenerDatos();
 
-        // Se aceptan varios nombres de campo para facilitar consumo desde otros sistemas.
-        $correos = $this->normalizarCorreos(
-            $datos['correos']
-            ?? $datos['destinatarios']
-            ?? $datos['destinatario']
-            ?? []
-        );
+        // Se toma la lista de destinatarios desde cc.
+        $correos = $this->destinatariosCc($datos);
 
         // Se valida que la peticion tenga al menos un correo correcto.
         if ($correos === []) {
-            return $this->respuestaError('Debe enviar al menos un correo valido.', 422);
+            return $this->respuestaError('Debe enviar al menos un correo en cc.', 422);
         }
 
         // Se revisa si algun correo tiene formato invalido antes de intentar enviar.
@@ -109,7 +118,7 @@ class CorreoInvitacion_Controller extends BaseController
         if ($invalidos !== []) {
             return $this->respuesta([
                 'ok' => false,
-                'mensaje' => 'Uno o mas correos no tienen formato valido.',
+                'mensaje' => 'Uno o mas correos en cc no tienen formato valido.',
                 'correos_invalidos' => $invalidos,
             ], 422);
         }
@@ -137,100 +146,120 @@ class CorreoInvitacion_Controller extends BaseController
             ], 422);
         }
 
-        // Se envia un correo por destinatario para no exponer la lista completa de personas.
-        $enviados = [];
-        $fallidos = [];
+        $resultado = $this->enviarInvitacion($correos, $datos, $adjuntos['archivos']);
 
-        foreach ($correos as $correo) {
-            $resultado = $this->enviarInvitacion($correo, $datos, $adjuntos['archivos']);
-
-            if ($resultado['ok']) {
-                $enviados[] = $correo;
-            } else {
-                $fallidos[] = $correo;
-            }
-        }
-
-        // Si todos fallaron, se marca como error de servidor.
-        if ($enviados === []) {
+        if ($resultado['enviados'] === []) {
             return $this->respuesta([
                 'ok' => false,
                 'mensaje' => 'No se pudo enviar ninguna invitacion. Revise los logs del servidor.',
-                'fallidos' => $fallidos,
+                'fallidos' => $resultado['fallidos'],
             ], 500);
         }
 
-        // Si algunos fallaron, se informa al consumidor del API sin ocultar el resultado parcial.
         return $this->respuesta([
-            'ok' => $fallidos === [],
-            'mensaje' => $fallidos === []
+            'ok' => $resultado['fallidos'] === [],
+            'mensaje' => $resultado['fallidos'] === []
                 ? 'Invitaciones enviadas correctamente.'
                 : 'Algunas invitaciones no pudieron enviarse.',
-            'enviados' => count($enviados),
-            'fallidos' => $fallidos,
+            'cc' => $correos,
+            'enviados' => count($resultado['enviados']),
+            'fallidos' => $resultado['fallidos'],
             'adjuntos' => count($adjuntos['archivos']),
-        ], $fallidos === [] ? 200 : 207);
+        ], $resultado['fallidos'] === [] ? 200 : 207);
     }
 
     /**
      * Envia la invitacion con el cuerpo recibido por parametro.
      */
-    private function enviarInvitacion(string $correo, array $datos, array $adjuntos = []): array
+    private function enviarInvitacion(array $correos, array $datos, array $adjuntos = []): array
     {
         $configuraciones = $this->configuracionesCorreo();
 
         if ($configuraciones === []) {
             log_message('error', 'ERROR ENVIO INVITACION CONGRESO: configuracion SMTP incompleta.');
 
-            return ['ok' => false];
+            return [
+                'ok' => false,
+                'enviados' => [],
+                'fallidos' => $correos,
+            ];
         }
-
-        $cc = $this->normalizarCorreos($datos['cc'] ?? $datos['copias'] ?? []);
-        $bcc = $this->normalizarCorreos($datos['bcc'] ?? $datos['copias_ocultas'] ?? []);
 
         foreach ($configuraciones as $configuracion) {
             $email = $this->crearCorreo($configuracion);
 
             $email->setFrom($this->remitenteCorreo(), $this->remitenteNombre());
-            $email->setTo($correo);
+
+            $email->setTo($correos);
             $email->setSubject($this->asunto($datos));
-
-            if ($cc !== []) {
-                $email->setCC($cc);
-            }
-
-            if ($bcc !== []) {
-                $email->setBCC($bcc);
-            }
 
             foreach ($adjuntos as $adjunto) {
                 $email->attach($adjunto['ruta'], 'attachment', $adjunto['nombre']);
             }
 
-            $email->setMessage($this->cuerpoCorreo($datos));
+            $hero = FCPATH . 'assets/img/SEPTIMO_CONGRESO2025.png';
+            $logo = FCPATH . 'assets/img/GOBIERNO_NEZA_LOGO.png';
+            $heroCid = '';
+            $logoCid = '';
+
+            if (is_file($hero)) {
+                $email->attach($hero, 'inline', 'SEPTIMO_CONGRESO2025.png');
+                $heroCid = (string) ($email->setAttachmentCID($hero) ?: '');
+
+                if ($heroCid === '') {
+                    log_message('error', 'No se pudo generar CID para imagen hero: ' . $hero);
+                }
+            } else {
+                log_message('error', 'No existe imagen hero: ' . $hero);
+            }
+
+            if (is_file($logo)) {
+                $email->attach($logo, 'inline', 'GOBIERNO_NEZA_LOGO.png');
+                $logoCid = (string) ($email->setAttachmentCID($logo) ?: '');
+
+                if ($logoCid === '') {
+                    log_message('error', 'No se pudo generar CID para imagen logo: ' . $logo);
+                }
+            } else {
+                log_message('error', 'No existe imagen logo: ' . $logo);
+            }
+
+            $email->setMessage($this->cuerpoCorreo($datos, $heroCid, $logoCid));
 
             try {
                 if ($email->send()) {
-                    return ['ok' => true];
+                    log_message(
+                        'info',
+                        'ENVIO INVITACION CONGRESO OK A LISTA usando ' . $this->descripcionCorreo($configuracion)
+                            . ' destinatarios=' . count($correos)
+                    );
+
+                    return [
+                        'ok' => true,
+                        'enviados' => $correos,
+                        'fallidos' => [],
+                    ];
                 }
 
                 log_message(
                     'error',
-                    'ERROR ENVIO INVITACION CONGRESO A ' . $correo
-                        . ' usando ' . $this->descripcionCorreo($configuracion)
+                    'ERROR ENVIO INVITACION CONGRESO A LISTA CC usando ' . $this->descripcionCorreo($configuracion)
                         . ': ' . strip_tags($email->printDebugger(['headers', 'subject']))
                 );
             } catch (\Throwable $exception) {
                 log_message(
                     'error',
-                    'ERROR ENVIO INVITACION CONGRESO EXCEPTION A ' . $correo
-                        . ' usando ' . $this->descripcionCorreo($configuracion)
+                    'ERROR ENVIO INVITACION CONGRESO EXCEPTION A LISTA CC usando ' . $this->descripcionCorreo($configuracion)
                         . ': ' . $exception->getMessage()
                 );
             }
         }
 
-        return ['ok' => false];
+        return [
+            'ok' => false,
+            'enviados' => [],
+            'fallidos' => $correos,
+        ];
     }
 
     /**
@@ -525,8 +554,16 @@ class CorreoInvitacion_Controller extends BaseController
     {
         $valor = env($llave);
 
-        if ($valor === null || $valor === false || $valor === '') {
+        if ($valor === null || $valor === '') {
             return $valorPorDefecto;
+        }
+
+        if ($valor === false) {
+            return 'false';
+        }
+
+        if ($valor === true) {
+            return 'true';
         }
 
         return trim((string) $valor);
@@ -541,6 +578,14 @@ class CorreoInvitacion_Controller extends BaseController
         return 'host=' . (($configuracion['SMTPHost'] ?? '') ?: 'N/A')
             . ' port=' . (($configuracion['SMTPPort'] ?? '') ?: 'N/A')
             . ' crypto=' . (($configuracion['SMTPCrypto'] ?? '') ?: 'N/A');
+    }
+
+    /**
+     * Obtiene la lista de destinatarios desde el parametro cc.
+     */
+    private function destinatariosCc(array $datos): array
+    {
+        return $this->normalizarCorreos($datos['cc'] ?? []);
     }
 
     /**
@@ -591,28 +636,15 @@ class CorreoInvitacion_Controller extends BaseController
      * Obtiene el cuerpo del correo enviado por quien consume el API.
      * El equipo que entregue el diseno final debe modificar este metodo o enviar body/html.
      */
-    private function cuerpoCorreo(array $datos): string
+    private function cuerpoCorreo(array $datos, string $heroCid = '', string $logoCid = ''): string
     {
-        $cuerpo = $datos['body']
-            ?? $datos['cuerpo']
-            ?? $datos['mensaje']
-            ?? $datos['html']
-            ?? $datos['contenido']
-            ?? $datos['mensaje_adicional']
-            ?? '';
-
-        $cuerpo = trim((string) $cuerpo);
-
-        if ($cuerpo !== '') {
-            return $cuerpo;
-        }
-
-        return '
-            <p>Se extiende una cordial invitacion al Octavo Congreso Internacional de Seguridad y Proximidad Social.</p>
-            <p>Este es un cuerpo provisional. Sustituir en CorreoInvitacion_Controller::cuerpoCorreo() o enviar el parametro body/html desde el sistema consumidor.</p>
-        ';
+        return view('Invitacion', [
+            'nombre_completo' => esc(trim((string) ($datos['nombre'] ?? $datos['nombre_completo'] ?? ''))),
+            'nombramiento'   => esc(trim((string) ($datos['nombramiento'] ?? ''))),
+            'hero_cid'        => $heroCid,
+            'logo_cid'        => $logoCid,
+        ]);
     }
-
     /**
      * Regresa el asunto del correo.
      */
