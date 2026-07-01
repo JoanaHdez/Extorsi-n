@@ -23,6 +23,7 @@ class CorreoInvitacion_Controller extends BaseController
      * - cc: correo o lista de correos que recibira la invitacion.
      * - adjunto o adjuntos[]: archivos opcionales enviados por multipart/form-data.
      * - body, cuerpo, mensaje, html, contenido o mensaje_adicional: cuerpo del correo.
+     * - smtp_usuario/smtp_password opcionales; si no se envian, usa .env.
      */
     public function enviarCorreo(): ResponseInterface
     {
@@ -93,6 +94,7 @@ class CorreoInvitacion_Controller extends BaseController
      * - cc: correo o lista de correos que recibira la invitacion.
      * - adjunto o adjuntos[]: archivos opcionales enviados por multipart/form-data.
      * - body, cuerpo, mensaje, html, contenido o mensaje_adicional: cuerpo del correo.
+     * - smtp_usuario/smtp_password opcionales; si no se envian, usa .env.
      */
     public function enviarMasivo(): ResponseInterface
     {
@@ -173,7 +175,7 @@ class CorreoInvitacion_Controller extends BaseController
      */
     private function enviarInvitacion(array $correos, array $datos, array $adjuntos = []): array
     {
-        $configuraciones = $this->configuracionesCorreo();
+        $configuraciones = $this->configuracionesCorreo($datos);
 
         if ($configuraciones === []) {
             log_message('error', 'ERROR ENVIO INVITACION CONGRESO: configuracion SMTP incompleta.');
@@ -197,13 +199,13 @@ class CorreoInvitacion_Controller extends BaseController
                 $email->attach($adjunto['ruta'], 'attachment', $adjunto['nombre']);
             }
 
-            $hero = FCPATH . 'assets/img/SEPTIMO_CONGRESO2025.png';
+            $hero = FCPATH . 'assets/img/OCTAVO_CONGRESO2026.png';
             $logo = FCPATH . 'assets/img/GOBIERNO_NEZA_LOGO.png';
             $heroCid = '';
             $logoCid = '';
 
             if (is_file($hero)) {
-                $email->attach($hero, 'inline', 'SEPTIMO_CONGRESO2025.png');
+                $email->attach($hero, 'inline', 'OCTAVO_CONGRESO2026.png');
                 $heroCid = (string) ($email->setAttachmentCID($hero) ?: '');
 
                 if ($heroCid === '') {
@@ -454,13 +456,13 @@ class CorreoInvitacion_Controller extends BaseController
     /**
      * Construye la configuracion de correo principal y sus fallbacks para el API.
      */
-    private function configuracionesCorreo(): array
+    private function configuracionesCorreo(array $datos = []): array
     {
         $smtpBase = [
             'protocol'       => 'smtp',
             'SMTPHost'       => $this->envTexto('correoInvitacion.SMTPHost', $this->envTexto('email.SMTPHost')),
-            'SMTPUser'       => $this->envTexto('correoInvitacion.SMTPUser', $this->envTexto('email.SMTPUser')),
-            'SMTPPass'       => $this->smtpPassword(),
+            'SMTPUser'       => $this->smtpUsuario($datos),
+            'SMTPPass'       => $this->smtpPassword($datos),
             'SMTPPort'       => (int) $this->envTexto('correoInvitacion.SMTPPort', $this->envTexto('email.SMTPPort', '25')),
             'SMTPTimeout'    => (int) $this->envTexto('correoInvitacion.SMTPTimeout', $this->envTexto('email.SMTPTimeout', '20')),
             'SMTPCrypto'     => $this->envTexto('correoInvitacion.SMTPCrypto', $this->envTexto('email.SMTPCrypto')),
@@ -518,10 +520,73 @@ class CorreoInvitacion_Controller extends BaseController
     }
 
     /**
+     * Obtiene el usuario SMTP enviado por API o el configurado en .env.
+     */
+    private function smtpUsuario(array $datos = []): string
+    {
+        $smtpUsuario = $this->datoTexto($datos, [
+            'smtp_usuario',
+            'smtpUsuario',
+            'smtp_user',
+            'smtpUser',
+            'SMTPUser',
+            'usuario_smtp',
+            'usuarioCorreo',
+            'usuario',
+        ]);
+
+        if ($smtpUsuario !== '') {
+            return $smtpUsuario;
+        }
+
+        return $this->envTexto('correoInvitacion.SMTPUser', $this->envTexto('email.SMTPUser'));
+    }
+
+    /**
      * Obtiene el password SMTP, preferentemente codificado en base64.
      */
-    private function smtpPassword(): string
+    private function smtpPassword(array $datos = []): string
     {
+        $smtpPass = $this->datoTexto($datos, [
+            'smtp_password',
+            'smtpPassword',
+            'smtp_pass',
+            'smtpPass',
+            'SMTPPass',
+            'smtp_contrasena',
+            'smtpContrasena',
+            'smtp_contraseña',
+            'smtpContraseña',
+            'password_smtp',
+            'contrasena_smtp',
+            'contraseña_smtp',
+            'contrasena',
+            'contraseña',
+            'password',
+        ]);
+
+        if ($smtpPass !== '') {
+            return $smtpPass;
+        }
+
+        $smtpPassB64Request = $this->datoTexto($datos, [
+            'smtp_password_b64',
+            'smtpPasswordB64',
+            'smtp_pass_b64',
+            'smtpPassB64',
+            'SMTPPassB64',
+        ]);
+
+        if ($smtpPassB64Request !== '') {
+            $smtpPassDecodificado = base64_decode($smtpPassB64Request, true);
+
+            if ($smtpPassDecodificado !== false) {
+                return $smtpPassDecodificado;
+            }
+
+            log_message('error', 'El password SMTP enviado por API no es base64 valido.');
+        }
+
         $smtpPassB64 = $this->envTexto('correoInvitacion.SMTPPassB64', $this->envTexto('email.SMTPPassB64'));
 
         if ($smtpPassB64 !== '') {
@@ -536,6 +601,33 @@ class CorreoInvitacion_Controller extends BaseController
 
         return $this->envTexto('correoInvitacion.SMTPPass', $this->envTexto('email.SMTPPass'));
     }
+
+    /**
+     * Lee el primer valor de texto no vacio desde varios alias de la peticion.
+     */
+    private function datoTexto(array $datos, array $llaves): string
+    {
+        foreach ($llaves as $llave) {
+            if (! array_key_exists($llave, $datos)) {
+                continue;
+            }
+
+            $valor = $datos[$llave];
+
+            if (is_array($valor) || is_object($valor)) {
+                continue;
+            }
+
+            $valor = trim((string) $valor);
+
+            if ($valor !== '') {
+                return $valor;
+            }
+        }
+
+        return '';
+    }
+
 
     private function remitenteCorreo(): string
     {
@@ -638,7 +730,7 @@ class CorreoInvitacion_Controller extends BaseController
      */
     private function cuerpoCorreo(array $datos, string $heroCid = '', string $logoCid = ''): string
     {
-        return view('Invitacion', [
+        return view('App\Modules\CorreosAPI\Views\Invitacion', [
             'nombre_completo' => esc(trim((string) ($datos['nombre'] ?? $datos['nombre_completo'] ?? ''))),
             'nombramiento'   => esc(trim((string) ($datos['nombramiento'] ?? ''))),
             'hero_cid'        => $heroCid,
